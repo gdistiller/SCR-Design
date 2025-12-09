@@ -1,11 +1,12 @@
 #!/bin/sh
 #SBATCH --account=stats
 #SBATCH --partition=ada
-#SBATCH --nodes=1 --ntasks=1
+#SBATCH --nodes=1 --ntasks=25
 #SBATCH --time=60:00:00
-#SBATCH --job-name="Design Sims 1b"
+#SBATCH --job-name="GA4 Sims c 40"
 #SBATCH --mail-user=Greg.Distiller@uct.ac.za
 #SBATCH --mail-type=BEGIN,END,FAIL
  
 hostname
-R --slave CMD BATCH Sims1b.R
+module load R/R-4.3.3-usr
+R --slave CMD BATCH GA4c.R

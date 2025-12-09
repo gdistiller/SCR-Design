@@ -1,0 +1,44 @@
+---
+title: "Test plotting via Shiny app"
+format: html
+server: shiny
+---
+
+## Interactive Plot with External Data
+
+This document contains an interactive Shiny app that allows you to explore data by selecting a numeric parameter.
+
+```{r echo = FALSE, include=FALSE}
+#| context: setup
+library(knitr)
+library(kableExtra)
+library(secr)
+library(shiny)
+load("GADesigns.RData")
+load("SCRObjs.RData")
+```
+
+```{r}
+numericInput("rep",
+             "Number of rep:",
+             value = sample(1:100,1),
+             min = 0,
+             max = 100,
+             step = 10)
+plotOutput("dataPlot")
+```
+
+
+```{r}
+#| context: server
+
+output$dataPlot <- renderPlot({
+  
+plot(res.objs$`SCR Mask`)
+plot(GA.designs$G4S1[[input$rep]], add = TRUE)
+})
+```
+
+## About the Plot
+
+The plot above shows a realisation from the GA4 design.

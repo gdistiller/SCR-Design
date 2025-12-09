@@ -1,0 +1,504 @@
+---
+title: "Simulation Results (500 reps)"
+format:
+  html:
+    embed-resources: true
+server: shiny
+editor: visual
+---
+
+```{r echo = FALSE, include=FALSE}
+#| context: setup
+library(knitr)
+library(kableExtra)
+library(secr)
+library(shiny)
+load("SimResults500.RData")
+load("Excluded500.RData")
+load("GADesigns.RData")
+load("SCRObjs.RData")
+load("DataSumms500.RData")
+```
+
+# Simulation setup: a 15 fold scenario
+
+- S1: D = 0.05 ; sigma = 200 m ; L0 = 2
+
+- S2: D = 0.0033 ; sigma = 3000 m ; L0 = 0.133
+
+- reps = 500
+
+- a rep was excluded if:
+  - an estimate was NA or infinite
+  - the RSE for one of the parameters is > 100
+  - an estimate was more than 5 fold away from the true value
+
+# Grids with 800 m spacing
+
+### Data summary
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms$Grid.800, ylab = "Count", ylim = c(0,200), las = 2)
+```
+
+### Simulation Results
+
+```{r echo = FALSE}
+grids <- data.frame(
+  C1 = c("S1", "S2"),
+  C2 = c(round(simresults$Grid800.D$`Rel bias (mean)`*100,1)),
+  C3 = c(round(simresults$Grid800.D$`Rel SE`,3)),
+  C4 = c(round(simresults$Grid800.L0$`Rel bias (mean)`*100,1)),
+  C5 = c(round(simresults$Grid800.L0$`Rel SE`,3)),
+  C6 = c(round(simresults$Grid800.Sig$`Rel bias (mean)`*100,1)),
+  C7 = c(round(simresults$Grid800.Sig$`Rel SE`,3)),
+  C8 = c(dim(excluded$Grid800.S1)[1], dim(excluded$Grid800.S2)[1])
+)
+
+colnames(grids) <- c("Strata","RB", "RSE", "RB", "RSE","RB", "RSE", "Reps") 
+
+grids %>%
+  kbl(format = "html", booktabs = TRUE, caption = "Sim Results from 800 m Grids", align = c('l', rep('c',6))) %>%
+  kable_styling(font_size = 24) %>%
+  kable_classic_2(full_width = F) %>%
+  column_spec(c(1,3,5,7), border_right = T) %>%
+  row_spec(0, bold = T, extra_css = "border-bottom: 1px solid") %>%
+  row_spec(2,  extra_css = "border-bottom: 1px solid") %>%
+  add_header_above(header = c(" " = 1, "D" = 2, "L0" = 2, "Sigma" = 2, " " = 1), border_right = TRUE, bold = TRUE) 
+```
+
+
+# Grids with 1600 m spacing
+
+### Data summary
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms$Grid.1600, ylab = "Count", ylim = c(0,200), las = 2)
+```
+
+### Simulation Results
+
+```{r echo = FALSE}
+grids2 <- data.frame(
+  C1 = c("S1", "S2"),
+  C2 = c(round(simresults$Grid1600.D$`Rel bias (mean)`*100,1)),
+  C3 = c(round(simresults$Grid1600.D$`Rel SE`,3)),
+  C4 = c(round(simresults$Grid1600.L0$`Rel bias (mean)`*100,1)),
+  C5 = c(round(simresults$Grid1600.L0$`Rel SE`,3)),
+  C6 = c(round(simresults$Grid1600.Sig$`Rel bias (mean)`*100,1)),
+  C7 = c(round(simresults$Grid1600.Sig$`Rel SE`,3)),
+  C8 = c(dim(excluded$Grid1600.S1)[1], dim(excluded$Grid1600.S2)[1])
+)
+
+colnames(grids2) <- c("Strata","RB", "RSE", "RB", "RSE","RB", "RSE", "Reps") 
+
+grids2 %>%
+  kbl(format = "html", booktabs = TRUE, caption = "Sim Results from 1600 m Grids", align = c('l', rep('c',6))) %>%
+  kable_styling(font_size = 24) %>%
+  kable_classic_2(full_width = F) %>%
+  column_spec(c(1,3,5,7), border_right = T) %>%
+  row_spec(0, bold = T, extra_css = "border-bottom: 1px solid") %>%
+  row_spec(2,  extra_css = "border-bottom: 1px solid") %>%
+  add_header_above(header = c(" " = 1, "D" = 2, "L0" = 2, "Sigma" = 2, " " = 1), border_right = TRUE, bold = TRUE) 
+```
+
+# GA4 Designs (min(n,r))
+
+## Data summaries
+
+::: panel-tabset
+### Using S1 values:
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms$G4.S1, ylab = "Count", ylim = c(0,200), las = 2)
+```
+
+### Using S2 values:
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms$G4.S2, ylab = "Count", ylim = c(0,200), las = 2)
+```
+
+### Using Avg values:
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms$G4.Avg, ylab = "Count", ylim = c(0,200), las = 2)
+```
+
+### Using Both values:
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms$G4.Both, ylab = "Count", ylim = c(0,200), las = 2)
+```
+
+### Using Both (max-min) values:
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms$G4.BothMax, ylab = "Count", ylim = c(0,200), las = 2)
+```
+:::
+
+## Simulation Results
+
+```{r echo = FALSE}
+GA4 <- data.frame(
+  C1 = c(rep("S1",2), rep("S2",2), rep("Avg",2), rep("Both",2), rep("Both (Max)",2)),
+  C2 = c(rep(c("S1","S2"),5)),
+  C3 = c(round(simresults$GA4.S1.D$`Rel bias (mean)`*100,1), round(simresults$GA4.S2.D$`Rel bias (mean)`*100,1), 
+         round(simresults$GA4.Avg.D$`Rel bias (mean)`*100,1), round(simresults$GA4.Both.D$`Rel bias (mean)`*100,1), 
+         round(simresults$GA4.BothMax.D$`Rel bias (mean)`*100,1)),
+  C4 = c(round(simresults$GA4.S1.D$`Rel SE`,3), round(simresults$GA4.S2.D$`Rel SE`,3), round(simresults$GA4.Avg.D$`Rel SE`,3),
+         round(simresults$GA4.Both.D$`Rel SE`,3), round(simresults$GA4.BothMax.D$`Rel SE`,3)),
+  C5 = c(round(simresults$GA4.S1.L0$`Rel bias (mean)`*100,1), round(simresults$GA4.S2.L0$`Rel bias (mean)`*100,1), 
+         round(simresults$GA4.Avg.L0$`Rel bias (mean)`*100,1), round(simresults$GA4.Both.L0$`Rel bias (mean)`*100,1), 
+         round(simresults$GA4.BothMax.L0$`Rel bias (mean)`*100,1)),
+  C6 = c(round(simresults$GA4.S1.L0$`Rel SE`,3), round(simresults$GA4.S2.L0$`Rel SE`,3), round(simresults$GA4.Avg.L0$`Rel SE`,3),
+         round(simresults$GA4.Both.L0$`Rel SE`,3), round(simresults$GA4.BothMax.L0$`Rel SE`,3)),
+  C7 = c(round(simresults$GA4.S1.Sig$`Rel bias (mean)`*100,1), round(simresults$GA4.S2.Sig$`Rel bias (mean)`*100,1), 
+         round(simresults$GA4.Avg.Sig$`Rel bias (mean)`*100,1), round(simresults$GA4.Both.Sig$`Rel bias (mean)`*100,1), 
+         round(simresults$GA4.BothMax.Sig$`Rel bias (mean)`*100,1)),
+  C8 = c(round(simresults$GA4.S1.Sig$`Rel SE`,3), round(simresults$GA4.S2.Sig$`Rel SE`,3), 
+         round(simresults$GA4.Avg.Sig$`Rel SE`,3), round(simresults$GA4.Both.Sig$`Rel SE`,3),
+         round(simresults$GA4.BothMax.L0$`Rel SE`,3)),
+  C9 = c(dim(excluded$GA4.S1.S1)[1], dim(excluded$GA4.S1.S2)[1], dim(excluded$GA4.S2.S1)[1], dim(excluded$GA4.S2.S2)[1],
+         dim(excluded$GA4.Avg.S1)[1], dim(excluded$GA4.Avg.S2)[1], dim(excluded$GA4.Both.S1)[1], dim(excluded$GA4.Both.S2)[1],
+         dim(excluded$GA4.BothMax.S1)[1], dim(excluded$GA4.BothMax.S2)[1])
+)
+
+colnames(GA4) <- c("Values","Strata","RB", "RSE", "RB", "RSE","RB", "RSE", "Reps") 
+
+GA4 %>%
+  kbl(format = "html", booktabs = TRUE, caption = "Sim Results from GA4 designs", align = c(rep('l',2), rep('c',7))) %>%
+  kable_styling(font_size = 24) %>%
+  kable_classic_2(full_width = F) %>%
+  column_spec(c(1,2,4,6,8), border_right = T) %>%
+  collapse_rows(columns = 1) %>%
+  row_spec(0, bold = T, extra_css = "border-bottom: 1px solid") %>%
+  row_spec(c(2,4,6,8,10),  extra_css = "border-bottom: 1px solid") %>%
+  add_header_above(header = c(" " = 2, "D" = 2, "L0" = 2, "Sigma" = 2, " " = 1), border_right = TRUE, bold = TRUE) 
+```
+
+Realisations from the proposed designs:
+
+::: panel-tabset
+### Using S1 values:
+
+```{r}
+numericInput("rep1",
+             "Number of rep:",
+             value = sample(1:500,1),
+             min = 0,
+             max = 500,
+             step = 10)
+plotOutput("dataPlot1")
+```
+
+```{r}
+#| context: server
+
+output$dataPlot1 <- renderPlot({
+plot(res.objs$`SCR Mask`)
+plot(GA.designs$G4S1[[input$rep1]], add = TRUE)
+})
+```
+
+### Using S2 values:
+
+```{r}
+numericInput("rep2",
+             "Number of rep:",
+             value = sample(1:500,1),
+             min = 0,
+             max = 500,
+             step = 10)
+plotOutput("dataPlot2")
+```
+
+```{r}
+#| context: server
+
+output$dataPlot2 <- renderPlot({
+plot(res.objs$`SCR Mask`)
+plot(GA.designs$G4S2[[input$rep2]], add = TRUE)
+})
+```
+
+### Using Avg values:
+
+```{r}
+numericInput("rep3",
+             "Number of rep:",
+             value = sample(1:500,1),
+             min = 0,
+             max = 500,
+             step = 10)
+plotOutput("dataPlot3")
+```
+
+```{r}
+#| context: server
+
+output$dataPlot3 <- renderPlot({
+plot(res.objs$`SCR Mask`)
+plot(GA.designs$G4Avg[[input$rep3]], add = TRUE)
+})
+```
+
+### Using Both values:
+
+```{r}
+numericInput("rep4",
+             "Number of rep:",
+             value = sample(1:500,1),
+             min = 0,
+             max = 500,
+             step = 10)
+plotOutput("dataPlot4")
+```
+
+```{r}
+#| context: server
+
+output$dataPlot4 <- renderPlot({
+plot(res.objs$`SCR Mask`)
+plot(GA.designs$G4Both[[input$rep4]], add = TRUE)
+})
+```
+
+### Using Both (max-min) values:
+
+```{r}
+numericInput("rep5",
+             "Number of rep:",
+             value = sample(1:500,1),
+             min = 0,
+             max = 500,
+             step = 10)
+plotOutput("dataPlot5")
+```
+
+```{r}
+#| context: server
+
+output$dataPlot5 <- renderPlot({
+plot(res.objs$`SCR Mask`)
+plot(GA.designs$G4BothMax[[input$rep5]], add = TRUE)
+})
+```
+:::
+
+# GA5 Designs (E(n2))
+
+## Data summaries
+
+::: panel-tabset
+### Using S1 values:
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms$G5.S1, ylab = "Count", ylim = c(0,200), las = 2)
+```
+
+### Using S2 values:
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms$G5.S2, ylab = "Count", ylim = c(0,200), las = 2)
+```
+
+### Using Avg values:
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms$G5.Avg, ylab = "Count", ylim = c(0,200), las = 2)
+```
+
+### Using Both values:
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms$G5.Both, ylab = "Count", ylim = c(0,200), las = 2)
+```
+
+### Using Both (max-min) values:
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms$G5.BothMax, ylab = "Count", ylim = c(0,200), las = 2)
+```
+:::
+
+## Simulation Results
+
+```{r echo = FALSE}
+GA5 <- data.frame(
+  C1 = c(rep("S1",2), rep("S2",2), rep("Avg",2), rep("Both",2), rep("Both (Max)",2)),
+  C2 = c(rep(c("S1","S2"),5)),
+  C3 = c(round(simresults$GA5.S1.D$`Rel bias (mean)`*100,1), round(simresults$GA5.S2.D$`Rel bias (mean)`*100,1), 
+         round(simresults$GA5.Avg.D$`Rel bias (mean)`*100,1), round(simresults$GA5.Both.D$`Rel bias (mean)`*100,1), 
+         round(simresults$GA5.BothMax.D$`Rel bias (mean)`*100,1)),
+  C4 = c(round(simresults$GA5.S1.D$`Rel SE`,3), round(simresults$GA5.S2.D$`Rel SE`,3), round(simresults$GA5.Avg.D$`Rel SE`,3),
+         round(simresults$GA5.Both.D$`Rel SE`,3), round(simresults$GA5.BothMax.D$`Rel SE`,3)),
+  C5 = c(round(simresults$GA5.S1.L0$`Rel bias (mean)`*100,1), round(simresults$GA5.S2.L0$`Rel bias (mean)`*100,1), 
+         round(simresults$GA5.Avg.L0$`Rel bias (mean)`*100,1), round(simresults$GA5.Both.L0$`Rel bias (mean)`*100,1), 
+         round(simresults$GA5.BothMax.L0$`Rel bias (mean)`*100,1)),
+  C6 = c(round(simresults$GA5.S1.L0$`Rel SE`,3), round(simresults$GA5.S2.L0$`Rel SE`,3), round(simresults$GA5.Avg.L0$`Rel SE`,3),
+         round(simresults$GA5.Both.L0$`Rel SE`,3), round(simresults$GA5.BothMax.L0$`Rel SE`,3)),
+  C7 = c(round(simresults$GA5.S1.Sig$`Rel bias (mean)`*100,1), round(simresults$GA5.S2.Sig$`Rel bias (mean)`*100,1), 
+         round(simresults$GA5.Avg.Sig$`Rel bias (mean)`*100,1), round(simresults$GA5.Both.Sig$`Rel bias (mean)`*100,1), 
+         round(simresults$GA5.BothMax.Sig$`Rel bias (mean)`*100,1)),
+  C8 = c(round(simresults$GA5.S1.Sig$`Rel SE`,3), round(simresults$GA5.S2.Sig$`Rel SE`,3), 
+         round(simresults$GA5.Avg.Sig$`Rel SE`,3), round(simresults$GA5.Both.Sig$`Rel SE`,3),
+         round(simresults$GA5.BothMax.L0$`Rel SE`,3)),
+  C9 = c(dim(excluded$GA5.S1.S1)[1], dim(excluded$GA5.S1.S2)[1], dim(excluded$GA5.S2.S1)[1], dim(excluded$GA5.S2.S2)[1],
+         dim(excluded$GA5.Avg.S1)[1], dim(excluded$GA5.Avg.S2)[1], dim(excluded$GA5.Both.S1)[1], dim(excluded$GA5.Both.S2)[1],
+         dim(excluded$GA5.BothMax.S1)[1], dim(excluded$GA5.BothMax.S2)[1])
+)
+
+colnames(GA5) <- c("Values","Strata","RB", "RSE", "RB", "RSE","RB", "RSE", "Reps") 
+
+GA5 %>%
+  kbl(format = "html", booktabs = TRUE, caption = "Sim Results from GA5 designs", align = c(rep('l',2), rep('c',7))) %>%
+  kable_styling(font_size = 24) %>%
+  kable_classic_2(full_width = F) %>%
+  column_spec(c(1,2,4,6,8), border_right = T) %>%
+  collapse_rows(columns = 1) %>%
+  row_spec(0, bold = T, extra_css = "border-bottom: 1px solid") %>%
+  row_spec(c(2,4,6,8,10),  extra_css = "border-bottom: 1px solid") %>%
+  add_header_above(header = c(" " = 2, "D" = 2, "L0" = 2, "Sigma" = 2, " " = 1), border_right = TRUE, bold = TRUE) 
+```
+
+Realisations from the proposed designs:
+
+::: panel-tabset
+### Using S1 values:
+
+```{r}
+numericInput("rep6",
+             "Number of rep:",
+             value = sample(1:500,1),
+             min = 0,
+             max = 500,
+             step = 10)
+plotOutput("dataPlot6")
+```
+
+```{r}
+#| context: server
+
+output$dataPlot6 <- renderPlot({
+plot(res.objs$`SCR Mask`)
+plot(GA.designs$G5S1[[input$rep6]], add = TRUE)
+})
+```
+
+### Using S2 values:
+
+```{r}
+numericInput("rep7",
+             "Number of rep:",
+             value = sample(1:500,1),
+             min = 0,
+             max = 500,
+             step = 10)
+plotOutput("dataPlot7")
+```
+
+```{r}
+#| context: server
+
+output$dataPlot7 <- renderPlot({
+plot(res.objs$`SCR Mask`)
+plot(GA.designs$G5S2[[input$rep7]], add = TRUE)
+})
+```
+
+### Using Avg values:
+
+```{r}
+numericInput("rep8",
+             "Number of rep:",
+             value = sample(1:500,1),
+             min = 0,
+             max = 500,
+             step = 10)
+plotOutput("dataPlot8")
+```
+
+```{r}
+#| context: server
+
+output$dataPlot8 <- renderPlot({
+plot(res.objs$`SCR Mask`)
+plot(GA.designs$G5Avg[[input$rep8]], add = TRUE)
+})
+```
+
+### Using Both values:
+
+```{r}
+numericInput("rep9",
+             "Number of rep:",
+             value = sample(1:500,1),
+             min = 0,
+             max = 500,
+             step = 10)
+plotOutput("dataPlot9")
+```
+
+```{r}
+#| context: server
+
+output$dataPlot9 <- renderPlot({
+plot(res.objs$`SCR Mask`)
+plot(GA.designs$G5Both[[input$rep9]], add = TRUE)
+})
+```
+
+### Using Both (max-min) values:
+
+```{r}
+numericInput("rep10",
+             "Number of rep:",
+             value = sample(1:500,1),
+             min = 0,
+             max = 500,
+             step = 10)
+plotOutput("dataPlot10")
+```
+
+```{r}
+#| context: server
+
+output$dataPlot10 <- renderPlot({
+plot(res.objs$`SCR Mask`)
+plot(GA.designs$G5BothMax[[input$rep10]], add = TRUE)
+})
+```
+:::
+
+# General comments:
+
+## Grid design
+
+- The grids do not work particularly well
+  - spacing of 800 m produces positive bias in D for both strata with a high RSE for strata 2. There was also a high proportion of reps that were excluded for strata 2 (17.2%, and 2.6% for strata 1).
+  - spacing of 1600 m produces high positive bias in D for strata 1 along with a high RSE and an exlcusion rate of 4.8%
+  - I do not understand how sigma is estimated so well, even with zero spatial recaptures the estimator for sigma appears unbiased?
+
+## GA4 (min(n,r))
+
+- The behaviour of the GA4 algorithm seems to spread traps much further when using S1 or avg values. I think this is due to the fairly high L0 values that make it easier to get high r so the algorithm spreads traps to increase n. The other settings produce a fairly dense array with traps tending to be quite close together.
+- Using average values does not work well and results in high positive bias in D for strata 1 with a high RSE and an exclusion rate of 6.2%.
+- The other configurations appear unbiased except for slight positive positive bias in D for strata 2 when using strata 1 values (and slightly lower bias for strata 1 when using strata 2 values).
+- The best option appears to be using both sets of values with minimal differences between a 50-50 weighting and the max-min approach
+- I'm not sure why when using S2 values there were a handful of reps (2.2%) that gave problems for S2. The data summary shows more spatial recaps and less singletons for S2 (with slightly lower n).
+
+
+## GA5 (min En2)
+
+-   The behaviour of the GA5 algorithm consistently produces clusters of traps, except when using average values. Using S2 values produces two large clusters, and using both with max-min tends to produce clusters that are more spread out compared to without max-min, and appear similar to when using S1 values. 
+
+- Using avg values leads to high bias and variance with an exclusion rate of 5.6% in strata 1.
+
+- Using S1 values leads to positive bias in D for S2 but not the other way round
+
+- Using both sets of values works well. There is not a lot of difference from the max-min approach though that does seem to exhibit a low degree of positive bias in D especially for strata 2.
+
+- GA5 seems marginally better than GA4 with slightly lower and better balance across the strata in RSE's in D
+
