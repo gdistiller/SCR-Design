@@ -1,4 +1,5 @@
 #28 March 2025, run again in November to get 500 reps
+#March 26, adding optimal spacing, and clustered systematic
 #getting proposed designs for new 15 fold diff scen
 #this code generates the grid designs, the GA designs are done on the cluster
 #cluster files are all combined into a GADesigns file at the end
@@ -34,21 +35,151 @@ traplocs.sf <- res.objs[[3]]
 plot(mask, axes = T)
 plot(trap.locs, add = T)
 
-#create grid designs using 800 m
-grid.800 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, sigma = NULL, 
-                             lambda0 = NULL, sigma.buff = NULL, grid.spacing = 800, 
+#create grid designs using optimal spacing, sum_min,  all_min critertia for two classes
+#result does not seem sensitive to spacing of base grid
+grid <- make.grid(7,7,1000, detector = "count")
+spacing.sum.min <- optimalSpacing2G(D1 = D1, D2 = D2,
+                            traps0 = grid,
+                            detectpar1 = list(lambda0 = L01, sigma = sigma1),
+                            detectpar2 = list(lambda0 = L02, sigma = sigma2),
+                            noccasions = 1,
+                            criterion = c("sum_min"), # sum_min
+                            spacing_m = seq(100,5000,100))
+spacing.sum.min$optimum.spacing
+
+spacing.all.min <- optimalSpacing2G(D1 = D1, D2 = D2,
+                                    traps0 = grid,
+                                    detectpar1 = list(lambda0 = L01, sigma = sigma1),
+                                    detectpar2 = list(lambda0 = L02, sigma = sigma2),
+                                    noccasions = 1,
+                                    criterion = c("all_min"), # all_min
+                                    spacing_m = seq(100,5000,100))
+spacing.all.min$optimum.spacing
+
+#use the spacing from all.min of 700 m
+grid.sum.min <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, sigma = NULL, 
+                             lambda0 = NULL, sigma.buff = NULL, grid.spacing = 700, 
                              criterion = 4, n.reps = nreps, grid = TRUE, nT = nT)
+
+#800
+grid.800 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, sigma = NULL, 
+                           lambda0 = NULL, sigma.buff = NULL, grid.spacing = 800, 
+                           criterion = 4, n.reps = nreps, grid = TRUE, nT = nT)
 
 #1600
 grid.1600<- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, sigma = NULL, 
                               lambda0 = NULL, sigma.buff = NULL, grid.spacing = mean(sigma), 
                               criterion = 4, n.reps = nreps, grid = TRUE, nT = nT)
 
-grid.designs <- list("800 m" = grid.800, "Avg sigma" = grid.1600)
+grid.designs <- list("700 m (opt)" = grid.sum.min, "800 m" = grid.800, "Avg sigma" = grid.1600)
 
-setwd("~/Library/CloudStorage/OneDrive-UniversityofCapeTown/Documents/Git/SCRDesign/15FoldScen")
-save(grid.designs, file = "GridDesigns.RData")
-save(res.objs, file = "SCRObjs.RData")
+save(grid.designs, file = "15FoldScen/GridDesigns.RData")
+save(res.objs, file = "15FoldScen/SCRObjs.RData")
+
+#########################################################
+#Systematic clustered designs
+#first find within and between optimal spacing using strata 1 for within a S2 for btwn
+#using 2G fn so I dont need a bunch of new fns
+#also some issue with dfcast (similar to secr_valid.detecfn)
+grid <- make.grid(7,7,100, detector = "count")
+spacing.within <- optimalSpacing2G(D1 = D1, D2 = D1,
+                                    traps0 = grid,
+                                    detectpar1 = list(lambda0 = L01, sigma = sigma1),
+                                    detectpar2 = list(lambda0 = L01, sigma = sigma1),
+                                    noccasions = 1,
+                                    criterion = c("sum_min"), # sum_min
+                                    spacing_m = seq(200,1000,200))
+spacing.within$optimum.spacing
+
+grid2 <- make.grid(7,7,1000, detector = "count")
+spacing.btwn <- optimalSpacing2G(D1 = D2, D2 = D2,
+                                   traps0 = grid2,
+                                   detectpar1 = list(lambda0 = L02, sigma = sigma2),
+                                   detectpar2 = list(lambda0 = L02, sigma = sigma2),
+                                   noccasions = 1,
+                                   criterion = c("sum_min"), # sum_min
+                                   spacing_m = seq(1000,10000,200))
+spacing.btwn$optimum.spacing
+
+#generate a between-cluster grid for cluster centroids
+#slightly increase the buffer, for 2x2 grids this is sqrt(2*300^2) or 424.26
+res.objs <- create.extent(sigma = 3000, buff.factor = 3.15, res = 200)
+mask <- res.objs[[1]]
+clust.locs <- res.objs[[2]]
+clustlocs.sf <- res.objs[[3]]
+
+clusters.10 <- Proposed.traps(poly = clustlocs.sf, alltraps = NULL, D = NULL, sigma = NULL, 
+                  lambda0 = NULL, sigma.buff = NULL, grid.spacing = spacing.btwn$optimum.spacing + spacing.within$optimum.spacing, 
+                  criterion = 4, n.reps = 500, grid = TRUE, nT = 10)
+
+plot(mask, axes = T)
+plot(clusters.10[[1]], add = T)
+
+# Wrapper that generates one full set of clustered trap coordinates
+trap_list <- lapply(clusters.10, function(centroids) {
+  make_cluster_traps(centroids, spacing = 600, n_rows = 2, n_cols = 2)
+})
+
+trap_secr_list <- lapply(trap_list, function(traps) {
+  read.traps(data = traps[, c("x", "y")], detector = "count")
+})
+
+plot(mask, axes = T)
+plot(trap_secr_list[[10]], add = T)
+
+Enrm(D = D1, trap_secr_list[[1]], mask, detectpar = list(lambda0 = L01, sigma = sigma1), noccasions = 1)
+Enrm(D = D2, trap_secr_list[[1]], mask, detectpar = list(lambda0 = L02, sigma = sigma2), noccasions = 1)
+
+#again with 400 / 1500 spacing
+clusters.10 <- Proposed.traps(poly = clustlocs.sf, alltraps = NULL, D = NULL, sigma = NULL, 
+                              lambda0 = NULL, sigma.buff = NULL, grid.spacing = 1900, 
+                              criterion = 4, n.reps = 2, grid = TRUE, nT = 10)
+
+# Wrapper that generates one full set of clustered trap coordinates
+trap_list <- lapply(clusters.10, function(centroids) {
+  make_cluster_traps(centroids, spacing = 400, n_rows = 2, n_cols = 2)
+})
+
+trap_secr_list <- lapply(trap_list, function(traps) {
+  read.traps(data = traps[, c("x", "y")], detector = "count")
+})
+
+Enrm(D = D1, trap_secr_list[[1]], mask, detectpar = list(lambda0 = L01, sigma = sigma1), noccasions = 1)
+Enrm(D = D2, trap_secr_list[[1]], mask, detectpar = list(lambda0 = L02, sigma = sigma2), noccasions = 1)
+
+#again with 400 / 6000 spacing
+clusters.10 <- Proposed.traps(poly = clustlocs.sf, alltraps = NULL, D = NULL, sigma = NULL, 
+                              lambda0 = NULL, sigma.buff = NULL, grid.spacing = 6400, 
+                              criterion = 4, n.reps = 2, grid = TRUE, nT = 10)
+
+# Wrapper that generates one full set of clustered trap coordinates
+trap_list <- lapply(clusters.10, function(centroids) {
+  make_cluster_traps(centroids, spacing = 400, n_rows = 2, n_cols = 2)
+})
+
+trap_secr_list <- lapply(trap_list, function(traps) {
+  read.traps(data = traps[, c("x", "y")], detector = "count")
+})
+
+Enrm(D = D1, trap_secr_list[[1]], mask, detectpar = list(lambda0 = L01, sigma = sigma1), noccasions = 1)
+Enrm(D = D2, trap_secr_list[[1]], mask, detectpar = list(lambda0 = L02, sigma = sigma2), noccasions = 1)
+
+#again with 400 / 3000 spacing
+clusters.10 <- Proposed.traps(poly = clustlocs.sf, alltraps = NULL, D = NULL, sigma = NULL, 
+                              lambda0 = NULL, sigma.buff = NULL, grid.spacing = 3400, 
+                              criterion = 4, n.reps = 2, grid = TRUE, nT = 10)
+
+# Wrapper that generates one full set of clustered trap coordinates
+trap_list <- lapply(clusters.10, function(centroids) {
+  make_cluster_traps(centroids, spacing = 400, n_rows = 2, n_cols = 2)
+})
+
+trap_secr_list <- lapply(trap_list, function(traps) {
+  read.traps(data = traps[, c("x", "y")], detector = "count")
+})
+
+Enrm(D = D1, trap_secr_list[[1]], mask, detectpar = list(lambda0 = L01, sigma = sigma1), noccasions = 1)
+Enrm(D = D2, trap_secr_list[[1]], mask, detectpar = list(lambda0 = L02, sigma = sigma2), noccasions = 1)
 
 ##########################################################
 #collate GA designs
