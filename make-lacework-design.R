@@ -35,7 +35,7 @@ plot(tempmask)
 plot(lw, add = TRUE)
 
 ## Manually remove some traps so end up with the same number of traps as other designs
-lw <- crop_to_n(lw$x, lw$y, N = 40, xy_ratio = 2)
+lw <- crop_to_n(lw$x, lw$y, N = 40, xy_ratio = 1)
 lw <- read.traps(data = lw$points, detector = "count")
 
 plot(tempmask)
