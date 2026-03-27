@@ -1,3 +1,12 @@
+# function to crop lacework design to N points 
+#
+# start with all points
+# repeatedly remove one point at a time
+# at each step, define the current centroid of the retained points
+# compute each point’s distance from that centroid
+# remove the farthest point
+# repeat until exactly N points remain
+
 crop_to_n <- function(x, y, N, xy_ratio = 1,
                                         tie_break = c("boundary", "random")) {
   stopifnot(length(x) == length(y))

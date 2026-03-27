@@ -1,14 +1,17 @@
-library(dplyr)
-library(raster)
-library(secr)
-library(sf)
-library(ggplot2)
+# example lacework design
+
 library(secrdesign)
 
 # function to subset lacework designs to contain N points
 source("crop_to_n.R")
 
 # set spacings
+# unclear what these should be, but:
+# smallspacing should probably be smaller than cluster design within-cluster spacing, because
+# lacework doesn't give the same regular grid arrangement.
+# similarly bigspacing should probably be bigger than cluster design between-cluster spacing, because
+# lacework gives plenty of opportunities for recaps at intermediate distances.
+
 smallspacing <- 600
 bigspacing <- 2400
 
