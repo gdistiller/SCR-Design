@@ -1,5 +1,6 @@
-#March 26, simulations to evaluate optimal spacing grid designs for 15 fold scen
+#March 26, simulations to evaluate optimal spacing grid designs (2G) for 15 fold scen
 #500 reps and uses 25 cores
+#here using opt spacing of 600
 
 rm(list=ls())
 
@@ -35,7 +36,7 @@ Fit.models <- function(Data.obj, nrep, numcores = 4){
                  dimnames = list(NULL, c("D1", "D1.se", "L01", "L01.se", "Sig1", "Sig1.se", "D2", "D2.se", "L02", "L02.se", "Sig2", "Sig2.se")))
   for (i in 1:nrep){
     CH <- Data.obj$output[[i]][[1]]
-    mod <- secr.fit(CH, detectfn = 'HHN', mask = mask, model = list(D~g, sigma~g, lambda0~g), groups = "group", ncores = numcores)
+    mod <- secr.fit(CH, detectfn = 'HHN', mask = mask, model = list(D~g, sigma~g, lambda0~g), groups = "group", trace = FALSE, ncores = numcores)
     temp1 <- unlist(predict(mod)[[1]][,2:3])
     temp2 <- unlist(predict(mod)[[2]][,2:3])
     ests[i,] <- c(temp1[c(1,4,2,5,3,6)], temp2[c(1,4,2,5,3,6)])
@@ -48,7 +49,7 @@ Fit.models <- function(Data.obj, nrep, numcores = 4){
 load("SCRObjs.RData")
 load("GridDesigns.RData") 
 
-mask <- res.objs[[1]]
+mask <- SCR.objs$Full[[1]]
 
 #Set values for both strata
 DiffFactor <- 15
@@ -65,8 +66,9 @@ scen$D[S2] <- D2
 scen$lambda0[S2] <- L02
 scen$sigma[S2] <- sigma2
 
-Grid.700.Data <- Sim.data(scenario.df = scen, nreps = 1, traplist = grid.designs$`700 m (opt)`, masklist = mask)
-Grid.700.results <- Fit.models(Data.obj = Grid.700.Data, nrep = nreps, numcores = cores)
+Grid.600.Data <- Sim.data(scenario.df = scen, nreps = 1, traplist = grid.designs$`600 m (2G opt)`, masklist = mask)
+Grid.600.results <- Fit.models(Data.obj = Grid.600.Data, nrep = nreps, numcores = cores)
+
 save.image("OSGridsResults40.RData")
 
 ###################################################################

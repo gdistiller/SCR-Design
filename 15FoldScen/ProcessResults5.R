@@ -44,7 +44,7 @@ CH.data.summs <- function(res.list){
 #can choose to produce boxplots, 
 #ylim.ceiling needs two values (1 for each strata)
 #true values also needs the true values for the chosen parameter for each strata
-summ.results <- function(results.df, par = "D", true.values, ylim.ceiling, plot = TRUE, se = FALSE){
+summ.results <- function(results.df, par = "D", true.values, ylim.ceiling, plot = TRUE, se = FALSE, rel.se = TRUE){
     if (par == "D"){
       index <- 1
       plot.label1 <- "Strata 1 Density"
@@ -77,8 +77,13 @@ summ.results <- function(results.df, par = "D", true.values, ylim.ceiling, plot 
       abline(h = true.values[2], col = 'red')
     } else {
       index <- index + 1
-      boxplot(results.df[,index], main = paste(plot.label1, "SE", sep = " "), ylim = c(0, ylim.ceiling[1]))
-      boxplot(results.df[,index+6], main = paste(plot.label2, "SE", sep = " "), ylim = c(0, ylim.ceiling[2]))
+      if (rel.se == TRUE){
+        boxplot(results.df[,index] / mean(results.df[,index], na.rm = T), main = paste(plot.label1, "Rel SE", sep = " "), ylim = c(0, ylim.ceiling[1]))
+        boxplot(results.df[,index+6] / mean(results.df[,index+6], na.rm = T), main = paste(plot.label2, "Rel SE", sep = " "), ylim = c(0, ylim.ceiling[2]))
+      } else {
+        boxplot(results.df[,index], main = paste(plot.label1, "SE", sep = " "), ylim = c(0, ylim.ceiling[1]))
+        boxplot(results.df[,index+6], main = paste(plot.label2, "SE", sep = " "), ylim = c(0, ylim.ceiling[2]))
+      }
     }
   }
   
@@ -175,10 +180,11 @@ find.rogue <- function(df, mag = 10, true){
 mag.factor <- 5 
 D1.ylim <- 0.25 ; D2.ylim <- 0.015
 L1.ylim <- 3.5 ; L2.ylim <- 0.25
-Sig1.ylim <- 350 ; Sig2.ylim <- 7500
+Sig1.ylim <- 350 ; Sig2.ylim <- 9000
 
 ################
 #Grid designs
+#now includes grids with optimal spacing 2G, and clustered grids
 ################
 
 load("15FoldScen/Cluster/Sims/GridsdResults40.RData")
@@ -207,10 +213,10 @@ Grid800.D.est <- summ.results(Grid.800.clean, par = "D", true.value = c(0.05,0.0
 Grid800.L0.est <- summ.results(Grid.800.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), plot = TRUE, se = FALSE)
 Grid800.Sig.est <- summ.results(Grid.800.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(Sig1.ylim, Sig2.ylim), plot = TRUE, se = FALSE)
 
-#standard errors
-Grid800.D.se <- summ.results(Grid.800.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(0.1,0.005), plot = TRUE, se = TRUE)
-Grid800.L0.se <- summ.results(Grid.800.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(0.75,0.05), plot = TRUE, se = TRUE)
-Grid800.Sig.se <- summ.results(Grid.800.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(50,7500), plot = TRUE, se = TRUE)
+#relative standard errors
+Grid800.D.se <- summ.results(Grid.800.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10,10), plot = TRUE, se = TRUE, rel.se = TRUE)
+Grid800.L0.se <- summ.results(Grid.800.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10,10), plot = TRUE, se = TRUE, rel.se = TRUE)
+Grid800.Sig.se <- summ.results(Grid.800.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(10,10), plot = TRUE, se = TRUE, rel.se = TRUE)
 
 #############
 #1600
@@ -236,10 +242,125 @@ Grid1600.D.est <- summ.results(Grid.1600.clean, par = "D", true.value = c(0.05,0
 Grid1600.L0.est <- summ.results(Grid.1600.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), plot = TRUE, se = FALSE)
 Grid1600.Sig.est <- summ.results(Grid.1600.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(Sig1.ylim, Sig2.ylim), plot = TRUE, se = FALSE)
 
+#rel standard errors
+Grid1600.D.se <- summ.results(Grid.1600.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10,10), plot = TRUE, se = TRUE, rel.se = TRUE)
+Grid1600.L0.se <- summ.results(Grid.1600.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+Grid1600.Sig.se <- summ.results(Grid.1600.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+
+################
+#Optimal Spacing
+#using OS of 600m
+################
+
+load("15FoldScen/Cluster/Sims/OSGridsResults40.RData")
+
+##first data summary, then estimates
+Grid.600.data.summ <- CH.data.summs(Grid.600.Data$output)
+
+pdf("15FoldScen/Grid600DataSumms.pdf", height = 8, width = 10, pointsize = 11)
+boxplot(Grid.600.data.summ)
+dev.off()
+
+#filter data, NAs and infinite, and wildly out values (20 fold)
+#one strata at a time
+Grid.600.red1 <- find.rogue(Grid.600.results[,c(1:6)], mag = mag.factor, true = c(0.05, 2, 200))
+Grid.600.red2 <- find.rogue(Grid.600.results[,c(7:12)], mag = mag.factor, true = c(0.05/15, 2/15, 3000))
+
+Grid.600.clean <- merge(Grid.600.red1, Grid.600.red2, by = "row", all.x = TRUE, all.y = TRUE)
+summary(Grid.600.clean)
+
+#plot and summarise
+#estimates first
+Grid600.D.est <- summ.results(Grid.600.clean, par = "D", true.values = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), plot = TRUE, se = FALSE)
+Grid600.L0.est <- summ.results(Grid.600.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), plot = TRUE, se = FALSE)
+Grid600.Sig.est <- summ.results(Grid.600.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(Sig1.ylim, Sig2.ylim), plot = TRUE, se = FALSE)
+
+#rel standard errors
+Grid600.D.se <- summ.results(Grid.600.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+Grid600.L0.se <- summ.results(Grid.600.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+Grid600.Sig.se <- summ.results(Grid.600.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+
+################
+#Clustered designs
+#three configs tried (200 reps)
+################
+
+load("15FoldScen/Cluster/Sims/ClustersTest.RData")
+
+#first trying OS that gave 600 / 1200
+##first data summary, then estimates
+Cluster.os.data.summ <- CH.data.summs(Grid.os.Data$output)
+
+boxplot(Cluster.os.data.summ)
+
+#filter data, NAs and infinite, and wildly out values (20 fold)
+#one strata at a time
+Cluster.os.red1 <- find.rogue(Grid.os.results[,c(1:6)], mag = mag.factor, true = c(0.05, 2, 200))
+Cluster.os.red2 <- find.rogue(Grid.os.results[,c(7:12)], mag = mag.factor, true = c(0.05/15, 2/15, 3000))
+
+Cluster.os.clean <- merge(Cluster.os.red1, Cluster.os.red2, by = "row", all.x = TRUE, all.y = TRUE)
+summary(Cluster.os.clean)
+
+#plot and summarise
+#estimates first
+Cluster.os.D.est <- summ.results(Cluster.os.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), plot = TRUE, se = FALSE)
+Cluster.os.L0.est <- summ.results(Cluster.os.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), plot = TRUE, se = FALSE)
+Cluster.os.Sig.est <- summ.results(Cluster.os.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(Sig1.ylim, Sig2.ylim), plot = TRUE, se = FALSE)
+
+#rel standard errors
+Cluster.os.D.se <- summ.results(Cluster.os.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+Cluster.os.L0.se <- summ.results(Cluster.os.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+Cluster.os.Sig.se <- summ.results(Cluster.os.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+
+#now trying 2 sigma spacing
+##first data summary, then estimates
+Cluster.2sig.data.summ <- CH.data.summs(Grid.2sig.Data$output)
+
+boxplot(Cluster.2sig.data.summ)
+
+#filter data, NAs and infinite, and wildly out values (20 fold)
+#one strata at a time
+Cluster.2sig.red1 <- find.rogue(Grid.2sig.results[,c(1:6)], mag = mag.factor, true = c(0.05, 2, 200))
+Cluster.2sig.red2 <- find.rogue(Grid.2sig.results[,c(7:12)], mag = mag.factor, true = c(0.05/15, 2/15, 3000))
+
+Cluster.2sig.clean <- merge(Cluster.2sig.red1, Cluster.2sig.red2, by = "row", all.x = TRUE, all.y = TRUE)
+summary(Cluster.2sig.clean)
+
+#plot and summarise
+#estimates first
+Cluster.2sig.D.est <- summ.results(Cluster.2sig.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), plot = TRUE, se = FALSE)
+Cluster.2sig.L0.est <- summ.results(Cluster.2sig.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), plot = TRUE, se = FALSE)
+Cluster.2sig.Sig.est <- summ.results(Cluster.2sig.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(Sig1.ylim, Sig2.ylim), plot = TRUE, se = FALSE)
+
 #standard errors
-Grid1600.D.se <- summ.results(Grid.1600.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10,0.005), plot = TRUE, se = TRUE)
-Grid1600.L0.se <- summ.results(Grid.1600.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(0.75,0.05), plot = TRUE, se = TRUE)
-Grid1600.Sig.se <- summ.results(Grid.1600.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(1750,1300), plot = TRUE, se = TRUE)
+Cluster.2sig.D.se <- summ.results(Cluster.2sig.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+Cluster.2sig.L0.se <- summ.results(Cluster.2sig.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+Cluster.2sig.Sig.se <- summ.results(Cluster.2sig.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+
+#trying 2 sig and 0.5 sig
+##first data summary, then estimates
+Cluster.alt.data.summ <- CH.data.summs(Grid.alt.Data$output)
+
+boxplot(Cluster.alt.data.summ)
+
+#filter data, NAs and infinite, and wildly out values (20 fold)
+#one strata at a time
+Cluster.alt.red1 <- find.rogue(Grid.alt.results[,c(1:6)], mag = mag.factor, true = c(0.05, 2, 200))
+Cluster.alt.red2 <- find.rogue(Grid.alt.results[,c(7:12)], mag = mag.factor, true = c(0.05/15, 2/15, 3000))
+
+Cluster.alt.clean <- merge(Cluster.alt.red1, Cluster.alt.red2, by = "row", all.x = TRUE, all.y = TRUE)
+summary(Cluster.alt.clean)
+
+#plot and summarise
+#estimates first
+Cluster.alt.D.est <- summ.results(Cluster.alt.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), plot = TRUE, se = FALSE)
+Cluster.alt.L0.est <- summ.results(Cluster.alt.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), plot = TRUE, se = FALSE)
+Cluster.alt.Sig.est <- summ.results(Cluster.alt.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(Sig1.ylim, Sig2.ylim), plot = TRUE, se = FALSE)
+
+#standard errors
+Cluster.alt.D.se <- summ.results(Cluster.alt.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+Cluster.alt.L0.se <- summ.results(Cluster.alt.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+Cluster.alt.Sig.se <- summ.results(Cluster.alt.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
 
 #######################################################################
 
@@ -273,9 +394,9 @@ GA4.S1.L0.est <- summ.results(GA4.S1.clean, par = "L0", true.value = c(2, 2/15) 
 GA4.S1.Sig.est <- summ.results(GA4.S1.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(Sig1.ylim, Sig2.ylim), plot = TRUE, se = FALSE)
 
 #standard errors
-GA4.S1.D.se <- summ.results(GA4.S1.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(0.1,0.01), plot = TRUE, se = TRUE)
-GA4.S1.L0.se <- summ.results(GA4.S1.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(1,0.1), plot = TRUE, se = TRUE)
-GA4.S1.Sig.se <- summ.results(GA4.S1.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(70,700), plot = TRUE, se = TRUE)
+GA4.S1.D.se <- summ.results(GA4.S1.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+GA4.S1.L0.se <- summ.results(GA4.S1.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+GA4.S1.Sig.se <- summ.results(GA4.S1.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
 
 ######################
 #GA4 with S2 pars
@@ -299,9 +420,9 @@ GA4.S2.L0.est <- summ.results(GA4.S2.clean, par = "L0", true.value = c(2, 2/15) 
 GA4.S2.Sig.est <- summ.results(GA4.S2.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(Sig1.ylim, Sig2.ylim), plot = TRUE, se = FALSE)
 
 #standard errors
-GA4.S2.D.se <- summ.results(GA4.S2.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(0.05,0.005), plot = TRUE, se = TRUE)
-GA4.S2.L0.se <- summ.results(GA4.S2.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(0.8,0.05), plot = TRUE, se = TRUE)
-GA4.S2.Sig.se <- summ.results(GA4.S2.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(40,2700), plot = TRUE, se = TRUE)
+GA4.S2.D.se <- summ.results(GA4.S2.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+GA4.S2.L0.se <- summ.results(GA4.S2.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+GA4.S2.Sig.se <- summ.results(GA4.S2.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
 
 ######################
 #GA4 with avg pars
@@ -325,9 +446,9 @@ GA4.Avg.L0.est <- summ.results(GA4.Avg.clean, par = "L0", true.value = c(2, 2/15
 GA4.Avg.Sig.est <- summ.results(GA4.Avg.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(Sig1.ylim, Sig2.ylim), plot = TRUE, se = FALSE)
 
 #standard errors
-GA4.Avg.D.se <- summ.results(GA4.Avg.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(0.15,0.005), plot = TRUE, se = TRUE)
-GA4.Avg.L0.se <- summ.results(GA4.Avg.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(0.8,0.08), plot = TRUE, se = TRUE)
-GA4.Avg.Sig.se <- summ.results(GA4.Avg.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(150,800), plot = TRUE, se = TRUE)
+GA4.Avg.D.se <- summ.results(GA4.Avg.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+GA4.Avg.L0.se <- summ.results(GA4.Avg.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+GA4.Avg.Sig.se <- summ.results(GA4.Avg.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
 
 ######################
 #GA4 with both
@@ -351,9 +472,9 @@ GA4.Both.L0.est <- summ.results(GA4.Both.clean, par = "L0", true.value = c(2, 2/
 GA4.Both.Sig.est <- summ.results(GA4.Both.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(Sig1.ylim, Sig2.ylim), plot = TRUE, se = FALSE)
 
 #standard errors
-GA4.Both.D.se <- summ.results(GA4.Both.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(0.05,0.005), plot = TRUE, se = TRUE)
-GA4.Both.L0.se <- summ.results(GA4.Both.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(0.55,0.05), plot = TRUE, se = TRUE)
-GA4.Both.Sig.se <- summ.results(GA4.Both.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(40,2000), plot = TRUE, se = TRUE)
+GA4.Both.D.se <- summ.results(GA4.Both.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+GA4.Both.L0.se <- summ.results(GA4.Both.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+GA4.Both.Sig.se <- summ.results(GA4.Both.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
 
 ######################
 #GA4 with both (max = T)
@@ -377,15 +498,13 @@ GA4.BothMax.L0.est <- summ.results(GA4.BothMax.clean, par = "L0", true.value = c
 GA4.BothMax.Sig.est <- summ.results(GA4.BothMax.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(Sig1.ylim, Sig2.ylim), plot = TRUE, se = FALSE)
 
 #standard errors
-GA4.BothMax.D.se <- summ.results(GA4.BothMax.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(0.05,0.005), plot = TRUE, se = TRUE)
-GA4.BothMax.L0.se <- summ.results(GA4.BothMax.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(1,0.05), plot = TRUE, se = TRUE)
-GA4.BothMax.Sig.se <- summ.results(GA4.BothMax.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(50,10000), plot = TRUE, se = TRUE)
+GA4.BothMax.D.se <- summ.results(GA4.BothMax.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+GA4.BothMax.L0.se <- summ.results(GA4.BothMax.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+GA4.BothMax.Sig.se <- summ.results(GA4.BothMax.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
 
 ################################
 #GA5 designs
 ################################
-
-#extract and collate results from two objs with 100 each 
 
 load("15FoldScen/Cluster/Sims/GA5dResults40.RData")
 
@@ -410,10 +529,10 @@ GA5.S1.D.est <- summ.results(GA5.S1.clean, par = "D", true.value = c(0.05,0.05/1
 GA5.S1.L0.est <- summ.results(GA5.S1.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), plot = TRUE, se = FALSE)
 GA5.S1.Sig.est <- summ.results(GA5.S1.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(Sig1.ylim, Sig2.ylim), plot = TRUE, se = FALSE)
 
-#standard errors
-GA5.S1.D.se <- summ.results(GA5.S1.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(0.05,0.005), plot = TRUE, se = TRUE)
-GA5.S1.L0.se <- summ.results(GA5.S1.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(0.6,0.055), plot = TRUE, se = TRUE)
-GA5.S1.Sig.se <- summ.results(GA5.S1.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(100,900), plot = TRUE, se = TRUE)
+#rel standard errors
+GA5.S1.D.se <- summ.results(GA5.S1.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+GA5.S1.L0.se <- summ.results(GA5.S1.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+GA5.S1.Sig.se <- summ.results(GA5.S1.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
 
 ######################
 #GA5 with S2 pars
@@ -436,10 +555,10 @@ GA5.S2.D.est  <- summ.results(GA5.S2.clean, par = "D", true.value = c(0.05,0.05/
 GA5.S2.L0.est  <- summ.results(GA5.S2.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), plot = TRUE, se = FALSE)
 GA5.S2.Sig.est  <- summ.results(GA5.S2.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(Sig1.ylim, Sig2.ylim), plot = TRUE, se = FALSE)
 
-#standard errors
-GA5.S2.D.se  <- summ.results(GA5.S2.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(0.05,0.005), plot = TRUE, se = TRUE)
-GA5.S2.L0.se  <- summ.results(GA5.S2.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(0.8,0.05), plot = TRUE, se = TRUE)
-GA5.S2.Sig.se  <- summ.results(GA5.S2.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(30,1400), plot = TRUE, se = TRUE)
+#rel standard errors
+GA5.S2.D.se  <- summ.results(GA5.S2.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+GA5.S2.L0.se  <- summ.results(GA5.S2.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+GA5.S2.Sig.se  <- summ.results(GA5.S2.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
 
 ######################
 #GA5 with avg pars
@@ -462,10 +581,10 @@ GA5.Avg.D.est  <- summ.results(GA5.Avg.clean, par = "D", true.value = c(0.05,0.0
 GA5.Avg.L0.est  <- summ.results(GA5.Avg.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), plot = TRUE, se = FALSE)
 GA5.Avg.Sig.est  <- summ.results(GA5.Avg.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(Sig1.ylim, Sig2.ylim), plot = TRUE, se = FALSE)
 
-#standard errors
-GA5.Avg.D.se <- summ.results(GA5.Avg.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(0.15,0.005), plot = TRUE, se = TRUE)
-GA5.Avg.L0.se <- summ.results(GA5.Avg.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(1,0.1), plot = TRUE, se = TRUE)
-GA5.Avg.Sig.se <- summ.results(GA5.Avg.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(150,900), plot = TRUE, se = TRUE)
+#rel standard errors
+GA5.Avg.D.se <- summ.results(GA5.Avg.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+GA5.Avg.L0.se <- summ.results(GA5.Avg.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+GA5.Avg.Sig.se <- summ.results(GA5.Avg.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
 
 ######################
 #GA5 with both
@@ -488,10 +607,10 @@ GA5.Both.D.est <- summ.results(GA5.Both.clean, par = "D", true.value = c(0.05,0.
 GA5.Both.L0.est <- summ.results(GA5.Both.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), plot = TRUE, se = FALSE)
 GA5.Both.Sig.est <- summ.results(GA5.Both.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(Sig1.ylim, Sig2.ylim), plot = TRUE, se = FALSE)
 
-#standard errors
-GA5.Both.D.se <- summ.results(GA5.Both.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(0.05,0.005), plot = TRUE, se = TRUE)
-GA5.Both.L0.se <- summ.results(GA5.Both.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(0.55,0.05), plot = TRUE, se = TRUE)
-GA5.Both.Sig.se <- summ.results(GA5.Both.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(50,2000), plot = TRUE, se = TRUE)
+#rel standard errors
+GA5.Both.D.se <- summ.results(GA5.Both.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+GA5.Both.L0.se <- summ.results(GA5.Both.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+GA5.Both.Sig.se <- summ.results(GA5.Both.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
 
 ######################
 #GA5 with both (max = T)
@@ -514,15 +633,76 @@ GA5.BothMax.D.est <- summ.results(GA5.BothMax.clean, par = "D", true.value = c(0
 GA5.BothMax.L0.est <- summ.results(GA5.BothMax.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), plot = TRUE, se = FALSE)
 GA5.BothMax.Sig.est <- summ.results(GA5.BothMax.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(Sig1.ylim, Sig2.ylim), plot = TRUE, se = FALSE)
 
-#standard errors
-GA5.BothMax.D.se <- summ.results(GA5.BothMax.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(0.05,0.01), plot = TRUE, se = TRUE)
-GA5.BothMax.L0.se <- summ.results(GA5.BothMax.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(0.7,0.05), plot = TRUE, se = TRUE)
-GA5.BothMax.Sig.se <- summ.results(GA5.BothMax.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(100,1000), plot = TRUE, se = TRUE)
+#rel standard errors
+GA5.BothMax.D.se <- summ.results(GA5.BothMax.clean, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+GA5.BothMax.L0.se <- summ.results(GA5.BothMax.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
+GA5.BothMax.Sig.se <- summ.results(GA5.BothMax.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
 
 ########################################################################
 #save R workspace
-
 save.image(file = "15FoldScen/Sim500ResultsObjs.RData")
+
+#save all results objects into a list for easy loading
+datasumms <- list("Grid.600" = Grid.600.data.summ, "Grid.800" = Grid.800.data.summ, "Grid.1600" = Grid.1600.data.summ, 
+                  "ClustOS" = Cluster.os.data.summ, "Clust2sig" = Cluster.2sig.data.summ, "ClustAlt" = Cluster.alt.data.summ, 
+                  "G4.S1" = GA4.S1.data.summ, "G4.S2" = GA4.S2.data.summ, "G4.Avg" = GA4.Avg.data.summ, "G4.Both" = GA4.Both.data.summ, "G4.BothMax" = GA4.BothMax.data.summ,
+                  "G5.S1" = GA5.S1.data.summ, "G5.S2" = GA5.S2.data.summ, "G5.Avg" = GA5.Avg.data.summ, "G5.Both" = GA5.Both.data.summ, "G5.BothMax" = GA5.BothMax.data.summ)
+save(datasumms, file = "15FoldScen/DataSumms500.RData")
+
+simresults <- list("Grid600.D" = Grid600.D.est, "Grid600.L0" = Grid600.L0.est, "Grid600.Sig" = Grid600.Sig.est,
+                   "Grid800.D" = Grid800.D.est, "Grid800.L0" = Grid800.L0.est, "Grid800.Sig" = Grid800.Sig.est,
+                   "Grid1600.D" = Grid1600.D.est, "Grid1600.L0" = Grid1600.L0.est, "Grid1600.Sig" = Grid1600.Sig.est,
+                   "ClustOS.D" = Cluster.os.D.est, "ClustOS.L0" = Cluster.os.L0.est, "ClustOS.Sig" = Cluster.os.Sig.est,
+                   "Clust2sig.D" = Cluster.2sig.D.est, "Clust2sig.L0" = Cluster.2sig.L0.est, "Clust2sig.Sig" = Cluster.2sig.Sig.est,
+                   "ClustAlt.D" = Cluster.alt.D.est, "ClustAlt.L0" = Cluster.alt.L0.est, "ClustAlt.Sig" = Cluster.alt.Sig.est,
+                   "GA4.S1.D" = GA4.S1.D.est, "GA4.S1.L0" = GA4.S1.L0.est, "GA4.S1.Sig" = GA4.S1.Sig.est,
+                   "GA4.S2.D" = GA4.S2.D.est, "GA4.S2.L0" = GA4.S2.L0.est, "GA4.S2.Sig" = GA4.S2.Sig.est,
+                   "GA4.Avg.D" = GA4.Avg.D.est, "GA4.Avg.L0" = GA4.Avg.L0.est, "GA4.Avg.Sig" = GA4.Avg.Sig.est,
+                   "GA4.Both.D" = GA4.Both.D.est, "GA4.Both.L0" = GA4.Both.L0.est, "GA4.Both.Sig" = GA4.Both.Sig.est,
+                   "GA4.BothMax.D" = GA4.BothMax.D.est, "GA4.BothMax.L0" = GA4.BothMax.L0.est, "GA4.BothMax.Sig" = GA4.BothMax.Sig.est,
+                   "GA5.S1.D" = GA5.S1.D.est, "GA5.S1.L0" = GA5.S1.L0.est, "GA5.S1.Sig" = GA5.S1.Sig.est,
+                   "GA5.S2.D" = GA5.S2.D.est, "GA5.S2.L0" = GA5.S2.L0.est, "GA5.S2.Sig" = GA5.S2.Sig.est,
+                   "GA5.Avg.D" = GA5.Avg.D.est, "GA5.Avg.L0" = GA5.Avg.L0.est, "GA5.Avg.Sig" = GA5.Avg.Sig.est,
+                   "GA5.Both.D" = GA5.Both.D.est, "GA5.Both.L0" = GA5.Both.L0.est, "GA5.Both.Sig" = GA5.Both.Sig.est,
+                   "GA5.BothMax.D" = GA5.BothMax.D.est, "GA5.BothMax.L0" = GA5.BothMax.L0.est, "GA5.BothMax.Sig" = GA5.BothMax.Sig.est)
+save(simresults, file = "15FoldScen/SimResults500.RData")
+
+seresults <- list("Grid600.D" = Grid600.D.se, "Grid600.L0" = Grid600.L0.se, "Grid600.Sig" = Grid600.Sig.se,
+                  "Grid800.D" = Grid800.D.se, "Grid800.L0" = Grid800.L0.se, "Grid800.Sig" = Grid800.Sig.se,
+                  "Grid1600.D" = Grid1600.D.se, "Grid1600.L0" = Grid1600.L0.se, "Grid1600.Sig" = Grid1600.Sig.se,
+                  "ClustOS.D" = Cluster.os.D.se, "ClustOS.L0" = Cluster.os.L0.se, "ClustOS.Sig" = Cluster.os.Sig.se,
+                  "Clust2sig.D" = Cluster.2sig.D.se, "Clust2sig.L0" = Cluster.2sig.L0.se, "Clust2sig.Sig" = Cluster.2sig.Sig.se,
+                  "ClustAlt.D" = Cluster.alt.D.se, "ClustAlt.L0" = Cluster.alt.L0.se, "ClustAlt.Sig" = Cluster.alt.Sig.se,
+                  "GA4.S1.D" = GA4.S1.D.se, "GA4.S1.L0" = GA4.S1.L0.se, "GA4.S1.Sig" = GA4.S1.Sig.se,
+                  "GA4.S2.D" = GA4.S2.D.se, "GA4.S2.L0" = GA4.S2.L0.se, "GA4.S2.Sig" = GA4.S2.Sig.se,
+                  "GA4.Avg.D" = GA4.Avg.D.se, "GA4.Avg.L0" = GA4.Avg.L0.se, "GA4.Avg.Sig" = GA4.Avg.Sig.se,
+                  "GA4.Both.D" = GA4.Both.D.se, "GA4.Both.L0" = GA4.Both.L0.se, "GA4.Both.Sig" = GA4.Both.Sig.se,
+                  "GA4.BothMax.D" = GA4.BothMax.D.se, "GA4.BothMax.L0" = GA4.BothMax.L0.se, "GA4.BothMax.Sig" = GA4.BothMax.Sig.se,
+                  "GA5.S1.D" = GA5.S1.D.se, "GA5.S1.L0" = GA5.S1.L0.se, "GA5.S1.Sig" = GA5.S1.Sig.se,
+                  "GA5.S2.D" = GA5.S2.D.se, "GA5.S2.L0" = GA5.S2.L0.se, "GA5.S2.Sig" = GA5.S2.Sig.se,
+                  "GA5.Avg.D" = GA5.Avg.D.se, "GA5.Avg.L0" = GA5.Avg.L0.se, "GA5.Avg.Sig" = GA5.Avg.Sig.se,
+                  "GA5.Both.D" = GA5.Both.D.se, "GA5.Both.L0" = GA5.Both.L0.se, "GA5.Both.Sig" = GA5.Both.Sig.se,
+                  "GA5.BothMax.D" = GA5.BothMax.D.se, "GA5.BothMax.L0" = GA5.BothMax.L0.se, "GA5.BothMax.Sig" = GA5.BothMax.Sig.se)
+
+save(seresults, file = "15FoldScen/seResults500.RData")
+
+excluded <- list("Grid600.S1" = Grid.600.red1, "Grid600.S2" = Grid.600.red2,
+                 "Grid800.S1" = Grid.800.red1, "Grid800.S2" = Grid.800.red2,
+                 "Grid1600.S1" = Grid.1600.red1, "Grid1600.S2" = Grid.1600.red2,
+                 "Clust.os.S1" = Cluster.os.red1, "Clust.os.S2" = Cluster.os.red2,
+                 "Clust.2sig.S1" = Cluster.2sig.red1, "Clust.2sig.S2" = Cluster.2sig.red2,
+                 "Clust.alt.S1" = Cluster.alt.red1, "Clust.alt.S2" = Cluster.alt.red2,
+                 "GA4.S1.S1" = GA4.S1.red1, "GA4.S1.S2" = GA4.S1.red2,
+                 "GA4.S2.S1" = GA4.S2.red1, "GA4.S2.S2" = GA4.S2.red2,
+                 "GA4.Avg.S1" = GA4.Avg.red1, "GA4.Avg.S2" = GA4.Avg.red2,
+                 "GA4.Both.S1" = GA4.Both.red1, "GA4.Both.S2" = GA4.Both.red2,
+                 "GA4.BothMax.S1" = GA4.BothMax.red1, "GA4.BothMax.S2" = GA4.BothMax.red2,
+                 "GA5.S1.S1" = GA5.S1.red1, "GA5.S1.S2" = GA5.S1.red2,
+                 "GA5.S2.S1" = GA5.S2.red1, "GA5.S2.S2" = GA5.S2.red2,
+                 "GA5.Avg.S1" = GA5.Avg.red1, "GA5.Avg.S2" = GA5.Avg.red2,
+                 "GA5.Both.S1" = GA5.Both.red1, "GA5.Both.S2" = GA5.Both.red2,
+                 "GA5.BothMax.S1" = GA5.BothMax.red1, "GA5.BothMax.S2" = GA5.BothMax.red2)
+save(excluded, file = "15FoldScen/Excluded500.RData")
 
 ########################################################################
 
@@ -651,53 +831,3 @@ GA5 %>%
   add_header_above(header = c(" " = 2, "D" = 2, "L0" = 2, "Sigma" = 2, " " = 1), border_right = TRUE, bold = TRUE) 
 
 
-#save all results objects into a list for easy loading
-#version 3 has 200 reps and includes 100 reps for 1600 m grid spacing
-
-datasumms <- list("Grid.800" = Grid.800.data.summ, "Grid.1600" = Grid.1600.data.summ, 
-                  "G4.S1" = GA4.S1.data.summ, "G4.S2" = GA4.S2.data.summ, "G4.Avg" = GA4.Avg.data.summ, "G4.Both" = GA4.Both.data.summ, "G4.BothMax" = GA4.BothMax.data.summ,
-                  "G5.S1" = GA5.S1.data.summ, "G5.S2" = GA5.S2.data.summ, "G5.Avg" = GA5.Avg.data.summ, "G5.Both" = GA5.Both.data.summ, "G5.BothMax" = GA5.BothMax.data.summ)
-save(datasumms, file = "15FoldScen/DataSumms500.RData")
-
-simresults <- list("Grid800.D" = Grid800.D.est, "Grid800.L0" = Grid800.L0.est, "Grid800.Sig" = Grid800.Sig.est,
-                   "Grid1600.D" = Grid1600.D.est, "Grid1600.L0" = Grid1600.L0.est, "Grid1600.Sig" = Grid1600.Sig.est,
-                   "GA4.S1.D" = GA4.S1.D.est, "GA4.S1.L0" = GA4.S1.L0.est, "GA4.S1.Sig" = GA4.S1.Sig.est,
-                   "GA4.S2.D" = GA4.S2.D.est, "GA4.S2.L0" = GA4.S2.L0.est, "GA4.S2.Sig" = GA4.S2.Sig.est,
-                   "GA4.Avg.D" = GA4.Avg.D.est, "GA4.Avg.L0" = GA4.Avg.L0.est, "GA4.Avg.Sig" = GA4.Avg.Sig.est,
-                   "GA4.Both.D" = GA4.Both.D.est, "GA4.Both.L0" = GA4.Both.L0.est, "GA4.Both.Sig" = GA4.Both.Sig.est,
-                   "GA4.BothMax.D" = GA4.BothMax.D.est, "GA4.BothMax.L0" = GA4.BothMax.L0.est, "GA4.BothMax.Sig" = GA4.BothMax.Sig.est,
-                   "GA5.S1.D" = GA5.S1.D.est, "GA5.S1.L0" = GA5.S1.L0.est, "GA5.S1.Sig" = GA5.S1.Sig.est,
-                   "GA5.S2.D" = GA5.S2.D.est, "GA5.S2.L0" = GA5.S2.L0.est, "GA5.S2.Sig" = GA5.S2.Sig.est,
-                   "GA5.Avg.D" = GA5.Avg.D.est, "GA5.Avg.L0" = GA5.Avg.L0.est, "GA5.Avg.Sig" = GA5.Avg.Sig.est,
-                   "GA5.Both.D" = GA5.Both.D.est, "GA5.Both.L0" = GA5.Both.L0.est, "GA5.Both.Sig" = GA5.Both.Sig.est,
-                   "GA5.BothMax.D" = GA5.BothMax.D.est, "GA5.BothMax.L0" = GA5.BothMax.L0.est, "GA5.BothMax.Sig" = GA5.BothMax.Sig.est)
-save(simresults, file = "15FoldScen/SimResults500.RData")
-
-seresults <- list("Grid800.D" = Grid800.D.se, "Grid800.L0" = Grid800.L0.se, "Grid800.Sig" = Grid800.Sig.se,
-                  "Grid1600.D" = Grid1600.D.se, "Grid1600.L0" = Grid1600.L0.se, "Grid1600.Sig" = Grid1600.Sig.se,
-                  "GA4.S1.D" = GA4.S1.D.se, "GA4.S1.L0" = GA4.S1.L0.se, "GA4.S1.Sig" = GA4.S1.Sig.se,
-                  "GA4.S2.D" = GA4.S2.D.se, "GA4.S2.L0" = GA4.S2.L0.se, "GA4.S2.Sig" = GA4.S2.Sig.se,
-                  "GA4.Avg.D" = GA4.Avg.D.se, "GA4.Avg.L0" = GA4.Avg.L0.se, "GA4.Avg.Sig" = GA4.Avg.Sig.se,
-                  "GA4.Both.D" = GA4.Both.D.se, "GA4.Both.L0" = GA4.Both.L0.se, "GA4.Both.Sig" = GA4.Both.Sig.se,
-                  "GA4.BothMax.D" = GA4.BothMax.D.se, "GA4.BothMax.L0" = GA4.BothMax.L0.se, "GA4.BothMax.Sig" = GA4.BothMax.Sig.se,
-                  "GA5.S1.D" = GA5.S1.D.se, "GA5.S1.L0" = GA5.S1.L0.se, "GA5.S1.Sig" = GA5.S1.Sig.se,
-                  "GA5.S2.D" = GA5.S2.D.se, "GA5.S2.L0" = GA5.S2.L0.se, "GA5.S2.Sig" = GA5.S2.Sig.se,
-                  "GA5.Avg.D" = GA5.Avg.D.se, "GA5.Avg.L0" = GA5.Avg.L0.se, "GA5.Avg.Sig" = GA5.Avg.Sig.se,
-                  "GA5.Both.D" = GA5.Both.D.se, "GA5.Both.L0" = GA5.Both.L0.se, "GA5.Both.Sig" = GA5.Both.Sig.se,
-                  "GA5.BothMax.D" = GA5.BothMax.D.se, "GA5.BothMax.L0" = GA5.BothMax.L0.se, "GA5.BothMax.Sig" = GA5.BothMax.Sig.se)
-
-save(seresults, file = "15FoldScen/seResults500.RData")
-
-excluded <- list("Grid800.S1" = Grid.800.red1, "Grid800.S2" = Grid.800.red2,
-                 "Grid1600.S1" = Grid.1600.red1, "Grid1600.S2" = Grid.1600.red2,
-                 "GA4.S1.S1" = GA4.S1.red1, "GA4.S1.S2" = GA4.S1.red2,
-                 "GA4.S2.S1" = GA4.S2.red1, "GA4.S2.S2" = GA4.S2.red2,
-                 "GA4.Avg.S1" = GA4.Avg.red1, "GA4.Avg.S2" = GA4.Avg.red2,
-                 "GA4.Both.S1" = GA4.Both.red1, "GA4.Both.S2" = GA4.Both.red2,
-                 "GA4.BothMax.S1" = GA4.BothMax.red1, "GA4.BothMax.S2" = GA4.BothMax.red2,
-                 "GA5.S1.S1" = GA5.S1.red1, "GA5.S1.S2" = GA5.S1.red2,
-                 "GA5.S2.S1" = GA5.S2.red1, "GA5.S2.S2" = GA5.S2.red2,
-                 "GA5.Avg.S1" = GA5.Avg.red1, "GA5.Avg.S2" = GA5.Avg.red2,
-                 "GA5.Both.S1" = GA5.Both.red1, "GA5.Both.S2" = GA5.Both.red2,
-                 "GA5.BothMax.S1" = GA5.BothMax.red1, "GA5.BothMax.S2" = GA5.BothMax.red2)
-save(excluded, file = "15FoldScen/Excluded500.RData")
