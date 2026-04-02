@@ -66,8 +66,8 @@ scen$D[S2] <- D2
 scen$lambda0[S2] <- L02
 scen$sigma[S2] <- sigma2
 
-Grid.600.Data <- Sim.data(scenario.df = scen, nreps = 1, traplist = grid.designs$`600 m (2G opt)`, masklist = mask)
-Grid.600.results <- Fit.models(Data.obj = Grid.600.Data, nrep = nreps, numcores = cores)
+Grid.700.Data <- Sim.data(scenario.df = scen, nreps = 1, traplist = grid.designs$`700 m (2G opt)`, masklist = mask)
+Grid.700.results <- Fit.models(Data.obj = Grid.600.Data, nrep = nreps, numcores = cores)
 
 save.image("OSGridsResults40.RData")
 

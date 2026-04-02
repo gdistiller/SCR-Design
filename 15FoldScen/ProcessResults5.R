@@ -285,7 +285,7 @@ Grid600.Sig.se <- summ.results(Grid.600.clean, par = "Sigma", true.value = c(200
 #three configs tried (200 reps)
 ################
 
-load("15FoldScen/Cluster/Sims/ClustersTest.RData")
+load("15FoldScen/Cluster/Sims/Clusters1.RData")
 
 #first trying OS that gave 600 / 1200
 ##first data summary, then estimates
@@ -313,6 +313,8 @@ Cluster.os.L0.se <- summ.results(Cluster.os.clean, par = "L0", true.value = c(2,
 Cluster.os.Sig.se <- summ.results(Cluster.os.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
 
 #now trying 2 sigma spacing
+load("15FoldScen/Cluster/Sims/Clusters2.RData")
+
 ##first data summary, then estimates
 Cluster.2sig.data.summ <- CH.data.summs(Grid.2sig.Data$output)
 
@@ -338,6 +340,8 @@ Cluster.2sig.L0.se <- summ.results(Cluster.2sig.clean, par = "L0", true.value = 
 Cluster.2sig.Sig.se <- summ.results(Cluster.2sig.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
 
 #trying 2 sig and 0.5 sig
+load("15FoldScen/Cluster/Sims/Clusters3.RData")
+
 ##first data summary, then estimates
 Cluster.alt.data.summ <- CH.data.summs(Grid.alt.Data$output)
 
