@@ -1,4 +1,4 @@
-#March 2026, incls OS and clustered designs
+#May 2026, incls OS and clustered designs
 #this code generates the grid designs, the GA designs are done on the cluster
 #cluster files are all combined into a GADesigns file at the end
 
@@ -43,7 +43,7 @@ spacing.sum.min <- optimalSpacing2G(D1 = D1, D2 = D2,
                                     detectpar2 = list(lambda0 = L02, sigma = sigma2),
                                     noccasions = 1,
                                     criterion = c("sum_min"), # sum_min
-                                    spacing_m = seq(0,5000,100))
+                                    spacing_m = seq(0,5000,10))
 spacing.sum.min$optimum.spacing
 
 spacing.all.min <- optimalSpacing2G(D1 = D1, D2 = D2,
@@ -88,7 +88,7 @@ grid.1600.120 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, s
 #first find within and between optimal spacing using strata 1 for within a S2 for btwn
 #using 2G fn so I dont need a bunch of new fns
 #also some issue with dfcast (similar to secr_valid.detecfn)
-grid <- make.grid(7,7,100, detector = "count")
+grid <- make.grid(7,7,1000, detector = "count")
 spacing.within <- optimalSpacing2G(D1 = D1, D2 = D1,
                                    traps0 = grid,
                                    detectpar1 = list(lambda0 = L01, sigma = sigma1),
@@ -146,7 +146,7 @@ trap.secr.list.os.120 <- lapply(trap.list.os.120, function(traps) {
 
 plot(mask1, axes = T)
 plot(trap.secr.list.os.40[[10]], add = T)
-plot(trap.secr.list.os.120[[10]], add = T)
+        plot(trap.secr.list.os.120[[10]], add = T)
 
 Enrm(D = D1, trap.secr.list.os.40[[1]], mask, detectpar = list(lambda0 = L01, sigma = sigma1), noccasions = 1)
 Enrm(D = D2, trap.secr.list.os.40[[1]], mask, detectpar = list(lambda0 = L02, sigma = sigma2), noccasions = 1)
@@ -155,7 +155,7 @@ Enrm(D = D1, trap.secr.list.os.120[[1]], mask, detectpar = list(lambda0 = L01, s
 Enrm(D = D2, trap.secr.list.os.120[[1]], mask, detectpar = list(lambda0 = L02, sigma = sigma2), noccasions = 1)
 
 #again with 2 sigma spacing (400 / 6000)
-#slightly increase the buffer, for 2x2 grids with 500 m spacing this is sqrt(2*200^2) or 282.84
+#slightly increase the buffer, for 2x2 grids with 400 m spacing this is sqrt(2*200^2) or 282.84
 res.objs2 <- create.extent(sigma = 3000, buff.factor = 3.095, res = 200)
 mask2 <- res.objs2[[1]]
 clust.locs2 <- res.objs2[[2]]
@@ -191,8 +191,8 @@ trap.secr.list.2sig.120 <- lapply(trap.list.2sig.120, function(traps) {
 })
 
 plot(mask2, axes = T)
-plot(trap.secr.list.os.40[[10]], add = T)
-plot(trap.secr.list.os.120[[10]], add = T)
+plot(trap.secr.list.2sig.40[[10]], add = T)
+plot(trap.secr.list.2sig.120[[10]], add = T)
 
 Enrm(D = D1, trap.secr.list.os.40[[1]], mask, detectpar = list(lambda0 = L01, sigma = sigma1), noccasions = 1)
 Enrm(D = D2, trap.secr.list.os.40[[1]], mask, detectpar = list(lambda0 = L02, sigma = sigma2), noccasions = 1)
@@ -207,8 +207,8 @@ grid.designs.40 <- list("700 m (2G opt)" = grid.sum.min.40, "800 m" = grid.800.4
 grid.designs.120 <- list("700 m (2G opt)" = grid.sum.min.120, "800 m" = grid.800.120, "Avg sigma" = grid.1600.120, 
                         "Cluster (opt)" = trap.secr.list.os.120, "Cluster (2 sig)" = trap.secr.list.2sig.120)
 
-save(grid.designs.40, file = "15FoldScen/GridDesigns40.RData")
-save(grid.designs.120, file = "15FoldScen/GridDesigns120.RData")
+save(grid.designs.40, file = "15FoldScen/Cluster/Sims/40Traps/GridDesigns40.RData")
+save(grid.designs.120, file = "15FoldScen/Cluster/Sims/120Traps/GridDesigns120.RData")
 
 ##########################################################
 #lacework
@@ -262,54 +262,59 @@ plot(lw.120.1, add = TRUE)
 plot(mask)
 plot(lw.120.2, add = TRUE)
 
+lwlist <- list("40 traps" = lw.40.1, "120 traps" = lw.120.1)
+
+save(lwlist, file = "15FoldScen/Cluster/Sims/LWdesigns.RData")
+
 ##########################################################
 #collate GA designs
 #now uses version _3 to get 500 reps
 #initial run had timeout so was rerun to save separate objs for GA4 and GA5
+#this for 40 traps
 
-load("15FoldScen/Cluster/GA4Strata1Pars3.RData")
-load("15FoldScen/Cluster/GA5Strata1Pars3.RData")
+load("15FoldScen/Cluster/ProposedDesigns/40Traps/GA4Strata1Pars3.RData")
+load("15FoldScen/Cluster/ProposedDesigns/40Traps/GA5Strata1Pars3.RData")
 
-load("15FoldScen/Cluster/GA4Strata2Pars3.RData")
-load("15FoldScen/Cluster/GA5Strata2Pars3.RData")
+load("15FoldScen/Cluster/ProposedDesigns/40Traps/GA4Strata2Pars3.RData")
+load("15FoldScen/Cluster/ProposedDesigns/40Traps/GA5Strata2Pars3.RData")
 
-load("15FoldScen/Cluster/GA4AvgStrataPars3.RData")
-load("15FoldScen/Cluster/GA5AvgStrataPars3.RData")
+load("15FoldScen/Cluster/ProposedDesigns/40Traps/GA4AvgStrataPars3.RData")
+load("15FoldScen/Cluster/ProposedDesigns/40Traps/GA5AvgStrataPars3.RData")
 
 #using both strata resulted in timeouts, hence a and b files for GA4 and GA5
 #combine the two sets of 250 into a consolidated list of 500
 #Both strata
-load("15FoldScen/Cluster/GA4BothStrataPars3a.RData")
+load("15FoldScen/Cluster/ProposedDesigns/40Traps/GA4BothStrataPars3a.RData")
 GA4.BothStrataPars.250reps <- GA4.BothStrataPars3.40.list
 
-load("15FoldScen/Cluster/GA4BothStrataPars3b.RData")
+load("15FoldScen/Cluster/ProposedDesigns/40Traps/GA4BothStrataPars3b.RData")
 
 GA4.BothStrataPars3.40.list <- c(GA4.BothStrataPars.250reps, GA4.BothStrataPars3.40.list)
 rm(GA4.BothStrataPars.250reps)
 
-load("15FoldScen/Cluster/GA5BothStrataPars3a.RData")
+load("15FoldScen/Cluster/ProposedDesigns/40Traps/GA5BothStrataPars3a.RData")
 GA5.BothStrataPars.250reps <- GA5.BothStrataPars3.40.list
 
-load("15FoldScen/Cluster/GA5BothStrataPars3b.RData")
+load("15FoldScen/Cluster/ProposedDesigns/40Traps/GA5BothStrataPars3b.RData")
 GA5.BothStrataPars3.40.list <- c(GA5.BothStrataPars.250reps, GA5.BothStrataPars3.40.list)
 rm(GA5.BothStrataPars.250reps)
 
 #Both strata max-min
-load("15FoldScen/Cluster/GA4BothStrataParsMax3a.RData")
+load("15FoldScen/Cluster/ProposedDesigns/40Traps/GA4BothStrataParsMax3a.RData")
 GA4.BothStrataParsMax.250reps <- GA4.BothStrataParsMax3.40.list
 
-load("15FoldScen/Cluster/GA4BothStrataParsMax3b.RData")
+load("15FoldScen/Cluster/ProposedDesigns/40Traps/GA4BothStrataParsMax3b.RData")
 GA4.BothStrataParsMax3.40.list <- c(GA4.BothStrataParsMax.250reps, GA4.BothStrataParsMax3.40.list)
 rm(GA4.BothStrataParsMax.250reps)
 
-load("15FoldScen/Cluster/GA5BothStrataParsMax3a.RData")
+load("15FoldScen/Cluster/ProposedDesigns/40Traps/GA5BothStrataParsMax3a.RData")
 GA5.BothStrataParsMax.250reps <- GA5.BothStrataParsMax3.40.list
 
-load("15FoldScen/Cluster/GA5BothStrataParsMax3b.RData")
+load("15FoldScen/Cluster/ProposedDesigns/40Traps/GA5BothStrataParsMax3b.RData")
 GA5.BothStrataParsMax3.40.list <- c(GA5.BothStrataParsMax.250reps, GA5.BothStrataParsMax3.40.list)
 rm(GA5.BothStrataParsMax.250reps)
 
-GA.designs <- list("G4S1" = GA4.Strata1Pars3.40.list, 
+GA.designs.40 <- list("G4S1" = GA4.Strata1Pars3.40.list, 
                    "G4S2" = GA4.Strata2Pars3.40.list,
                    "G5S1" = GA5.Strata1Pars3.40.list, 
                    "G5S2" = GA5.Strata2Pars3.40.list,
@@ -320,4 +325,59 @@ GA.designs <- list("G4S1" = GA4.Strata1Pars3.40.list,
                    "G4BothMax" = GA4.BothStrataParsMax3.40.list, 
                    "G5BothMax" = GA5.BothStrataParsMax3.40.list)
 
-save(GA.designs, file = "15FoldScen/GADesigns.RData")
+save(GA.designs.40, file = "15FoldScen/Cluster/Sims/40Traps/GADesigns40.RData")
+
+#########################################################
+#collate GA designs with 120 traps
+#for S1 and S2 the results obj has 500 reps but rest split 
+load("15FoldScen/Cluster/ProposedDesigns/120Traps/GA4Strata1Pars120.RData")
+load("15FoldScen/Cluster/ProposedDesigns/120Traps/GA4Strata2Pars120.RData")
+
+load("15FoldScen/Cluster/ProposedDesigns/120Traps/GA5Strata1Pars120.RData")
+load("15FoldScen/Cluster/ProposedDesigns/120Traps/GA5Strata2Pars120.RData")
+
+#for Avg doing 1st 250 reps, 2nd set still running
+load("15FoldScen/Cluster/ProposedDesigns/120Traps/GA4AvgStrataPars120a.RData")
+load("15FoldScen/Cluster/ProposedDesigns/120Traps/GA4AvgStrataPars120b.RData")
+
+GA4.AvgStrataPars.120.list <- c(GA4.AvgStrataPars.120.lista, GA4.AvgStrataPars.120.listb)
+
+load("15FoldScen/Cluster/ProposedDesigns/120Traps/GA5AvgStrataPars120a.RData")
+load("15FoldScen/Cluster/ProposedDesigns/120Traps/GA5AvgStrataPars120b.RData")
+
+GA5.AvgStrataPars.120.list <- c(GA5.AvgStrataPars.120.lista, GA5.AvgStrataPars.120.listb)
+
+#for both, combining a and b, lists named as a and b
+load("15FoldScen/Cluster/ProposedDesigns/120Traps/GA4BothStrataPars120a.RData")
+load("15FoldScen/Cluster/ProposedDesigns/120Traps/GA4BothStrataPars120b.RData")
+
+GA4.BothStrataPars.120.list <- c(GA4.BothStrataPars.120.lista, GA4.BothStrataPars.120.listb)
+
+load("15FoldScen/Cluster/ProposedDesigns/120Traps/GA5BothStrataPars120a.RData")
+load("15FoldScen/Cluster/ProposedDesigns/120Traps/GA5BothStrataPars120b.RData")
+
+GA5.BothStrataPars.120.list <- c(GA5.BothStrataPars.120.lista, GA5.BothStrataPars.120.listb)
+
+#for bothmax, still running 2nd set for GA4, but have both sets for GA5
+load("15FoldScen/Cluster/ProposedDesigns/120Traps/GA4BothStrataParsMax120a.RData")
+load("15FoldScen/Cluster/ProposedDesigns/120Traps/GA4BothStrataParsMax120b.RData")
+
+GA4.BothStrataParsMax.120.list <- c(GA4.BothStrataParsMax.120.lista, GA4.BothStrataParsMax.120.listb)
+
+load("15FoldScen/Cluster/ProposedDesigns/120Traps/GA5BothStrataParsMax120a.RData")
+load("15FoldScen/Cluster/ProposedDesigns/120Traps/GA5BothStrataParsMax120b.RData")
+
+GA5.BothStrataParsMax.120.list <- c(GA5.BothStrataParsMax.120.lista, GA5.BothStrataParsMax.120.listb)
+
+GA.designs.120 <- list("G4S1" = GA4.Strata1Pars.120.list, 
+                   "G4S2" = GA4.Strata2Pars.120.list,
+                   "G5S1" = GA5.Strata1Pars.120.list, 
+                   "G5S2" = GA5.Strata2Pars.120.list,
+                   "G4Avg" = GA4.AvgStrataPars.120.list, 
+                   "G5Avg" = GA5.AvgStrataPars.120.list,
+                   "G4Both" = GA4.BothStrataPars.120.list, 
+                   "G5Both" = GA5.BothStrataPars.120.list,
+                   "G4BothMax" = GA4.BothStrataParsMax.120.list, 
+                   "G5BothMax" = GA5.BothStrataParsMax.120.list)
+
+save(GA.designs.120, file = "15FoldScen/Cluster/Sims/120Traps/GADesigns120.RData")
