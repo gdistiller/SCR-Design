@@ -1,4 +1,5 @@
-#May 2026, process sim results for 15 fold scen
+#June 2026, process sim results for 15 fold scen
+#modified June to save actual results not just summaries
 #For 40 traps and 120 traps and a large regular area
 #this version to process results from fitting models outside secrdesign 
 #uses 500 reps
@@ -44,6 +45,7 @@ CH.data.summs <- function(res.list){
 #can choose to produce boxplots, 
 #ylim.ceiling needs two values (1 for each strata)
 #true values also needs the true values for the chosen parameter for each strata
+#now stores all results
 summ.results <- function(results.df, par = "D", true.values, ylim.ceiling, plot = TRUE, se = FALSE, rel.se = TRUE){
     if (par == "D"){
       index <- 1
@@ -91,9 +93,50 @@ summ.results <- function(results.df, par = "D", true.values, ylim.ceiling, plot 
   S1.RSE <- sd(results.df[,index], na.rm = T) / mean(results.df[,index], na.rm = T) 
   S2.RSE <- sd(results.df[,index+6], na.rm = T) / mean(results.df[,index+6], na.rm = T) 
   
-  res <- list("Rel bias (mean)" = c(S1.RB.mean, S2.RB.mean), "Rel bias (median)" = c(S1.RB.median, S2.RB.median), "Rel SE" = c(S1.RSE, S2.RSE))
+  res <- list("Results" = results.df,"Rel bias (mean)" = c(S1.RB.mean, S2.RB.mean), "Rel bias (median)" = c(S1.RB.median, S2.RB.median), "Rel SE" = c(S1.RSE, S2.RSE))
   return(res)
 }
+
+#reduced function to just plot from the df of results
+#merging the dfs leads to the 1st column being the row number so need + 1 to index
+#true values needed for plots of estimates
+plot.results <- function(results.df, par, se = T, rel.se = T, ylim.ceiling, true.values = NULL){
+  if (par == "D"){
+    index <- 2
+    plot.label1 <- "Strata 1 Density"
+    plot.label2 <- "Strata 2 Density"
+  } else {
+    if (par=="Sigma"){
+      index <- 6
+      plot.label1 <- "Strata 1 Sigma"
+      plot.label2 <- "Strata 2 Sigma"
+    } else {
+      index <- 4
+      plot.label1 <- "Strata 1 Lambda0"
+      plot.label2 <- "Strata 2 Lambda0"
+    }
+  }
+
+  #produce side by side boxplots
+  #if rel.se = T it divides the estimates by the mean
+  par(mfrow=c(1,2))
+  if (se == FALSE){
+    boxplot(results.df[,index], main = paste(plot.label1, "estimates", sep =" "), ylim = c(0, ylim.ceiling[1]))
+    abline(h = true.values[1], col = 'red')
+    boxplot(results.df[,index+6], main = paste(plot.label2, "estimates", sep =" "), ylim = c(0, ylim.ceiling[2]))
+    abline(h = true.values[2], col = 'red')
+  } else {
+    index <- index + 1
+    if (rel.se == TRUE){
+      boxplot(results.df[,index] / mean(results.df[,index], na.rm = T), main = paste(plot.label1, "Rel SE", sep = " "), ylim = c(0, ylim.ceiling[1]))
+      boxplot(results.df[,index+6] / mean(results.df[,index+6], na.rm = T), main = paste(plot.label2, "Rel SE", sep = " "), ylim = c(0, ylim.ceiling[2]))
+    } else {
+      boxplot(results.df[,index], main = paste(plot.label1, "SE", sep = " "), ylim = c(0, ylim.ceiling[1]))
+      boxplot(results.df[,index+6], main = paste(plot.label2, "SE", sep = " "), ylim = c(0, ylim.ceiling[2]))
+    }
+  }
+}
+
 
 #function to find rogue values for a single strata
 #cannot do both together as diff strata cant be in the same row
@@ -157,7 +200,7 @@ Grid40.800.data.summ <- CH.data.summs(Grid.800.Data$output)
 pdf("15FoldScen/Grid800DataSumms.pdf", height = 8, width = 10, pointsize = 11)
 boxplot(Grid40.800.data.summ)
 
-#filter data, NAs and infinite, and wildly out values (20 fold)
+#filter data, NAs and infinite, and values out by at least 5 fold
 #one strata at a time
 Grid40.800.red1 <- find.rogue(Grid.800.results[,c(1:6)], mag = mag.factor, true = c(0.05, 2, 200))
 Grid40.800.red2 <- find.rogue(Grid.800.results[,c(7:12)], mag = mag.factor, true = c(0.05/15, 2/15, 3000))
@@ -856,17 +899,15 @@ GA4.120.S2.Sig.se <- summ.results(GA4.120.S2.clean, par = "Sigma", true.value = 
 #GA4 with avg pars (c)
 ######################
 
-JOBS RUNNING ON CLUSTER
-
 load("15FoldScen/Cluster/Sims/120Traps/GA4Results120C.RData")
 
-GA4.120.Avg.data.summ <- CH.data.summs(G4.Avg.DataC$output)
-boxplot(GA4.Avg.data.summ)
+GA4.120.Avg.data.summ <- CH.data.summs(G4.Avg.Datac$output)
+boxplot(GA4.120.Avg.data.summ)
 
 #filter estimates, NAs and infinite, and wildly out values (10 fold)
 #one strata at a time
-GA4.120.Avg.red1 <- find.rogue(G4.Avg.resultsC[,c(1:6)], mag = mag.factor, true = c(0.05, 2, 200))
-GA4.120.Avg.red2 <- find.rogue(G4.Avg.resultsC[,c(7:12)], mag = mag.factor, true = c(0.05/15, 2/15, 3000))
+GA4.120.Avg.red1 <- find.rogue(G4.Avg.resultsc[,c(1:6)], mag = mag.factor, true = c(0.05, 2, 200))
+GA4.120.Avg.red2 <- find.rogue(G4.Avg.resultsc[,c(7:12)], mag = mag.factor, true = c(0.05/15, 2/15, 3000))
 
 GA4.120.Avg.clean <- merge(GA4.120.Avg.red1, GA4.120.Avg.red2, by = "row", all.x = TRUE, all.y = TRUE)
 summary(GA4.120.Avg.clean)
@@ -889,7 +930,7 @@ GA4.120.Avg.Sig.se <- summ.results(GA4.120.Avg.clean, par = "Sigma", true.value 
 load("15FoldScen/Cluster/Sims/120Traps/GA4Results120d.RData")
 
 GA4.120.Both.data.summ <- CH.data.summs(G4.Both.Datad$output)
-boxplot(GA4.Both.data.summ)
+boxplot(GA4.120.Both.data.summ)
 
 #filter estimates, NAs and infinite, and wildly out values (10 fold)
 #one strata at a time
@@ -897,7 +938,7 @@ GA4.120.Both.red1 <- find.rogue(G4.Both.resultsd[,c(1:6)], mag = mag.factor, tru
 GA4.120.Both.red2 <- find.rogue(G4.Both.resultsd[,c(7:12)], mag = mag.factor, true = c(0.05/15, 2/15, 3000))
 
 GA4.120.Both.clean <- merge(GA4.120.Both.red1, GA4.120.Both.red2, by = "row", all.x = TRUE, all.y = TRUE)
-summary(GA4.Both.clean)
+summary(GA4.120.Both.clean)
 
 #plot and summarise
 #estimates first
@@ -925,7 +966,7 @@ GA4.120.BothMax.red1 <- find.rogue(G4.BothMax.resultse[,c(1:6)], mag = mag.facto
 GA4.120.BothMax.red2 <- find.rogue(G4.BothMax.resultse[,c(7:12)], mag = mag.factor, true = c(0.05/15, 2/15, 3000))
 
 GA4.120.BothMax.clean <- merge(GA4.120.BothMax.red1, GA4.120.BothMax.red2, by = "row", all.x = TRUE, all.y = TRUE)
-summary(GA4.BothMax.clean)
+summary(GA4.120.BothMax.clean)
 
 #plot and summarise
 #estimates first
@@ -1016,12 +1057,10 @@ GA5.120.S2.Sig.se  <- summ.results(GA5.120.S2.clean, par = "Sigma", true.value =
 #GA5 with avg pars (c)
 ######################
 
-BUSY RUNNING
-
 load("15FoldScen/Cluster/Sims/120Traps/GA5Results120c.RData")
 
 GA5.120.Avg.data.summ <- CH.data.summs(G5.Avg.Datac$output)
-boxplot(GA5.120.120.Avg.data.summ)
+boxplot(GA5.120.Avg.data.summ)
 
 #filter estimates, NAs and infinite, and wildly out values (10 fold)
 #one strata at a time
@@ -1046,7 +1085,7 @@ GA5.120.Avg.Sig.se <- summ.results(GA5.120.Avg.clean, par = "Sigma", true.value 
 #GA5 with both (d)
 ######################
 
-load("15FoldScen/Cluster/Sims/120Traps/GA5Results120e.RData")
+load("15FoldScen/Cluster/Sims/120Traps/GA5Results120d.RData")
 
 GA5.120.Both.data.summ <- CH.data.summs(G5.Both.Datad$output)
 boxplot(GA5.120.Both.data.summ)
@@ -1073,6 +1112,8 @@ GA5.120.Both.Sig.se <- summ.results(GA5.120.Both.clean, par = "Sigma", true.valu
 ######################
 #GA5 with both (max = T) (e)
 ######################
+
+load("15FoldScen/Cluster/Sims/120Traps/GA5Results120e.RData")
 
 GA5.120.BothMax.data.summ <- CH.data.summs(G5.BothMax.Datae$output)
 boxplot(GA5.120.BothMax.data.summ)
@@ -1125,6 +1166,9 @@ LW120.D.se <- summ.results(LW120.clean, par = "D", true.value = c(0.05,0.05/15) 
 LW120.L0.se <- summ.results(LW120.clean, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
 LW120.Sig.se <- summ.results(LW120.clean, par = "Sigma", true.value = c(200, 3000) , ylim.ceiling = c(10, 10), plot = TRUE, se = TRUE, rel.se = TRUE)
 
+############################################################################################
+#Two stage - busy running
+
 ##########################################################
 #save all results objects into a list for easy loading
 datasumms.120 <- list("Grid120.700" = Grid120.700.data.summ, "Grid120.800" = Grid120.800.data.summ,
@@ -1148,7 +1192,7 @@ simresults.120 <- list("Grid120.700.D" = Grid120.700.D.est, "Grid120.700.L0" = G
                        "GA5.120.Avg.D" = GA5.120.Avg.D.est, "GA5.120.Avg.L0" = GA5.120.Avg.L0.est, "GA5.120.Avg.Sig" = GA5.120.Avg.Sig.est,
                        "GA5.120.Both.D" = GA5.120.Both.D.est, "GA5.120.Both.L0" = GA5.120.Both.L0.est, "GA5.120.Both.Sig" = GA5.120.Both.Sig.est,
                        "GA5.120.BothMax.D" = GA5.120.BothMax.D.est, "GA5.120.BothMax.L0" = GA5.120.BothMax.L0.est, "GA5.120.BothMax.Sig" = GA5.120.BothMax.Sig.est,
-                       "LW120.D" = LW120.D.est, "LW120.L0" = LW120.L0.est, "LW120.Sig" = LW120.Sig.est))
+                       "LW120.D" = LW120.D.est, "LW120.L0" = LW120.L0.est, "LW120.Sig" = LW120.Sig.est)
 save(simresults.120, file = "15FoldScen/SimResults120Traps500.RData")
 
 seresults.120 <- list("Grid120.700.D" = Grid120.700.D.se, "Grid120.700.L0" = Grid120.700.L0.se, "Grid120.700.Sig" = Grid120.700.Sig.se,

@@ -1,0 +1,742 @@
+---
+title: "Plots from Simulations (500 reps)"
+format:
+  html:
+    embed-resources: true
+editor: visual
+---
+
+```{r echo = FALSE, include=FALSE}
+#| context: setup
+library(knitr)
+library(secr)
+load("AllResults.RData")
+AllResults40 <- Allresults[[1]]
+AllResults120 <- Allresults[[2]]
+```
+
+``` {r echo = FALSE, include=FALSE}
+
+```
+
+# Relative bias plots
+
+- Strata 1: D = 0.05 ; sigma = 200 m ; L0 = 2
+
+- Strata 2: D = 0.0033 ; sigma = 3000 m ; L0 = 0.133
+
+## Grids with 800 m spacing
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$Grid40.800.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$Grid40.800.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$Grid40.800.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$Grid120.800.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$Grid120.800.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$Grid120.800.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+:::
+
+## Grids with 700 m spacing
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$Grid40.700.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$Grid40.700.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$Grid40.700.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$Grid120.700.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$Grid120.700.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$Grid120.700.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+:::
+
+## Clusters - OS spacing
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$Clust40.OS.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$Clust40.OS.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$Clust40.OS.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$Clust120.OS.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$Clust120.OS.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$Clust120.OS.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+:::
+
+## Clusters - 2 $\sigma$ spacing
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$Clust40.2sig.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$Clust40.2sig.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$Clust40.2sig.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$Clust120.2sig.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$Clust120.2sig.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$Clust120.2sig.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+:::
+
+## GA4 - S1 values
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$GA4.40.S1.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$GA4.40.S1.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$GA4.40.S1.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$GA4.120.S1.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$GA4.120.S1.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$GA4.120.S1.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+:::
+
+## GA4 - S2 values
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$GA4.40.S2.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$GA4.40.S2.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$GA4.40.S2.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$GA4.120.S2.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$GA4.120.S2.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$GA4.120.S2.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+:::
+
+## GA4 - Avg values
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$GA4.40.Avg.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$GA4.40.Avg.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$GA4.40.Avg.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$GA4.120.Avg.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$GA4.120.Avg.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$GA4.120.Avg.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+:::
+
+## GA4 - Both values
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$GA4.40.Both.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$GA4.40.Both.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$GA4.40.Both.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$GA4.120.Both.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$GA4.120.Both.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$GA4.120.Both.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+:::
+
+## GA4 - Both values (max-min)
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$GA4.40.BothMax.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$GA4.40.BothMax.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$GA4.40.BothMax.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$GA4.120.BothMax.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$GA4.120.BothMax.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$GA4.120.BothMax.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+:::
+
+## GA5 - S1 values
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$GA5.40.S1.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$GA5.40.S1.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$GA5.40.S1.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$GA5.120.S1.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$GA5.120.S1.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$GA5.120.S1.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+:::
+
+## GA5 - S2 values
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$GA5.40.S2.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$GA5.40.S2.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$GA5.40.S2.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$GA5.120.S2.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$GA5.120.S2.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$GA5.120.S2.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+:::
+
+## GA5 - Avg values
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$GA5.40.Avg.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$GA5.40.Avg.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$GA5.40.Avg.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$GA5.120.Avg.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$GA5.120.Avg.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$GA5.120.Avg.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+:::
+
+## GA5 - Both values
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$GA5.40.Both.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$GA5.40.Both.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$GA5.40.Both.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$GA5.120.Both.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$GA5.120.Both.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$GA5.120.Both.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+:::
+
+## GA5 - Both values (max-min)
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$GA5.40.BothMax.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$GA5.40.BothMax.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$GA5.40.BothMax.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$GA5.120.BothMax.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$GA5.120.BothMax.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$GA5.120.BothMax.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+:::
+
+## Lacework
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$LW40.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$LW40.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.40$LW40.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$LW120.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(D1.ylim, D2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$LW120.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(L1.ylim, L2.ylim), se = F, rel.se = TRUE)
+plot.results(simresults.120$LW120.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(Sig1.ylim, Sig2.ylim), se = F, rel.se = TRUE)
+```
+:::
+
+# General comments - bias
+
+## Grids
+ - S1 and S2 D ests are skewed to the right for 800 m spacing but less so for 700 m
+ - For 800 m spacing S1 sigma skewed to the left and S2 sigma to the right, for 700 m S1 more symmetrical and S2 skewed to the right
+ - With 120 traps there are very few outliers for 700 m and 800 m spacing
+ 
+## Clusters
+ - OS spacings: some skewness for S2 D and Sigma
+ - 2 * sigma spacing: slight positive skewness but balanced across the 2 strata
+ - With 120 traps there are very few outliers for OS spacing. With 2 sigma spacing there is slight +ve skew in D for both and some +ve skew in S2 L0 and sigmas are symmetrical
+ 
+## GA4
+
+### S1 values
+ - Some positive skewness in D (more for S2), slight for L0 and sigma (more for S1)
+ - With 120 traps there are very few outliers
+ 
+### S2 values
+ - Slight positive skew in D and L0 for both strata, for sigma only for S2
+ - With 120 traps slight +ve skew in D for S1 but others fairly symmetrical
+
+### Avg values
+ - Positive skewness in D and sigma, especially for S1
+ - For S1, -ve bias in D and +ve bias in sigma
+ - With 120 traps still substantial +ve skew in S1 D, other parameters fairly symmetrical
+ 
+### Both values
+ - Slight +ve skew across parameters (except for S1 sigma) but fairly balanced across strata
+ - Max-min similar
+ - With 120 traps dbns symmetrical with few outliers, for max-min there was slight +ve skew in the sigmas for both strata
+
+## GA5
+
+### S1 values
+ - Some positive skewness in D (more for S2), slight for L0 and sigma fairly symmetrical
+ - With 120 traps the dbns are mostly symmetrical with few outliers
+
+### S2 values
+ - Slight positive skew in D for S2, in L0 for S1, in sigma for both
+ - With 120 traps very slight skew for S1 D otherwise symmetrical
+
+### Avg values
+ - Positive skewness in D, especially for S1
+ - Slight skew across other parameters for both strata
+ - For S1, -ve bias in D and +ve bias in sigma
+ - Even with 120 traps substantial +ve skew in S1 D and slight bias in S1 sigma
+
+### Both values
+ - Very slight +ve skew in D for both, and sigma for S2
+ - Max-min similar for D but L0 and sigma are more symmetrical
+ - With 120 traps few outliers and mostly symmetrical dbns, same for max-min
+
+## Lacework
+ - Very slight skew but mostly more symmetrical dbns for all parameters
+ - With 120 traps few outliers and mostly symmetrical dbns
+
+# Relative SE plots
+
+## Grids with 800 m spacing
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$Grid40.800.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$Grid40.800.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$Grid40.800.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$Grid120.800.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$Grid120.800.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$Grid120.800.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+```
+:::
+
+## Grids with 700 m spacing
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$Grid40.700.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$Grid40.700.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$Grid40.700.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$Grid120.700.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$Grid120.700.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$Grid120.700.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+```
+:::
+
+## Clusters - OS spacing
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$Clust40.OS.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$Clust40.OS.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$Clust40.OS.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$Clust120.OS.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$Clust120.OS.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$Clust120.OS.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+```
+:::
+
+## Clusters - 2 $\sigma$ spacing
+
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$Clust40.2sig.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$Clust40.2sig.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$Clust40.2sig.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$Clust120.2sig.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$Clust120.2sig.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$Clust120.2sig.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+```
+:::
+
+## GA4 - S1 values
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$GA4.40.S1.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$GA4.40.S1.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$GA4.40.S1.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$GA4.120.S1.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$GA4.120.S1.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$GA4.120.S1.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+```
+:::
+
+## GA4 - S2 values
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$GA4.40.S2.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$GA4.40.S2.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$GA4.40.S2.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$GA4.120.S2.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$GA4.120.S2.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$GA4.120.S2.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+```
+:::
+
+## GA4 - Avg values
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$GA4.40.Avg.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$GA4.40.Avg.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$GA4.40.Avg.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$GA4.120.Avg.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$GA4.120.Avg.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$GA4.120.Avg.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+```
+:::
+
+## GA4 - Both values
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$GA4.40.Both.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$GA4.40.Both.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$GA4.40.Both.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$GA4.120.Both.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$GA4.120.Both.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$GA4.120.Both.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+```
+:::
+
+## GA4 - Both values (max min)
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$GA4.40.BothMax.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$GA4.40.BothMax.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$GA4.40.BothMax.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$GA4.120.BothMax.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$GA4.120.BothMax.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$GA4.120.BothMax.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+```
+:::
+
+
+## GA5 - S1 values
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$GA5.40.S1.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$GA5.40.S1.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$GA5.40.S1.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$GA5.120.S1.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$GA5.120.S1.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$GA5.120.S1.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+```
+:::
+
+## GA5 - S2 values
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$GA5.40.S2.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$GA5.40.S2.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$GA5.40.S2.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$GA5.120.S2.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$GA5.120.S2.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$GA5.120.S2.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+```
+:::
+
+## GA5 - Avg values
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$GA5.40.Avg.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$GA5.40.Avg.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$GA5.40.Avg.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$GA5.120.Avg.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$GA5.120.Avg.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$GA5.120.Avg.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+```
+:::
+
+## GA5 - Both values
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$GA5.40.Both.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$GA5.40.Both.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$GA5.40.Both.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$GA5.120.Both.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$GA5.120.Both.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$GA5.120.Both.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+```
+:::
+
+## GA5 - Both values (max-min)
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$GA5.40.BothMax.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$GA5.40.BothMax.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$GA5.40.BothMax.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$GA5.120.BothMax.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$GA5.120.BothMax.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$GA5.120.BothMax.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+```
+:::
+
+## Lacework
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.40$LW40.D$Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$LW40.D$Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+plot.results(simresults.40$LW40.D$Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(se.lim,se.lim), se = TRUE, rel.se = TRUE)
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot.results(simresults.120$LW120.D $Results, par = "D", true.value = c(0.05,0.05/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$LW120.D $Results, par = "L0", true.value = c(2, 2/15) , ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+plot.results(simresults.120$LW120.D $Results, par = "Sigma", true.value = c(200, 3000), ylim.ceiling = c(10,10), se = TRUE, rel.se = TRUE)
+```
+:::
+
+# General comments - precision
+
+## Grids
+ - For 800 m spacing SE’s for all parameters skewed to the right (apart from S2 L0)
+ - Improved for 700 m spacing, some skewness for S2 D and S2 sigma.
+ - With 120 traps there are very few outliers, at 800 m spacing the most for S1 D and for 700 m spacing the most for S2 sigma
+
+## Clusters
+ - OS spacing: skewness for S2 D and sigma (as with bias)
+ - 2 * sigma spacing: se’s quite tightly clustered for both strata and all parameters
+ - With 120 traps there are very few outliers for both spacings
+
+## GA4
+
+### S1 values
+ - More positive skewness in D for S2, and slightly more for S1 in sigma ses
+ - With 120 traps there are very few outliers
+
+### S2 values
+ - Slight positive skewness in D for both strata, and more skew for S2 in sigma ses
+ - With 120 traps some skew for S1 D is evident
+
+### Avg values
+ - Positive skewness across parameters, more so for S1
+ - With 120 traps some skew for S1 D is evident with a few outliers for S1 sigma
+
+### Both values
+ - Some skew in S2 sigma but otherwise quite balanced
+ - Max-min similar
+ - With 120 traps tight dbns with few outliers, same for max-min
+
+## GA5
+
+### S1 values
+ - More positive skewness in D for S2, and slightly more for S1 in sigma ses
+ - With 120 traps there are very few outliers
+
+### S2 values
+ - Slight positive skew in D and sigma (mainly for S2)
+ - With 120 traps very slight +ve skew in S1 D
+
+### Avg values
+ - Positive skewness in D, especially for S1
+ - Slight skew in other parameters across both strata
+ - Even with 120 traps substantial +ve skew in S1 D and some skew in S1 L0
+
+### Both values
+ - Very slight +ve skew in D for both, and sigma especially for S2
+ - Max-min more skew for S2 D, and for sigma both are slightly skew
+ - With 120 traps few outliers and mostly symmetrical dbns, with max-min a tiny bit more skewness in D and sigma for S1
+
+## Lacework
+ - Very slight skew in D and sigma for S2
+ - With 120 traps few outliers and mostly symmetrical dbns

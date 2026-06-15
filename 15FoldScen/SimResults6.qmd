@@ -14,6 +14,9 @@ library(secr)
 load("SCRObjs.RData")
 load("Cluster/Sims/40Traps/GADesigns40.RData")
 load("Cluster/Sims/120Traps/GADesigns120.RData")
+load("Cluster/Sims/40Traps/GridDesigns40.RData")
+load("Cluster/Sims/120Traps/GridDesigns120.RData")
+load("LWdesigns.RData")
 load("SimResults40Traps500.RData")
 load("Excluded40Traps500.RData")
 load("DataSumms40Traps500.RData")
@@ -24,40 +27,60 @@ load("DataSumms120Traps500.RData")
 
 # Simulation setup: a 15 fold scenario
 
-- Strata 1: D = 0.05 ; sigma = 200 m ; L0 = 2
+-   Strata 1: D = 0.05 ; sigma = 200 m ; L0 = 2
 
-- Strata 2: D = 0.0033 ; sigma = 3000 m ; L0 = 0.133
+-   Strata 2: D = 0.0033 ; sigma = 3000 m ; L0 = 0.133
 
-- reps = 500
+-   reps = 500
 
-- a rep was excluded if:
+-   a rep was excluded if:
 
-  - an estimate was NA or infinite
-  - the RSE for one of the parameters is \> 100
-  - an estimate was more than 5 fold away from the true value
+    -   an estimate was NA or infinite
+    -   the RSE for one of the parameters is \> 100
+    -   an estimate was more than 5 fold away from the true value
 
-- measures of performance
+-   measures of performance
 
-  - relative bias
-  - relative se (empirical sd / mean of all estimates)
+    -   relative bias
+    -   relative se (empirical sd / mean of all estimates)
 
-- approaches include:
-  - grids with 800 m spacing and optimal 2G spacing of 700 m
-  - systematic clustered grid designs with OS (500 / 1200) or 2 * sigma spacing
-  - GA4 and GaA5 designs using values from: S1 / S2 / Avg / Both / BothMax
-  
-- For both 40 traps and 120 traps
+-   For both 40 traps and 120 traps, approaches include:
+
+    -   grids with 800 m spacing and optimal 2G spacing of 700 m
+    -   systematic clustered grid designs with OS (500 / 1200) or 2 \* sigma spacing
+    -   GA4 and GaA5 designs using values from: S1 / S2 / Avg / Both / BothMax
+    -   Lacework designs
+    -   Two stage approach (to be added still)
 
 # Grids with 800 m spacing
 
-### Data summary
+## Realisations and data summaries
+
+::: panel-tabset
+### 40 Traps
 
 ```{r, echo = FALSE, fig.align="left"}
-boxplot(datasumms.40$Grid40.800, ylab = "Count", ylim = c(0,400), las = 2, main = "40 Traps")
-boxplot(datasumms.120$Grid120.800, ylab = "Count", ylim = c(0,400), las = 2, main = "120 Traps")
+plot(SCR.objs$Full$`SCR Mask`)
+plot(grid.designs.40$`800 m`[[sample(1:500,1)]], add = TRUE,  main = "40 Traps")
 ```
 
-### Simulation Results
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms.40$Grid40.800, ylab = "Count", ylim = c(0,500), las = 2, main = "40 Traps")
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot(SCR.objs$Full$`SCR Mask`)
+plot(grid.designs.120$`800 m`[[sample(1:500,1)]], add = TRUE,  main = "120 Traps")
+```
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms.120$Grid120.800, ylab = "Count", ylim = c(0,500), las = 2, main = "120 Traps")
+```
+:::
+
+## Simulation Results
 
 ```{r echo = FALSE}
 grids1.40 <- data.frame(
@@ -105,17 +128,35 @@ grids1.120 %>%
   add_header_above(header = c(" " = 1, "D" = 2, "L0" = 2, "Sigma" = 2, " " = 1), border_right = TRUE, bold = TRUE) 
 ```
 
-
 # Grids with optimal 2G spacing (700 m)
 
 The optimal spacing used here is from extending the optimalSpacing function to two groups and optimising the sum of n and r across the two strata.
 
-### Data summary
+## Realisations and data summaries
+
+::: panel-tabset
+### 40 Traps
 
 ```{r, echo = FALSE, fig.align="left"}
-boxplot(datasumms.40$Grid40.700, ylab = "Count", ylim = c(0,400), las = 2, main = "40 Traps")
-boxplot(datasumms.120$Grid120.700, ylab = "Count", ylim = c(0,400), las = 2, main = "120 Traps")
+plot(SCR.objs$Full$`SCR Mask`)
+plot(grid.designs.40$`700 m`[[sample(1:500,1)]], add = TRUE,  main = "40 Traps")
 ```
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms.40$Grid40.700, ylab = "Count", ylim = c(0,500), las = 2, main = "40 Traps")
+```
+
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot(SCR.objs$Full$`SCR Mask`)
+plot(grid.designs.120$`700 m`[[sample(1:500,1)]], add = TRUE,  main = "120 Traps")
+```
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms.120$Grid120.700, ylab = "Count", ylim = c(0,500), las = 2, main = "120 Traps")
+```
+:::
 
 ### Simulation Results
 
@@ -173,23 +214,56 @@ The clustered grids base within-cluster spacing on the smaller sigma and the bet
 1.  500 m / 1200 m: these spacings are based on optimal spacings for each sigma seperately
 2.  400 m / 6000 m: these spacings are 2 \* sigma for each strata
 
-## Data summaries
+## Realisations and data summaries for optimal spacings (500 / 1200):
 
 ::: panel-tabset
-### 500 m / 1200 m
+### 40 Traps
 
 ```{r, echo = FALSE, fig.align="left"}
-boxplot(datasumms.40$Clust40.OS, ylab = "Count", ylim = c(0,400), las = 2, main = "40 Traps")
-boxplot(datasumms.120$Clust120.OS, ylab = "Count", ylim = c(0,400), las = 2, main = "120 Traps")
+plot(SCR.objs$Full$`SCR Mask`)
+plot(grid.designs.40$`Cluster (opt)`[[sample(1:500,1)]], add = TRUE,  main = "40 Traps")
 ```
-
-### 400 m / 6000 m
 
 ```{r, echo = FALSE, fig.align="left"}
-boxplot(datasumms.40$Clust40.2sig, ylab = "Count", ylim = c(0,400), las = 2, main = "40 Traps")
-boxplot(datasumms.120$Clust120.2sig, ylab = "Count", ylim = c(0,400), las = 2, main = "120 Traps")
+boxplot(datasumms.40$Clust40.OS, ylab = "Count", ylim = c(0,500), las = 2, main = "40 Traps")
 ```
 
+### 120 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot(SCR.objs$Full$`SCR Mask`)
+plot(grid.designs.120$`Cluster (opt)`[[sample(1:500,1)]], add = TRUE,  main = "120 Traps")
+```
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms.120$Clust120.OS, ylab = "Count", ylim = c(0,500), las = 2, main = "120 Traps")
+```
+:::
+
+## Realisations and data summaries for 2 $\sigma$ spacings (400 / 6000):
+
+::: panel-tabset
+### 40 Traps
+
+```{r, echo = FALSE, fig.align="left"}
+plot(SCR.objs$Full$`SCR Mask`)
+plot(grid.designs.40$`Cluster (2 sig)`[[sample(1:500,1)]], add = TRUE,  main = "40 Traps")
+```
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms.40$Clust40.2sig, ylab = "Count", ylim = c(0,500), las = 2, main = "40 Traps")
+```
+
+### 120 Traps (actually only 64 traps!)
+
+```{r, echo = FALSE, fig.align="left"}
+plot(SCR.objs$Full$`SCR Mask`)
+plot(grid.designs.120$`Cluster (2 sig)`[[sample(1:500,1)]], add = TRUE,  main = "120 Traps")
+```
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms.120$Clust120.2sig, ylab = "Count", ylim = c(0,500), las = 2, main = "120 Traps")
+```
 :::
 
 ### Simulation Results
@@ -246,47 +320,87 @@ grids4.120 %>%
 
 # GA4 Designs (min(n,r))
 
-## Data summaries
+## Realisations and data summaries:
 
 ::: panel-tabset
 ### Using S1 values:
 
 ```{r, echo = FALSE, fig.align="left"}
-boxplot(datasumms.40$G4.40.S1, ylab = "Count", ylim = c(0,400), las = 2, main = "40 Traps")
-boxplot(datasumms.120$G4.120.S1, ylab = "Count", ylim = c(0,400), las = 2, main = "120 Traps")
+plot(SCR.objs$Full$`SCR Mask`)
+plot(GA.designs.40$G4S1[[sample(1:500,1)]], add = TRUE,  main = "40 Traps")
+
+plot(SCR.objs$Full$`SCR Mask`)
+plot(GA.designs.120$G4S1[[sample(1:500,1)]], add = TRUE,  main = "120 Traps")
+```
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms.40$G4.40.S1, ylab = "Count", ylim = c(0,500), las = 2, main = "40 Traps")
+boxplot(datasumms.120$G4.120.S1, ylab = "Count", ylim = c(0,500), las = 2, main = "120 Traps")
 ```
 
 ### Using S2 values:
 
 ```{r, echo = FALSE, fig.align="left"}
-boxplot(datasumms.40$G4.40.S2, ylab = "Count", ylim = c(0,400), las = 2, main = "40 Traps")
-boxplot(datasumms.120$G4.120.S2, ylab = "Count", ylim = c(0,400), las = 2, main = "120 Traps")
+plot(SCR.objs$Full$`SCR Mask`)
+plot(GA.designs.40$G4S2[[sample(1:500,1)]], add = TRUE,  main = "40 Traps")
+
+plot(SCR.objs$Full$`SCR Mask`)
+plot(GA.designs.120$G4S2[[sample(1:500,1)]], add = TRUE,  main = "120 Traps")
+```
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms.40$G4.40.S2, ylab = "Count", ylim = c(0,500), las = 2, main = "40 Traps")
+boxplot(datasumms.120$G4.120.S2, ylab = "Count", ylim = c(0,500), las = 2, main = "120 Traps")
 ```
 
 ### Using Avg values:
 
 ```{r, echo = FALSE, fig.align="left"}
-boxplot(datasumms.40$G4.40.Avg, ylab = "Count", ylim = c(0,400), las = 2, main = "40 Traps")
-boxplot(datasumms.120$G4.120.Avg, ylab = "Count", ylim = c(0,400), las = 2, main = "120 Traps")
+plot(SCR.objs$Full$`SCR Mask`)
+plot(GA.designs.40$G4Avg[[sample(1:500,1)]], add = TRUE, main = "40 Traps")
+
+plot(SCR.objs$Full$`SCR Mask`)
+plot(GA.designs.120$G4Avg[[sample(1:500,1)]], add = TRUE, main = "120 Traps")
+```
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms.40$G4.40.Avg, ylab = "Count", ylim = c(0,500), las = 2, main = "40 Traps")
+boxplot(datasumms.120$G4.120.Avg, ylab = "Count", ylim = c(0,500), las = 2, main = "120 Traps")
 ```
 
 ### Using Both values:
 
 ```{r, echo = FALSE, fig.align="left"}
-boxplot(datasumms.40$G4.40.Both, ylab = "Count", ylim = c(0,400), las = 2, main = "40 Traps")
-boxplot(datasumms.120$G4.120.Both, ylab = "Count", ylim = c(0,400), las = 2, main = "120 Traps")
+plot(SCR.objs$Full$`SCR Mask`)
+plot(GA.designs.40$G4Both[[sample(1:500,1)]], add = TRUE, main = "40 Traps")
+
+plot(SCR.objs$Full$`SCR Mask`)
+plot(GA.designs.120$G4Both[[sample(1:500,1)]], add = TRUE, main = "120 Traps")
+```
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms.40$G4.40.Both, ylab = "Count", ylim = c(0,500), las = 2, main = "40 Traps")
+boxplot(datasumms.120$G4.120.Both, ylab = "Count", ylim = c(0,500), las = 2, main = "120 Traps")
 ```
 
 ### Using Both (max-min) values:
 
 ```{r, echo = FALSE, fig.align="left"}
-boxplot(datasumms.40$G4.40.BothMax, ylab = "Count", ylim = c(0,400), las = 2, main = "40 Traps")
-boxplot(datasumms.120$G4.120.BothMax, ylab = "Count", ylim = c(0,400), las = 2, main = "120 Traps")
+plot(SCR.objs$Full$`SCR Mask`)
+plot(GA.designs.40$G4BothMax[[sample(1:500,1)]], add = TRUE, main = "40 Traps")
+
+plot(SCR.objs$Full$`SCR Mask`)
+plot(GA.designs.120$G4BothMax[[sample(1:500,1)]], add = TRUE, main = "120 Traps")
+```
+
+```{r, echo = FALSE, fig.align="left"}
+boxplot(datasumms.40$G4.40.BothMax, ylab = "Count", ylim = c(0,500), las = 2, main = "40 Traps")
+boxplot(datasumms.120$G4.120.BothMax, ylab = "Count", ylim = c(0,500), las = 2, main = "120 Traps")
 ```
 :::
 
 ## Simulation Results
-  
+
 ```{r echo = FALSE}
 GA4.40 <- data.frame(
   C1 = c(rep("S1",2), rep("S2",2), rep("Avg",2), rep("Both",2), rep("Both (Max)",2)),
@@ -307,9 +421,9 @@ GA4.40 <- data.frame(
   C8 = c(round(simresults.40$GA4.40.S1.Sig$`Rel SE`,3), round(simresults.40$GA4.40.S2.Sig$`Rel SE`,3), 
          round(simresults.40$GA4.40.Avg.Sig$`Rel SE`,3), round(simresults.40$GA4.40.Both.Sig$`Rel SE`,3),
          round(simresults.40$GA4.40.BothMax.L0$`Rel SE`,3)),
-  C9 = c(dim(excluded$GA4.40.S1.S1)[1], dim(excluded$GA4.40.S1.S2)[1], dim(excluded$GA4.40.S2.S1)[1], dim(excluded$GA4.40.S2.S2)[1],
-         dim(excluded$GA4.40.Avg.S1)[1], dim(excluded$GA4.40.Avg.S2)[1], dim(excluded$GA4.40.Both.S1)[1], dim(excluded$GA4.40.Both.S2)[1],
-         dim(excluded$GA4.40.BothMax.S1)[1], dim(excluded$GA4.40.BothMax.S2)[1])
+  C9 = c(dim(excluded.40$GA4.40.S1.S1)[1], dim(excluded.40$GA4.40.S1.S2)[1], dim(excluded.40$GA4.40.S2.S1)[1], dim(excluded.40$GA4.40.S2.S2)[1],
+         dim(excluded.40$GA4.40.Avg.S1)[1], dim(excluded.40$GA4.40.Avg.S2)[1], dim(excluded.40$GA4.40.Both.S1)[1], dim(excluded.40$GA4.40.Both.S2)[1],
+         dim(excluded.40$GA4.40.BothMax.S1)[1], dim(excluded.40$GA4.40.BothMax.S2)[1])
 )
 
 colnames(GA4.40) <- c("Values","Strata","RB", "RSE", "RB", "RSE","RB", "RSE", "Reps") 
@@ -343,9 +457,9 @@ GA4.120 <- data.frame(
   C8 = c(round(simresults.120$GA4.120.S1.Sig$`Rel SE`,3), round(simresults.120$GA4.120.S2.Sig$`Rel SE`,3), 
          round(simresults.120$GA4.120.Avg.Sig$`Rel SE`,3), round(simresults.120$GA4.120.Both.Sig$`Rel SE`,3),
          round(simresults.120$GA4.120.BothMax.L0$`Rel SE`,3)),
-  C9 = c(dim(excluded$GA4.120.S1.S1)[1], dim(excluded$GA4.120.S1.S2)[1], dim(excluded$GA4.120.S2.S1)[1], dim(excluded$GA4.120.S2.S2)[1],
-         dim(excluded$GA4.120.Avg.S1)[1], dim(excluded$GA4.120.Avg.S2)[1], dim(excluded$GA4.120.Both.S1)[1], dim(excluded$GA4.120.Both.S2)[1],
-         dim(excluded$GA4.120.BothMax.S1)[1], dim(excluded$GA4.120.BothMax.S2)[1])
+  C9 = c(dim(excluded.120$GA4.120.S1.S1)[1], dim(excluded.120$GA4.120.S1.S2)[1], dim(excluded.120$GA4.120.S2.S1)[1], dim(excluded.120$GA4.120.S2.S2)[1],
+         dim(excluded.120$GA4.120.Avg.S1)[1], dim(excluded.120$GA4.120.Avg.S2)[1], dim(excluded.120$GA4.120.Both.S1)[1], dim(excluded.120$GA4.120.Both.S2)[1],
+         dim(excluded.120$GA4.120.BothMax.S1)[1], dim(excluded.120$GA4.120.BothMax.S2)[1])
 )
 
 colnames(GA4.120) <- c("Values","Strata","RB", "RSE", "RB", "RSE","RB", "RSE", "Reps") 
@@ -362,67 +476,20 @@ GA4.120 %>%
 
 ```
 
-Realisations from the proposed designs:
-  
-::: panel-tabset
-### Using S1 values:
-
-```{r, echo = FALSE, fig.align="left"}
-plot(SCR.objs$Full$`SCR Mask`)
-plot(GA.designs.40$G4S1[[sample(1:500,1)]], add = TRUE,  main = "40 Traps")
-
-plot(SCR.objs$Full$`SCR Mask`)
-plot(GA.designs.120$G4S1[[sample(1:500,1)]], add = TRUE,  main = "120 Traps")
-```
-
-### Using S2 values:
-
-```{r, echo = FALSE, fig.align="left"}
-plot(SCR.objs$Full$`SCR Mask`)
-plot(GA.designs.40$G4S2[[sample(1:500,1)]], add = TRUE,  main = "40 Traps")
-
-plot(SCR.objs$Full$`SCR Mask`)
-plot(GA.designs.120$G4S2[[sample(1:500,1)]], add = TRUE,  main = "120 Traps")
-```
-
-### Using Avg values:
-
-```{r, echo = FALSE, fig.align="left"}
-plot(SCR.objs$Full$`SCR Mask`)
-plot(GA.designs.40$G4Avg[[sample(1:500,1)]], add = TRUE, main = "40 Traps")
-
-plot(SCR.objs$Full$`SCR Mask`)
-plot(GA.designs.120$G4Avg[[sample(1:500,1)]], add = TRUE, main = "120 Traps")
-```
-
-### Using Both values:
-
-```{r, echo = FALSE, fig.align="left"}
-plot(SCR.objs$Full$`SCR Mask`)
-plot(GA.designs.40$G4Both[[sample(1:500,1)]], add = TRUE, main = "40 Traps")
-
-plot(SCR.objs$Full$`SCR Mask`)
-plot(GA.designs.120$G4Both[[sample(1:500,1)]], add = TRUE, main = "120 Traps")
-```
-
-### Using Both (max-min) values:
-
-```{r, echo = FALSE, fig.align="left"}
-plot(SCR.objs$Full$`SCR Mask`)
-plot(GA.designs.40$G4BothMax[[sample(1:500,1)]], add = TRUE, main = "40 Traps")
-
-plot(SCR.objs$Full$`SCR Mask`)
-plot(GA.designs.120$G4BothMax[[sample(1:500,1)]], add = TRUE, main = "120 Traps")
-```
-:::
-  
 # GA5 Designs (E(n2))
-  
-## Data summaries
-  
-::: panel-tabset
 
+## Realisations and data summaries
+
+::: panel-tabset
 ### Using S1 values:
+
+```{r, echo = FALSE, fig.align="left"}
+plot(SCR.objs$Full$`SCR Mask`)
+plot(GA.designs.40$G5S1[[sample(1:500,1)]], add = TRUE,  main = "40 Traps")
+
+plot(SCR.objs$Full$`SCR Mask`)
+plot(GA.designs.120$G5S1[[sample(1:500,1)]], add = TRUE,  main = "120 Traps")
+```
 
 ```{r, echo = FALSE, fig.align="left"}
 boxplot(datasumms.40$G5.40.S1, ylab = "Count", ylim = c(0,200), las = 2, main = "40 Traps")
@@ -432,11 +499,27 @@ boxplot(datasumms.120$G5.120.S1, ylab = "Count", ylim = c(0,200), las = 2, main 
 ### Using S2 values:
 
 ```{r, echo = FALSE, fig.align="left"}
+plot(SCR.objs$Full$`SCR Mask`)
+plot(GA.designs.40$G5S2[[sample(1:500,1)]], add = TRUE,  main = "40 Traps")
+
+plot(SCR.objs$Full$`SCR Mask`)
+plot(GA.designs.120$G5S2[[sample(1:500,1)]], add = TRUE,  main = "120 Traps")
+```
+
+```{r, echo = FALSE, fig.align="left"}
 boxplot(datasumms.40$G5.40.S2, ylab = "Count", ylim = c(0,200), las = 2, main = "40 Traps")
 boxplot(datasumms.120$G5.120.S2, ylab = "Count", ylim = c(0,200), las = 2, main = "120 Traps")
 ```
 
 ### Using Avg values:
+
+```{r, echo = FALSE, fig.align="left"}
+plot(SCR.objs$Full$`SCR Mask`)
+plot(GA.designs.40$G5Avg[[sample(1:500,1)]], add = TRUE, main = "40 Traps")
+
+plot(SCR.objs$Full$`SCR Mask`)
+plot(GA.designs.120$G5Avg[[sample(1:500,1)]], add = TRUE, main = "120 Traps")
+```
 
 ```{r, echo = FALSE, fig.align="left"}
 boxplot(datasumms.40$G5.40.Avg, ylab = "Count", ylim = c(0,200), las = 2, main = "40 Traps")
@@ -446,6 +529,14 @@ boxplot(datasumms.120$G5.120.Avg, ylab = "Count", ylim = c(0,200), las = 2, main
 ### Using Both values:
 
 ```{r, echo = FALSE, fig.align="left"}
+plot(SCR.objs$Full$`SCR Mask`)
+plot(GA.designs.40$G5Both[[sample(1:500,1)]], add = TRUE, main = "40 Traps")
+
+plot(SCR.objs$Full$`SCR Mask`)
+plot(GA.designs.120$G5Both[[sample(1:500,1)]], add = TRUE, main = "120 Traps")
+```
+
+```{r, echo = FALSE, fig.align="left"}
 boxplot(datasumms.40$G5.40.Both, ylab = "Count", ylim = c(0,200), las = 2, main = "40 Traps")
 boxplot(datasumms.120$G5.120.Both, ylab = "Count", ylim = c(0,200), las = 2, main = "120 Traps")
 ```
@@ -453,13 +544,21 @@ boxplot(datasumms.120$G5.120.Both, ylab = "Count", ylim = c(0,200), las = 2, mai
 ### Using Both (max-min) values:
 
 ```{r, echo = FALSE, fig.align="left"}
+plot(SCR.objs$Full$`SCR Mask`)
+plot(GA.designs.40$G5BothMax[[sample(1:500,1)]], add = TRUE, main = "40 Traps")
+
+plot(SCR.objs$Full$`SCR Mask`)
+plot(GA.designs.120$G5BothMax[[sample(1:500,1)]], add = TRUE, main = "120 Traps")
+```
+
+```{r, echo = FALSE, fig.align="left"}
 boxplot(datasumms.40$G5.40.BothMax, ylab = "Count", ylim = c(0,200), las = 2, main = "40 Traps")
 boxplot(datasumms.120$G5.120.BothMax, ylab = "Count", ylim = c(0,200), las = 2, main = "120 Traps")
 ```
 :::
-  
+
 ## Simulation Results
-  
+
 ```{r echo = FALSE}
 GA5.40 <- data.frame(
   C1 = c(rep("S1",2), rep("S2",2), rep("Avg",2), rep("Both",2), rep("Both (Max)",2)),
@@ -480,9 +579,9 @@ GA5.40 <- data.frame(
   C8 = c(round(simresults.40$GA5.40.S1.Sig$`Rel SE`,3), round(simresults.40$GA5.40.S2.Sig$`Rel SE`,3), 
          round(simresults.40$GA5.40.Avg.Sig$`Rel SE`,3), round(simresults.40$GA5.40.Both.Sig$`Rel SE`,3),
          round(simresults.40$GA5.40.BothMax.L0$`Rel SE`,3)),
-  C9 = c(dim(excluded$GA5.40.S1.S1)[1], dim(excluded$GA5.40.S1.S2)[1], dim(excluded$GA5.40.S2.S1)[1], dim(excluded$GA5.40.S2.S2)[1],
-         dim(excluded$GA5.40.Avg.S1)[1], dim(excluded$GA5.40.Avg.S2)[1], dim(excluded$GA5.40.Both.S1)[1], dim(excluded$GA5.40.Both.S2)[1],
-         dim(excluded$GA5.40.BothMax.S1)[1], dim(excluded$GA5.40.BothMax.S2)[1])
+  C9 = c(dim(excluded.40$GA5.40.S1.S1)[1], dim(excluded.40$GA5.40.S1.S2)[1], dim(excluded.40$GA5.40.S2.S1)[1], dim(excluded.40$GA5.40.S2.S2)[1],
+         dim(excluded.40$GA5.40.Avg.S1)[1], dim(excluded.40$GA5.40.Avg.S2)[1], dim(excluded.40$GA5.40.Both.S1)[1], dim(excluded.40$GA5.40.Both.S2)[1],
+         dim(excluded.40$GA5.40.BothMax.S1)[1], dim(excluded.40$GA5.40.BothMax.S2)[1])
 )
 
 colnames(GA5.40) <- c("Values","Strata","RB", "RSE", "RB", "RSE","RB", "RSE", "Reps") 
@@ -516,9 +615,9 @@ GA5.120 <- data.frame(
   C8 = c(round(simresults.120$GA5.120.S1.Sig$`Rel SE`,3), round(simresults.120$GA5.120.S2.Sig$`Rel SE`,3), 
          round(simresults.120$GA5.120.Avg.Sig$`Rel SE`,3), round(simresults.120$GA5.120.Both.Sig$`Rel SE`,3),
          round(simresults.120$GA5.120.BothMax.L0$`Rel SE`,3)),
-  C9 = c(dim(excluded$GA5.120.S1.S1)[1], dim(excluded$GA5.120.S1.S2)[1], dim(excluded$GA5.120.S2.S1)[1], dim(excluded$GA5.120.S2.S2)[1],
-         dim(excluded$GA5.120.Avg.S1)[1], dim(excluded$GA5.120.Avg.S2)[1], dim(excluded$GA5.120.Both.S1)[1], dim(excluded$GA5.120.Both.S2)[1],
-         dim(excluded$GA5.120.BothMax.S1)[1], dim(excluded$GA5.120.BothMax.S2)[1])
+  C9 = c(dim(excluded.120$GA5.120.S1.S1)[1], dim(excluded.120$GA5.120.S1.S2)[1], dim(excluded.120$GA5.120.S2.S1)[1], dim(excluded.120$GA5.120.S2.S2)[1],
+         dim(excluded.120$GA5.120.Avg.S1)[1], dim(excluded.120$GA5.120.Avg.S2)[1], dim(excluded.120$GA5.120.Both.S1)[1], dim(excluded.120$GA5.120.Both.S2)[1],
+         dim(excluded.120$GA5.120.BothMax.S1)[1], dim(excluded.120$GA5.120.BothMax.S2)[1])
 )
 
 colnames(GA5.120) <- c("Values","Strata","RB", "RSE", "RB", "RSE","RB", "RSE", "Reps") 
@@ -535,86 +634,114 @@ GA5.120 %>%
 
 ```
 
-Realisations from the proposed designs:
-  
+# Lacework
+
+## Design (fixed) and data summaries
+
 ::: panel-tabset
-
-### Using S1 values:
+### 40 Traps
 
 ```{r, echo = FALSE, fig.align="left"}
 plot(SCR.objs$Full$`SCR Mask`)
-plot(GA.designs.40$G5S1[[sample(1:500,1)]], add = TRUE,  main = "40 Traps")
-
-plot(SCR.objs$Full$`SCR Mask`)
-plot(GA.designs.120$G5S1[[sample(1:500,1)]], add = TRUE,  main = "120 Traps")
+plot(lwlist$`40 traps`, add = TRUE,  main = "40 Traps")
 ```
 
-### Using S2 values:
-
 ```{r, echo = FALSE, fig.align="left"}
-plot(SCR.objs$Full$`SCR Mask`)
-plot(GA.designs.40$G5S2[[sample(1:500,1)]], add = TRUE,  main = "40 Traps")
-
-plot(SCR.objs$Full$`SCR Mask`)
-plot(GA.designs.120$G5S2[[sample(1:500,1)]], add = TRUE,  main = "120 Traps")
+boxplot(datasumms.40$LW40, ylab = "Count", ylim = c(0,500), las = 2, main = "40 Traps")
 ```
 
-### Using Avg values:
+### 120 Traps
 
 ```{r, echo = FALSE, fig.align="left"}
 plot(SCR.objs$Full$`SCR Mask`)
-plot(GA.designs.40$G5Avg[[sample(1:500,1)]], add = TRUE, main = "40 Traps")
-
-plot(SCR.objs$Full$`SCR Mask`)
-plot(GA.designs.120$G5Avg[[sample(1:500,1)]], add = TRUE, main = "120 Traps")
+plot(lwlist$`120 traps`, add = TRUE,  main = "120 Traps")
 ```
 
-### Using Both values:
-
 ```{r, echo = FALSE, fig.align="left"}
-plot(SCR.objs$Full$`SCR Mask`)
-plot(GA.designs.40$G5Both[[sample(1:500,1)]], add = TRUE, main = "40 Traps")
-
-plot(SCR.objs$Full$`SCR Mask`)
-plot(GA.designs.120$G5Both[[sample(1:500,1)]], add = TRUE, main = "120 Traps")
-```
-
-### Using Both (max-min) values:
-
-```{r, echo = FALSE, fig.align="left"}
-plot(SCR.objs$Full$`SCR Mask`)
-plot(GA.designs.40$G5BothMax[[sample(1:500,1)]], add = TRUE, main = "40 Traps")
-
-plot(SCR.objs$Full$`SCR Mask`)
-plot(GA.designs.120$G5BothMax[[sample(1:500,1)]], add = TRUE, main = "120 Traps")
+boxplot(datasumms.120$LW40, ylab = "Count", ylim = c(0,500), las = 2, main = "120 Traps")
 ```
 :::
-  
+
+## Simulation Results
+
+```{r echo = FALSE}
+LW.40 <- data.frame(
+  C1 = c("S1", "S2"),
+  C2 = c(round(simresults.40$LW40.D$`Rel bias (mean)`*100,1)),
+  C3 = c(round(simresults.40$LW40.D$`Rel SE`,3)),
+  C4 = c(round(simresults.40$LW40.L0$`Rel bias (mean)`*100,1)),
+  C5 = c(round(simresults.40$LW40.L0$`Rel SE`,3)),
+  C6 = c(round(simresults.40$LW40.Sig$`Rel bias (mean)`*100,1)),
+  C7 = c(round(simresults.40$LW40.Sig$`Rel SE`,3)),
+  C8 = c(dim(excluded.40$LW40.S1)[1], dim(excluded.40$LW40.S2)[1])
+)
+
+colnames(LW.40) <- c("Strata","RB", "RSE", "RB", "RSE","RB", "RSE", "Reps") 
+
+LW.40 %>%
+  kbl(format = "html", booktabs = TRUE, caption = "Sim Results from lacework design (40 traps)", align = c('l', rep('c',6))) %>%
+  kable_styling(font_size = 24) %>%
+  kable_classic_2(full_width = F) %>%
+  column_spec(c(1,3,5,7), border_right = T) %>%
+  row_spec(0, bold = T, extra_css = "border-bottom: 1px solid") %>%
+  row_spec(2,  extra_css = "border-bottom: 1px solid") %>%
+  add_header_above(header = c(" " = 1, "D" = 2, "L0" = 2, "Sigma" = 2, " " = 1), border_right = TRUE, bold = TRUE) 
+
+LW.120 <- data.frame(
+  C1 = c("S1", "S2"),
+  C2 = c(round(simresults.120$LW120.D$`Rel bias (mean)`*100,1)),
+  C3 = c(round(simresults.120$LW120.D$`Rel SE`,3)),
+  C4 = c(round(simresults.120$LW120.L0$`Rel bias (mean)`*100,1)),
+  C5 = c(round(simresults.120$LW120.L0$`Rel SE`,3)),
+  C6 = c(round(simresults.120$LW120.Sig$`Rel bias (mean)`*100,1)),
+  C7 = c(round(simresults.120$LW120.Sig$`Rel SE`,3)),
+  C8 = c(dim(excluded.120$LW120.S1)[1], dim(excluded.120$LW120.S2)[1])
+)
+
+colnames(LW.120) <- c("Strata","RB", "RSE", "RB", "RSE","RB", "RSE", "Reps") 
+
+LW.120 %>%
+  kbl(format = "html", booktabs = TRUE, caption = "Sim Results from lacework design (120 traps)", align = c('l', rep('c',6))) %>%
+  kable_styling(font_size = 24) %>%
+  kable_classic_2(full_width = F) %>%
+  column_spec(c(1,3,5,7), border_right = T) %>%
+  row_spec(0, bold = T, extra_css = "border-bottom: 1px solid") %>%
+  row_spec(2,  extra_css = "border-bottom: 1px solid") %>%
+  add_header_above(header = c(" " = 1, "D" = 2, "L0" = 2, "Sigma" = 2, " " = 1), border_right = TRUE, bold = TRUE) 
+```
+
 # General comments:
-  
+
 ## Grid design
-  
-- The grids do not work particularly well
-- spacing of 800 m produces positive bias in D for both strata with a high RSE for strata 2. There was also a high proportion of reps that were excluded for strata 2 (17.2%, and 2.6% for strata 1).
-- spacing of 1600 m produces high positive bias in D for strata 1 along with a high RSE and an exlcusion rate of 4.8%
-- I do not understand how sigma is estimated so well, even with zero spatial recaptures the estimator for sigma appears unbiased?
-  
+
+-   With 40 traps, the grids do not work particularly well
+-   Spacing of 800 m produces positive bias in D for both strata with a high RSE for strata 2. There was also a high proportion of reps that were excluded for strata 2 (17.2%, and 2.6% for strata 1).
+-   Slightly reduced spacing of 700 m leads to better performance for S1
+-   Using 120 traps resolves these issues, I think because the low number of spatial recaps for S1 triple
+
+## Clustered designs
+
+-   Using optimal spacing (for 2 groups) works fairly well though there is some bias for S2 and a small proporiton of reps were excluded (3.6%)
+-   Using 2 sigma spacing results in a slightly more balanced performance across the strata. For 40 traps the 2 $\sigma$ clustered design has lower variance for S2 compared to both GA approaches
+-   Again using 120 traps resolves any performance issues, and for 2 $\sigma$ spacing there is only space for 64 traps
+
 ## GA4 (min(n,r))
-  
-- The behaviour of the GA4 algorithm seems to spread traps much further when using S1 or avg values. I think this is due to the fairly high L0 values that make it easier to get high r so the algorithm spreads traps to increase n. The other settings produce a fairly dense array with traps tending to be quite close together.
-- Using average values does not work well and results in high positive bias in D for strata 1 with a high RSE and an exclusion rate of 6.2%.
-- The other configurations appear unbiased except for slight positive positive bias in D for strata 2 when using strata 1 values (and slightly lower bias for strata 1 when using strata 2 values).
-- The best option appears to be using both sets of values with minimal differences between a 50-50 weighting and the max-min approach
-- I'm not sure why when using S2 values there were a handful of reps (2.2%) that gave problems for S2. The data summary shows more spatial recaps and less singletons for S2 (with slightly lower n).
+
+-   With 40 traps, the behaviour of the GA4 algorithm seems to spread traps much further when using S1 or avg values. I think this is due to the fairly high L0 values that make it easier to get high r so the algorithm spreads traps to increase n. The other settings produce a fairly dense array with traps tending to be quite close together.
+- There is some positive bias for S2 when using S1 values and vica versa. This pattern largely disappears with 120 traps though there is still slight positive bias for S1 if using S2 values.
+-   Using average values results in high positive bias in D for strata 1 with a high RSE and an exclusion rate of 6.2%. This bias reduces quite a lot with 120 traps.
+- The best option appears to be using both sets of values which results in essentially unbiased performance, and there is very little difference between a 50-50 weighting and the max-min approach.
 
 ## GA5 (min En2)
 
-- The behaviour of the GA5 algorithm consistently produces clusters of traps, except when using average values. Using S2 values produces two large clusters, and using both with max-min tends to produce clusters that are more spread out compared to without max-min, and appear similar to when using S1 values.
+-   The behaviour of the GA5 algorithm consistently produces clusters of traps when there are 40 traps, except when using average values. This pattern is less apparent with 120 traps, except when using both sets of values. The both with max-min option tends to produce clusters that are more spread out compared to without max-min, and appear similar to when using S1 values.
 
-- Using avg values leads to high bias and variance with an exclusion rate of 5.6% in strata 1.
+-   Using S1 values leads to positive bias in D for S2 but not the other way round. This is not evident with 120 traps.
+-   Using avg values again leads to high bias and variance in S1 (for both 40 and 120 traps) with an exclusion rate of 5.6% with 40 traps.
+-   Using both sets of values works well and for 40 traps there seems to be slightly better performance using the 50-50 split over max-min.
+-   GA5 seems marginally better than GA4 with slightly lower and better balance across the strata in RSE's in D
 
-- Using S1 values leads to positive bias in D for S2 but not the other way round
+## Lacework
 
-- Using both sets of values works well. There is not a lot of difference from the max-min approach though that does seem to exhibit a low degree of positive bias in D especially for strata 2.
-
-- GA5 seems marginally better than GA4 with slightly lower and better balance across the strata in RSE's in D
+- The lacework designs seem to work well and produce balanced performance across the strata
+- not suprising that is similar to the clustered designs
