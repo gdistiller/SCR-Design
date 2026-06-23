@@ -8,7 +8,7 @@ library(tidyr)
 library(ggplot2)
 library(patchwork)
 
-# table of parameter esrtimates per strata
+# table of parameter estimates per strata
 
 true.vals <- matrix(c(
   0.05,  0.05/15,    # D.x, D.y
@@ -154,12 +154,71 @@ plot.D2 <-Combine.plots(D.RB2, D.RSE2, D.cov2,
 ggsave("15FoldScen/figures/D1.pdf", plot = plot.D1, width = 7, height = 9)
 ggsave("15FoldScen/figures/D2.pdf", plot = plot.D2, width = 7, height = 9)
 
+#plots for L0, trap lvls plotted together
+L0.RB <- Metric.plot(summary.combined,
+                    plot.title = expression(RB~"("*lambda[0]*")"),
+                    param_select = "lambda[0]",
+                    metric = "RB",
+                    facet_traps = FALSE,
+                    ylims=c(-0.1,1))
+
+#Rel SE plots (model-based)
+L0.RSE <- Metric.plot(summary.combined,
+                     plot.title = expression(RSE~"("*lambda[0]*")"),
+                     param_select = "lambda[0]",
+                     metric = "RSE",
+                     facet_traps = FALSE,
+                     ylims=c(0,1))
+
+#coverage plots
+L0.cov <- Metric.plot(summary.combined,
+                     plot.title = expression(Coverage~"("*lambda[0]*")"),
+                     param_select = "lambda[0]",
+                     metric = "coverage",
+                     facet_traps = FALSE,
+                     ylims=c(0.8,1))
+
+#combine in two different ways
+plot.L01 <- Combine.plots(L0.RB, L0.RSE, L0.cov,
+                         global_title = expression("Performance of "~lambda[0])
+)
+ggsave("15FoldScen/figures/L01.pdf", plot = plot.L01, width = 7, height = 9)
+
+#plots for sigma, trap lvls plotted together
+sig.RB <- Metric.plot(summary.combined,
+                     plot.title = expression(RB~"("*sigma*")"),
+                     param_select = "sigma",
+                     metric = "RB",
+                     facet_traps = FALSE,
+                     ylims=c(-0.1,0.5))
+
+#Rel SE plots (model-based)
+sig.RSE <- Metric.plot(summary.combined,
+                      plot.title = expression(RSE~"("*sigma*")"),
+                      param_select = "sigma",
+                      metric = "RSE",
+                      facet_traps = FALSE,
+                      ylims=c(0,0.5))
+
+#coverage plots
+sig.cov <- Metric.plot(summary.combined,
+                      plot.title = expression(Coverage~"("*sigma*")"),
+                      param_select = "sigma",
+                      metric = "coverage",
+                      facet_traps = FALSE,
+                      ylims=c(0.8,1))
+
+#combine in two different ways
+plot.sig1 <- Combine.plots(sig.RB, sig.RSE, sig.cov,
+                          global_title = expression("Performance of "~ sigma)
+)
+ggsave("15FoldScen/figures/Sig1.pdf", plot = plot.sig1, width = 7, height = 9)
 
 
 ###################################
 #a plot of different realisations, for 40 traps
 #objs with various proposed designs pasted into dir below
-setwd("~/OneDrive - University of Cape Town/Documents/Git/SCRDesign/15FoldScen/Cluster/ProposedDesigns")
+setwd("~/Git/SCR-Design/15FoldScen/Cluster/ProposedDesigns")
 
 load("SCRObjs.RData")
 
@@ -169,11 +228,9 @@ load("GADesigns40.RData")
 load("GA2StageDesigns.RData") 
 
 #extract coordinates and put all in one df
-# mask
-mask_df <- as.data.frame(mask)  # should give x, y
 
 # extract designs
-sys1 <- as.data.frame(grid.designs.40$`800 m`[[1]]) %>%
+sys1 <- as.data.frame(grid.designs.40$`800 m`[[2]]) %>%
   mutate(design = "Grid 800")
 
 sys2 <- as.data.frame(grid.designs.40$`Cluster (opt)`[[1]]) %>%
@@ -185,39 +242,333 @@ sys3 <- as.data.frame(grid.designs.40$`Cluster (2 sig)`[[1]]) %>%
 sys4 <- as.data.frame(lwlist$`40 traps`) %>%
   mutate(design = "Lacework")
 
-ga1 <- as.data.frame(GA.designs.40$G4S1[[1]]) %>%
+ga41 <- as.data.frame(GA.designs.40$G4S1[[1]]) %>%
   mutate(design = "GA4 S1")
 
-ga2 <- as.data.frame(GA.designs.40$G4S2[[1]]) %>%
+ga42 <- as.data.frame(GA.designs.40$G4S2[[1]]) %>%
   mutate(design = "GA4 S2")
 
-ga3 <- as.data.frame(GA.designs.40$G4Avg[[1]]) %>%
+ga43 <- as.data.frame(GA.designs.40$G4Avg[[1]]) %>%
   mutate(design = "GA4 Avg")
 
-ga4 <- as.data.frame(GA.designs.40$G4Both[[1]]) %>%
+ga44 <- as.data.frame(GA.designs.40$G4Both[[1]]) %>%
   mutate(design = "GA4 Both")
 
-ga5 <- as.data.frame(GA.designs.40$G5S1[[1]]) %>%
+ga51 <- as.data.frame(GA.designs.40$G5S1[[1]]) %>%
   mutate(design = "GA5 S1")
 
-ga6 <- as.data.frame(GA.designs.40$G5S2[[1]]) %>%
+ga52 <- as.data.frame(GA.designs.40$G5S2[[1]]) %>%
   mutate(design = "GA5 S2")
 
-ga7 <- as.data.frame(GA.designs.40$G5Avg[[1]]) %>%
+ga53 <- as.data.frame(GA.designs.40$G5Avg[[1]]) %>%
   mutate(design = "GA5 Avg")
 
-ga8 <- as.data.frame(GA.designs.40$G5Both[[1]]) %>%
+ga54 <- as.data.frame(GA.designs.40$G5Both[[1]]) %>%
   mutate(design = "GA5 Both")
 
-ga9 <- as.data.frame(GA2StageDesigns$`40 traps`[[1]]) %>%
+ga2 <- as.data.frame(GA2StageDesigns$`40 traps`[[1]]) %>%
   mutate(design = "Two Stage")
 
-design.40.df <- bind_rows(sys1, sys2, sys3, sys4,
-                       ga1, ga2, ga3, ga4, ga5, ga6, ga7, ga8, ga9)
+#first deal with systematic designs
+sys.40 <- bind_rows(sys1, sys2, sys3, sys4)
 
+#set labels to parse properly
+sys.40 <- sys.40 %>%
+  mutate(
+    design_label = case_when(
+      design == "Grid 800" ~ "Grid~800",
+      design == "Cluster (opt)" ~ "Cluster~'(OS)'",
+      design == "Cluster (2 sig)" ~ "Cluster~(2*sigma)",
+      design == "Lacework" ~ "Lacework"
+    ),
+    design_label = factor(design_label, levels = c(
+      "Grid~800",
+      "Cluster~'(OS)'",
+      "Cluster~(2*sigma)",
+      "Lacework"
+      ))
+  )
 
-mask <- SCR.objs$Full[[1]]
+msk <- SCR.objs$Full[[1]]
 
+#use fn
+sys40.plot <- plot.design.zoom(sys.40, msk, title = "Systematic trap configurations (40 traps)", symbol = 3, point.size = 1)
 
+setwd("~/Git/SCR-Design")
+ggsave("15FoldScen/figures/sys40.pdf", plot = sys40.plot, width = 9, height = 9)
 
+################################################################################
+#now optimised designs plotted on full extent
+#first just GA4 or GA5
+GA4.40 <- bind_rows(ga41, ga42, ga43, ga44)
 
+GA4.40 <- GA4.40 %>%
+  mutate(
+    design_label = case_when(
+      design == "GA4 S1" ~ "GA[4]~S[1]",
+      design == "GA4 S2" ~ "GA[4]~S[2]",
+      design == "GA4 Avg" ~ "GA[4]~Avg",
+      design == "GA4 Both" ~ "GA[4]~Both",
+      TRUE ~ design
+    ),
+    design_label = factor(design_label, levels = c(
+      "GA[4]~S[1]",
+      "GA[4]~S[2]",
+      "GA[4]~Avg",
+      "GA[4]~Both")
+      )
+  )
+
+GA4.40.plot <- plot.design.fixed(GA4.40, msk, title.expr = expression(GA[4]~"trap configurations (40 traps)"))
+
+#GA5
+GA5.40 <- bind_rows(ga51, ga52, ga53, ga54)
+
+GA5.40 <- GA5.40 %>%
+  mutate(
+    design_label = case_when(
+      design == "GA5 S1" ~ "GA[5]~S[1]",
+      design == "GA5 S2" ~ "GA[5]~S[2]",
+      design == "GA5 Avg" ~ "GA[5]~Avg",
+      design == "GA5 Both" ~ "GA[5]~Both",
+      TRUE ~ design
+    ),
+    design_label = factor(design_label, levels = c(
+      "GA[5]~S[1]",
+      "GA[5]~S[2]",
+      "GA[5]~Avg",
+      "GA[5]~Both"
+    ))
+  )
+
+GA5.40.plot <- plot.design.fixed(GA5.40, msk, title.expr = expression(GA[5]~"trap configurations (40 traps)"))
+
+ggsave("15FoldScen/figures/GA440.pdf", plot = GA4.40.plot, width = 9, height = 9)
+ggsave("15FoldScen/figures/GA540.pdf", plot = GA5.40.plot, width = 9, height = 9)
+
+#and both sets in one plot
+opt.40 <- bind_rows(ga41, ga42, ga43, ga44,
+                    ga51, ga52, ga53, ga54)
+
+opt.40 <- opt.40 %>%
+  mutate(
+    design_label = case_when(
+      design == "GA4 S1" ~ "GA[4]~S[1]",
+      design == "GA4 S2" ~ "GA[4]~S[2]",
+      design == "GA4 Avg" ~ "GA[4]~Avg",
+      design == "GA4 Both" ~ "GA[4]~Both",
+      design == "GA5 S1" ~ "GA[5]~S[1]",
+      design == "GA5 S2" ~ "GA[5]~S[2]",
+      design == "GA5 Avg" ~ "GA[5]~Avg",
+      design == "GA5 Both" ~ "GA[5]~Both",
+      TRUE ~ design
+    ),
+    design_label = factor(design_label, levels = c(
+      "GA[4]~S[1]",
+      "GA[5]~S[1]",
+      "GA[4]~S[2]",
+      "GA[5]~S[2]",
+      "GA[4]~Avg",
+      "GA[5]~Avg",
+      "GA[4]~Both",
+      "GA[5]~Both"
+    ))
+  )
+
+opt.40.plot <- plot.design.fixed(opt.40, msk, title.expr = expression(GA[4]~"and"~GA[5]~"trap configurations (40 traps)"))
+
+ggsave("15FoldScen/figures/Opt40.pdf", plot = opt.40.plot, width = 7, height = 9.5)
+
+#and both sets in one plot
+opt2.40 <- bind_rows(ga41, ga42, ga43, ga44,
+                    ga51, ga52, ga53, ga54,
+                    ga2)
+
+opt2.40 <- opt2.40 %>%
+  mutate(
+    design_label = case_when(
+      design == "GA4 S1" ~ "GA[4]~S[1]",
+      design == "GA4 S2" ~ "GA[4]~S[2]",
+      design == "GA4 Avg" ~ "GA[4]~Avg",
+      design == "GA4 Both" ~ "GA[4]~Both",
+      design == "GA5 S1" ~ "GA[5]~S[1]",
+      design == "GA5 S2" ~ "GA[5]~S[2]",
+      design == "GA5 Avg" ~ "GA[5]~Avg",
+      design == "GA5 Both" ~ "GA[5]~Both",
+      design == "Two Stage" ~ "Two~Stage",
+      TRUE ~ design
+    ),
+    design_label = factor(design_label, levels = c(
+      "GA[4]~S[1]",
+      "GA[5]~S[1]",
+      "GA[4]~S[2]",
+      "GA[5]~S[2]",
+      "GA[4]~Avg",
+      "GA[5]~Avg",
+      "GA[4]~Both",
+      "GA[5]~Both",
+      "Two~Stage"
+    ))
+  )
+
+opt2.40.plot <- plot.design.fixed(opt2.40, msk, title.expr = "Optimised trap configurations (40 traps)")
+
+ggsave("15FoldScen/figures/Opt240.pdf", plot = opt2.40.plot, width = 7, height = 9.5)
+
+###############
+#for 120 traps
+###############
+setwd("~/Git/SCR-Design/15FoldScen/Cluster/ProposedDesigns")
+load("GridDesigns120.RData")
+load("GADesigns120.RData")
+
+#extract coordinates and put all in one df
+
+# extract designs
+sys1b <- as.data.frame(grid.designs.120$`800 m`[[2]]) %>%
+  mutate(design = "Grid 800")
+
+sys2b <- as.data.frame(grid.designs.120$`Cluster (opt)`[[1]]) %>%
+  mutate(design = "Cluster (opt)")
+
+sys3b <- as.data.frame(grid.designs.120$`Cluster (2 sig)`[[1]]) %>%
+  mutate(design = "Cluster (2 sig)")
+
+sys4b <- as.data.frame(lwlist$`120 traps`) %>%
+  mutate(design = "Lacework")
+
+ga41b <- as.data.frame(GA.designs.120$G4S1[[1]]) %>%
+  mutate(design = "GA4 S1")
+
+ga42b <- as.data.frame(GA.designs.120$G4S2[[1]]) %>%
+  mutate(design = "GA4 S2")
+
+ga43b <- as.data.frame(GA.designs.120$G4Avg[[1]]) %>%
+  mutate(design = "GA4 Avg")
+
+ga44b <- as.data.frame(GA.designs.120$G4Both[[1]]) %>%
+  mutate(design = "GA4 Both")
+
+ga51b <- as.data.frame(GA.designs.120$G5S1[[1]]) %>%
+  mutate(design = "GA5 S1")
+
+ga52b <- as.data.frame(GA.designs.120$G5S2[[1]]) %>%
+  mutate(design = "GA5 S2")
+
+ga53b <- as.data.frame(GA.designs.120$G5Avg[[1]]) %>%
+  mutate(design = "GA5 Avg")
+
+ga54b <- as.data.frame(GA.designs.120$G5Both[[1]]) %>%
+  mutate(design = "GA5 Both")
+
+#ga2 needed still for 120 traps
+
+#first deal with systematic designs
+sys.120 <- bind_rows(sys1b, sys2b, sys3b, sys4b)
+
+#set labels to parse properly
+sys.120 <- sys.120 %>%
+  mutate(
+    design_label = case_when(
+      design == "Grid 800" ~ "Grid~800",
+      design == "Cluster (opt)" ~ "Cluster~'(OS)'",
+      design == "Cluster (2 sig)" ~ "Cluster~(2*sigma)",
+      design == "Lacework" ~ "Lacework"
+    ),
+    design_label = factor(design_label, levels = c(
+      "Grid~800",
+      "Cluster~'(OS)'",
+      "Cluster~(2*sigma)",
+      "Lacework"
+    ))
+  )
+
+msk <- SCR.objs$Full[[1]]
+
+#use fn
+sys120.plot <- plot.design.zoom(sys.120, msk, title = "Systematic trap configurations (120 traps)", symbol = 3, point.size = 1)
+
+setwd("~/Git/SCR-Design")
+ggsave("15FoldScen/figures/sys120.pdf", plot = sys120.plot, width = 9, height = 9)
+
+#######################################################################################
+#now optimised designs plotted on full extent
+#first just GA4 or GA5
+GA4.120 <- bind_rows(ga41b, ga42b, ga43b, ga44b)
+
+GA4.120 <- GA4.120 %>%
+  mutate(
+    design_label = case_when(
+      design == "GA4 S1" ~ "GA[4]~S[1]",
+      design == "GA4 S2" ~ "GA[4]~S[2]",
+      design == "GA4 Avg" ~ "GA[4]~Avg",
+      design == "GA4 Both" ~ "GA[4]~Both",
+      TRUE ~ design
+    ),
+    design_label = factor(design_label, levels = c(
+      "GA[4]~S[1]",
+      "GA[4]~S[2]",
+      "GA[4]~Avg",
+      "GA[4]~Both")
+    )
+  )
+
+GA4.120.plot <- plot.design.fixed(GA4.120, msk, title.expr = expression(GA[4]~"trap configurations (120 traps)"))
+
+#GA5
+GA5.120 <- bind_rows(ga51b, ga52b, ga53b, ga54b)
+
+GA5.120 <- GA5.120 %>%
+  mutate(
+    design_label = case_when(
+      design == "GA5 S1" ~ "GA[5]~S[1]",
+      design == "GA5 S2" ~ "GA[5]~S[2]",
+      design == "GA5 Avg" ~ "GA[5]~Avg",
+      design == "GA5 Both" ~ "GA[5]~Both",
+      TRUE ~ design
+    ),
+    design_label = factor(design_label, levels = c(
+      "GA[5]~S[1]",
+      "GA[5]~S[2]",
+      "GA[5]~Avg",
+      "GA[5]~Both"
+    ))
+  )
+
+GA5.120.plot <- plot.design.fixed(GA5.120, msk, title.expr = expression(GA[5]~"trap configurations (120 traps)"))
+
+ggsave("15FoldScen/figures/GA4120.pdf", plot = GA4.120.plot, width = 9, height = 9)
+ggsave("15FoldScen/figures/GA5120.pdf", plot = GA5.120.plot, width = 9, height = 9)
+
+#and both sets in one plot
+opt.120 <- bind_rows(ga41b, ga42b, ga43b, ga44b,
+                    ga51b, ga52b, ga53b, ga54b)
+
+opt.120 <- opt.120 %>%
+  mutate(
+    design_label = case_when(
+      design == "GA4 S1" ~ "GA[4]~S[1]",
+      design == "GA4 S2" ~ "GA[4]~S[2]",
+      design == "GA4 Avg" ~ "GA[4]~Av",
+      design == "GA4 Both" ~ "GA[4]~Both",
+      design == "GA5 S1" ~ "GA[5]~S[1]",
+      design == "GA5 S2" ~ "GA[5]~S[2]",
+      design == "GA5 Avg" ~ "GA[5]~Av",
+      design == "GA5 Both" ~ "GA[5]~Both",
+      TRUE ~ design
+    ),
+    design_label = factor(design_label, levels = c(
+      "GA[4]~S[1]",
+      "GA[5]~S[1]",
+      "GA[4]~S[2]",
+      "GA[5]~S[2]",
+      "GA[4]~Av",
+      "GA[5]~Av",
+      "GA[4]~Both",
+      "GA[5]~Both"
+    ))
+  )
+
+opt.120.plot <- plot.design.fixed(opt.120, msk, title.expr = expression(GA[4]~"and"~GA[5]~"trap configurations (120 traps)"))
+
+ggsave("15FoldScen/figures/Opt120.pdf", plot = opt.120.plot, width = 7, height = 9.5)

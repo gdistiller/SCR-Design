@@ -210,7 +210,8 @@ Metric.plot <- function(sum.df, plot.title, param_select, metric = "RB", ylims =
   return(p)
 }
 
-#allows one to facet by trap level or plot with two synmbols
+#allows one to facet by trap level or plot with two symbols
+#this is the current one
 Metric.plot <- function(sum.df, plot.title, param_select, metric = "RB", ylims = NULL,
                         facet_traps = TRUE) {
   
@@ -372,6 +373,46 @@ Metric.plot <- function(sum.df, plot.title, param_select, metric = "RB", ylims =
   
   return(p)
 }
+
+#fn to combine plots with patchwork
+Combine.plots <- function(p1, p2, p3, global_title = NULL, tag_levels = "A", legend_position = "top", compact = TRUE) {
+  
+  # ✅ Base combination
+  p_comb <- (p1 / p2 / p3) +
+    plot_layout(
+      guides = "collect",   # ✅ shared legend
+      heights = c(1, 1, 1)  # equal heights
+    )
+  
+  # ✅ Compact theme for vertical space
+  if (compact) {
+    p_comb <- p_comb &
+      theme(
+        legend.position = legend_position,
+        legend.title = element_text(size = 9),
+        legend.text = element_text(size = 8),
+        
+        axis.text.x = element_text(size = 7, angle = 70, hjust = 1),
+        axis.text.y = element_text(size = 8),
+        axis.title = element_text(size = 9),
+        
+        strip.text = element_text(size = 9),
+        
+        panel.spacing = unit(0.3, "lines"),
+        plot.margin = margin(2, 2, 2, 2)
+      )
+  }
+  
+  # ✅ Add labels + title
+  p_comb <- p_comb +
+    plot_annotation(
+      title = global_title,
+      tag_levels = tag_levels
+    )
+  
+  return(p_comb)
+}
+
 
 #plotting functions, here RB
 RB.plot <- function(sum.df, plot.title, ylims){
@@ -1156,7 +1197,6 @@ plot_block_tabs <- function(df, design_name,
   cat(":::\n\n")
 }
 
-
 #plot to generate boxplots of estimates in a similar structure
 Boxplot.general <- function(df, plot.title, yvar = "estimate", show_ref = TRUE, ref_df = NULL) {
   
@@ -1259,4 +1299,172 @@ Boxplot.general <- function(df, plot.title, yvar = "estimate", show_ref = TRUE, 
   }
   
   return(p)
+}4
+
+#plots of panels of realised designs
+#first one zooms into the trap array to reveal detail
+plot.design.zoom <- function(design.df, mask, buffer.prop = 0.2, point.size = 1, trap.colour = "#d95f02",
+                             mask.size = 0.4, symbol = 16, title.expr = "Trap configurations") {
+  
+  # ---------------------------
+  # 1. Compute bounds per design
+  # ---------------------------
+  
+  bounds <- design.df %>%
+    group_by(design) %>%
+    summarise(
+      xmin = min(x),
+      xmax = max(x),
+      ymin = min(y),
+      ymax = max(y),
+      .groups = "drop"
+    ) %>%
+    mutate(
+      xbuf = buffer.prop * (xmax - xmin),
+      ybuf = buffer.prop * (ymax - ymin),
+      xmin = xmin - xbuf,
+      xmax = xmax + xbuf,
+      ymin = ymin - ybuf,
+      ymax = ymax + ybuf
+    )
+  
+  # attach bounds to designs
+  design.df <- design.df %>%
+    left_join(bounds, by = "design")
+  
+  # ---------------------------
+  # 2. Prepare mask
+  # ---------------------------
+  
+  mask_df <- as.data.frame(mask)
+  
+  mask_df <- mask_df %>%
+    crossing(bounds) %>%
+    left_join(
+      design.df %>% distinct(design, design_label),
+      by = "design"
+    )
+  
+  # crop mask per design
+  mask_zoom <- mask_df %>%
+    filter(
+      x >= xmin, x <= xmax,
+      y >= ymin, y <= ymax
+    )
+  
+  # ---------------------------
+  # 3. Plot
+  # ---------------------------
+  
+  p <- ggplot() +
+    
+    geom_point(
+      data = mask_zoom,
+      aes(x, y),
+      colour = "grey88",
+      size = mask.size
+    ) +
+    
+    geom_point(
+      data = design.df,
+      aes(x, y),
+      shape = symbol,
+      colour = trap.colour,
+      size = point.size
+    ) +
+    
+    facet_wrap(~ design_label,
+               scales = "free",
+               ncol = 2,
+               labeller = label_parsed) +
+    
+    theme_bw() +
+    
+    theme(
+      axis.text = element_text(size = 8),
+      axis.title = element_text(size = 12),
+      axis.ticks = element_line(),
+      panel.grid = element_blank()
+    ) +
+    
+    labs(
+      x = "x coordinate",
+      y = "y coordinate"
+    )
+  # ---------------------------
+  # optional title
+  # ---------------------------
+  
+  if (!is.null(title.expr)) {
+    p <- p + labs(title = title.expr)
+  }
+  
+  return(p)
 }
+
+#2nd one keeps the same spatial extent for all plots
+plot.design.fixed <- function(design.df, mask, point.size = 2, mask.size = 0.3, trap.colour = "#d95f02", symbol = 3, ncol = 2,
+                              title.expr = NULL) {
+  
+  # convert mask once
+  mask_df <- as.data.frame(mask)
+  
+  # ---------------------------
+  # build plot
+  # ---------------------------
+  
+  p <- ggplot() +
+    
+    # mask
+    geom_point(
+      data = mask_df,
+      aes(x, y),
+      colour = "grey90",
+      size = mask.size
+    ) +
+    
+    # traps
+    geom_point(
+      data = design.df,
+      aes(x, y),
+      colour = trap.colour,
+      shape = symbol,
+      size = point.size
+    ) +
+    
+    # facets (fixed extent)
+    facet_wrap(~ design_label,
+               scales = "fixed",
+               labeller = label_parsed,
+               dir = "h",
+               ncol = ncol) +
+    
+    # spatial accuracy
+    coord_equal() +
+    
+    # theme
+    theme_bw() +
+    theme(
+      axis.text = element_blank(),
+      axis.ticks = element_blank(),
+      axis.title = element_text(size = 9),
+      strip.text = element_text(size = 12),
+      panel.grid = element_blank()
+    ) +
+    
+    labs(
+      x = "x",
+      y = "y"
+    )
+  
+  # ---------------------------
+  # optional title
+  # ---------------------------
+  
+  if (!is.null(title.expr)) {
+    p <- p + labs(title = title.expr)
+  }
+  
+  return(p)
+}
+
