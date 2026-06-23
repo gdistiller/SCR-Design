@@ -23,6 +23,7 @@ AllResults120$traps <- "120"
 
 AllResults.combined <- bind_rows(AllResults40, AllResults120)
 AllResults.combined$traps <- factor(AllResults.combined$traps, levels = c("40", "120"))
+AllResults.combined$relSE <- AllResults.combined$se / AllResults.combined$truth
 
 #control order of design factor
 AllResults.combined <- AllResults.combined %>%
@@ -80,7 +81,7 @@ make.summary <- function(df) {
       mean_se = mean(se, na.rm = TRUE),
       sd_se = sd(se, na.rm = TRUE),
       truth = first(truth),
-      
+
       # ✅ coverage (now works)
       coverage = mean(covered, na.rm = TRUE),
       cov_se = sqrt(coverage * (1 - coverage) / n),
@@ -356,7 +357,13 @@ Prec.plot <- function(sum.df, plot.title, ylims){
 
 #plot to generate boxplots of estimates in a similar structure
 #so no need to have so many sections and tabs
-Boxplot.general <- function(df, plot.title, yvar = "estimate", show_ref = TRUE, ref_df = NULL) {
+#can plot for both trap levels of just one
+Boxplot.general <- function(df,
+                           plot.title,
+                           yvar = "estimate",
+                           show_ref = TRUE,
+                           ref_df = NULL,
+                           trap_level = NULL) {
 
   # ✅ Fix parameter labels
   df <- df %>%
@@ -367,7 +374,12 @@ Boxplot.general <- function(df, plot.title, yvar = "estimate", show_ref = TRUE, 
         param == "Sig" ~ "sigma"
       )
     )
-  
+
+  # ✅ ✅ NEW: filter for a single trap level if requested
+  if (!is.null(trap_level)) {
+    df <- df %>% filter(traps == trap_level)
+  }
+
   # ✅ Base plot
   p <- ggplot(df,
               aes(x = design,
@@ -385,9 +397,12 @@ Boxplot.general <- function(df, plot.title, yvar = "estimate", show_ref = TRUE, 
     annotate("rect", xmin = 10.5, xmax = 15.5, ymin = -Inf, ymax = Inf,
              fill = "#bcbddc", alpha = 0.08) +
     
-    # ✅ Boxplots
+    # ✅ Boxplots (no dodge if single trap)
     geom_boxplot(
-      position = position_dodge(width = 0.75),
+      position = if (is.null(trap_level))
+                   position_dodge(width = 0.75)
+                 else
+                   position_identity(),
       alpha = 0.7,
       outlier.size = 0.5
     ) +
@@ -406,37 +421,33 @@ Boxplot.general <- function(df, plot.title, yvar = "estimate", show_ref = TRUE, 
       )
     ) +
     
+    # ✅ X-axis labels
     scale_x_discrete(labels = c(
-    "Grid 700m" = "Gr.700",
-    "Grid 800m" = "Gr.800",
-    "Cluster (OS)" = "Cl(OS)",
-    "Cluster (2 Sig)" = "Cl(2 Sig)",
-    "Lacework" = "LW",
-    "GA4 S1" = "GA4 S1",
-    "GA4 S2" = "GA4 S2",
-    "GA4 Avg" = "GA4 Avg",
-    "GA4 Both" = "GA4 Both",
-    "GA4 Both (max-min)" = "GA4 Both (max-min)",
-    "GA5 S1" = "GA5 S1",
-    "GA5 S2" = "GA5 S2",
-    "GA5 Avg" = "GA5 Avg",
-    "GA5 Both" = "GA5 Both",
-    "GA5 BothMax" = "GA5 BothMax"
-  )) +
-    
-    # ✅ Trap legend
+      "Grid 700m" = "Gr.700",
+      "Grid 800m" = "Gr.800",
+      "Cluster (OS)" = "Cl(OS)",
+      "Cluster (2 Sig)" = "Cl(2 Sig)",
+      "Lacework" = "LW",
+      "GA4 S1" = "GA4 S1",
+      "GA4 S2" = "GA4 S2",
+      "GA4 Avg" = "GA4 Avg",
+      "GA4 Both" = "GA4 Both",
+      "GA4 Both (max-min)" = "GA4 Both (max-min)",
+      "GA5 S1" = "GA5 S1",
+      "GA5 S2" = "GA5 S2",
+      "GA5 Avg" = "GA5 Avg",
+      "GA5 Both" = "GA5 Both",
+      "GA5 BothMax" = "GA5 BothMax"
+    )) +
+
+    # ✅ Trap legend (hide if single level)
     scale_fill_manual(
       name = "Traps",
-      values = c(
-        "40"  = "#1b9e77",
-        "120" = "#d95f02"
-      ),
-      labels = c(
-        "40"  = "40 traps",
-        "120" = "120 traps"
-      )
+      values = c("40" = "#1b9e77", "120" = "#d95f02"),
+      labels = c("40" = "40 traps", "120" = "120 traps"),
+      guide = if (is.null(trap_level)) "legend" else "none"
     ) +
-    
+
     theme_bw() +
     theme(
       axis.text.x = element_text(angle = 60, hjust = 1),
@@ -449,8 +460,8 @@ Boxplot.general <- function(df, plot.title, yvar = "estimate", show_ref = TRUE, 
       x = "Design",
       title = plot.title
     )
-  
-  # ✅ ✅ Add REF lines (stratum-specific)
+
+  # ✅ Reference lines
   if (show_ref & !is.null(ref_df)) {
     
     ref_df_fixed <- ref_df %>%
@@ -462,7 +473,7 @@ Boxplot.general <- function(df, plot.title, yvar = "estimate", show_ref = TRUE, 
         )
       ) %>%
       distinct(param_label, stratum, ref_val)
-    
+
     p <- p +
       geom_hline(
         data = ref_df_fixed,
@@ -473,193 +484,9 @@ Boxplot.general <- function(df, plot.title, yvar = "estimate", show_ref = TRUE, 
         inherit.aes = FALSE
       )
   }
-  
+
   return(p)
 }
-```
-
-# Simulation setup
-
-- Strata 1: D = 0.05 ; sigma = 200 m ; L0 = 2
-
-- Strata 2: D = 0.0033 ; sigma = 3000 m ; L0 = 0.133
-
-```{r echo = FALSE}
-#create summaries
-summary.40 <- make.summary(AllResults40)
-summary.120 <- make.summary(AllResults120)
-summary.40$traps  <- "40"
-summary.120$traps <- "120"
-summary.combined <- dplyr::bind_rows(summary.40, summary.120)
-summary.combined$traps <- factor(summary.combined$traps, levels = c("40", "120"))
-```
-
-# Relative bias plots
-
-```{r echo = FALSE,  fig.height=12}
-#RB plot, both trap lvls
-plot_metric(summary.combined,
-            yvar = "RB",
-            sevar = "RB_se",
-            ylab = "Relative Bias",
-            yline = 0,
-            plot.title = "Relative Bias",
-            ylims = c(-0.1, 0.6))
-```
-
-## General comments - bias
-
-### Grids
-
-- S1 and S2 D ests are skewed to the right for 800 m spacing but less so for 700 m
-- For 800 m spacing S1 sigma skewed to the left and S2 sigma to the right, for 700 m S1 more symmetrical and S2 skewed to the right
-- With 120 traps there are very few outliers for 700 m and 800 m spacing
-
-### Clusters
-
-- OS spacings: some skewness for S2 D and Sigma
-- 2 \* sigma spacing: slight positive skewness but balanced across the 2 strata
-- With 120 traps there are very few outliers for OS spacing. With 2 sigma spacing there is slight +ve skew in D for both and some +ve skew in S2 L0 and sigmas are symmetrical
-
-### GA4
-
-#### S1 values
-
-- Some positive skewness in D (more for S2), slight for L0 and sigma (more for S1)
-- With 120 traps there are very few outliers
-
-#### S2 values
-
-- Slight positive skew in D and L0 for both strata, for sigma only for S2
-- With 120 traps slight +ve skew in D for S1 but others fairly symmetrical
-
-#### Avg values
-
-- Positive skewness in D and sigma, especially for S1
-- For S1, -ve bias in D and +ve bias in sigma
-- With 120 traps still substantial +ve skew in S1 D, other parameters fairly symmetrical
-
-#### Both values
-
-- Slight +ve skew across parameters (except for S1 sigma) but fairly balanced across strata
-- Max-min similar
-- With 120 traps dbns symmetrical with few outliers, for max-min there was slight +ve skew in the sigmas for both strata
-
-### GA5
-
-#### S1 values
-
-- Some positive skewness in D (more for S2), slight for L0 and sigma fairly symmetrical
-- With 120 traps the dbns are mostly symmetrical with few outliers
-
-#### S2 values
-
-- Slight positive skew in D for S2, in L0 for S1, in sigma for both
-- With 120 traps very slight skew for S1 D otherwise symmetrical
-
-#### Avg values
-
-- Positive skewness in D, especially for S1
-- Slight skew across other parameters for both strata
-- For S1, -ve bias in D and +ve bias in sigma
-- Even with 120 traps substantial +ve skew in S1 D and slight bias in S1 sigma
-
-#### Both values
-
-- Very slight +ve skew in D for both, and sigma for S2
-- Max-min similar for D but L0 and sigma are more symmetrical
-- With 120 traps few outliers and mostly symmetrical dbns, same for max-min
-
-### Lacework
-
-- Very slight skew but mostly more symmetrical dbns for all parameters
-- With 120 traps few outliers and mostly symmetrical dbns
-
-# Excluded reps
-
-```{r echo = FALSE}
-df_excl <- AllResults.combined %>%   # or your combined df
-  mutate(traps = factor(traps, levels = c("40", "120"))) %>%
-  group_by(sim, design, stratum, traps) %>%
-  summarise(
-    bad_sim = any(is.na(estimate)),
-    .groups = "drop"
-  ) %>%
-  group_by(design, stratum, traps) %>%
-  summarise(
-    n_bad   = sum(bad_sim),
-    n_sims  = n(),
-    prop_bad = n_bad / n_sims,
-    .groups = "drop"
-  )
-```
-
-```{r echo = FALSE,  fig.height=5}
-ggplot(df_excl,
-       aes(x = design,
-           y = prop_bad,
-           fill = stratum)) +
-  
-  # ✅ bars (side-by-side within each design)
-  geom_col(
-    position = position_dodge(width = 0.75),
-    width = 0.7
-  ) +
-  
-    # ✅ separate panels for 40 vs 120 traps
-  facet_wrap(~ traps) +
-  
-  # ✅ nice colours for strata
-  scale_fill_manual(
-    name = "Stratum",
-    values = c(
-      "S1" = "#1b9e77",
-      "S2" = "#d95f02"
-    ),
-    labels = c(
-      "S1" = "Stratum 1",
-      "S2" = "Stratum 2"
-    )
-  ) +
-  
-  # ✅ show % on axis
-  scale_y_continuous(
-    labels = scales::percent_format(accuracy = 1)
-  ) +
-  
-  # ✅ theme
-  theme_bw() +
-  theme(
-    axis.text.x = element_text(angle = 60, hjust = 1),
-    legend.position = "top",
-    strip.text = element_text(size = 12)
-  ) +
-  
-  # ✅ labels
-  labs(
-    y = "Proportion excluded",
-    x = "Design",
-    title = "Simulation exclusion %"
-  )
-```
-
-# Relative SE plots
-
-```{r echo = FALSE,  fig.height=14}
-#Precision plot, 40 traps
-Prec.plot(summary.40, "Relative SE (40 traps)", ylims = c(0, 1.75))
-
-#Precision plot, 120 traps
-Prec.plot(summary.120, "Relative SE (120 traps)", ylims = c(0, 1.75))
-
-#plot of empirical SE for both trap lvls
-plot_metric(summary.combined,
-            yvar = "RSE_emp",
-            sevar = "RSE_emp_se",
-            ylab = "Relative SE (empirical)",
-            yline = NULL,
-            plot.title = "Relative SE (empirical)",
-            ylims = c(0, 1.25))
 
 #operates on combined df
 plot_param_combined <- function(df, design_name, param_name, use_se = FALSE, rel_se = TRUE) {
@@ -758,20 +585,34 @@ plot_block_tabs <- function(df, design_name, use_se = FALSE, rel_se = TRUE) {
 }
 ```
 
-# Coverage plots
+# Simulation setup
 
-```{r echo = FALSE,  fig.height=12}
-#Coverage for both trap lvls
-plot_metric(summary.combined,
-            yvar = "coverage",
-            sevar = "cov_se",
-            ylab = "Coverage probability",
-            yline = 0.95,
-            plot.title = "Coverage",
-            ylims = c(0.8, 1.0))
+-   Strata 1: D = 0.05 ; sigma = 200 m ; L0 = 2
+
+-   Strata 2: D = 0.0033 ; sigma = 3000 m ; L0 = 0.133
+
+```{r echo = FALSE}
+#create summaries
+summary.40 <- make.summary(AllResults40)
+summary.120 <- make.summary(AllResults120)
+summary.40$traps  <- "40"
+summary.120$traps <- "120"
+summary.combined <- dplyr::bind_rows(summary.40, summary.120)
+summary.combined$traps <- factor(summary.combined$traps, levels = c("40", "120"))
 ```
 
-# Boxplots of estimates
+# Relative bias plots
+
+```{r echo = FALSE,  fig.height=12}
+#RB plot, both trap lvls
+plot_metric(summary.combined,
+            yvar = "RB",
+            sevar = "RB_se",
+            ylab = "Relative Bias",
+            yline = 0,
+            plot.title = "Relative Bias",
+            ylims = c(-0.1, 0.6))
+```
 
 ```{r echo=FALSE, results='asis', warning=FALSE,  fig.height = 12}
 #ref values needed
@@ -792,16 +633,111 @@ Boxplot.general(AllResults.combined,
                ref_df = ref_df)
 ```
 
-# Boxplots of standard errors
+## By trap level
+
+::: {.panel-tabset}
+### 40 traps
+
+```{r echo=FALSE, warning=FALSE, fig.height=12}
+Boxplot.general(AllResults.combined,
+                plot.title = "Estimates (40 traps)",
+                show_ref = TRUE, ref_df = ref_df,
+                trap_level = "40")
+```
+
+### 120 traps
+
+```{r echo=FALSE, warning=FALSE, fig.height=12}
+Boxplot.general(AllResults.combined,
+                plot.title = "Estimates (120 traps)",
+                show_ref = TRUE, ref_df = ref_df,
+                trap_level = "120")
+```
+:::
+
+## General comments - bias
+
+### Grids
+
+- slight positive bias in D for both strata, slightly less for S1 with 700 m spacing
+- very slight positive bias in $\sigma$ for S2
+- dbn of D ests skew to the right particularly for S1 at 800 m spacing
+- for 800 m spacing the dbn of $\sigma$ ests negatively skewed for S1, and positively skewed for S2 at both 700 and 800 
+
+### Clusters
+
+- with OS spacing there is very slight positive bias in D for S1 and a bit more for S2 ; there is also slight positive bias in $\sigma$ for S2
+- with  2 $\sigma$  spacing and the lacework design there is very slight positive bias in D that is balanced across the strata
+
+### GA4
+
+#### S1 values
+
+-   Some positive skewness in D (more for S2), slight for L0 and sigma (more for S1)
+
+#### S2 values
+
+-   Slight positive skew in D and L0 for both strata, for sigma only for S2
+-   With 120 traps slight +ve skew in D for S1 but others fairly symmetrical
+
+#### Avg values
+
+-   Substantial positive skewness and bias in D, especially for S1. Even with 120 traps there is still positive bias of around 15%. 
+-   Also slight -ve bias in $\sigma$ for S1
+
+#### Both values
+
+-   With 40 traps, slight +ve bias and skew in D, more so for S2
+-   Max-min similar
+
+### GA5
+
+- similar pattern to GA4 though when using average values slightly less bias in D for S1 for 40 traps and slightly more with 120 traps
+
+### Lacework
+
+-   Very slight positive bias and skew in D but balanced across strata and mostly more symmetrical dbns for all parameters
+
+# Relative SE plots
+
+```{r echo = FALSE,  fig.height=14}
+#Precision plot, 40 traps
+Prec.plot(summary.40, "Relative SE (40 traps)", ylims = c(0, 1.75))
+
+#Precision plot, 120 traps
+Prec.plot(summary.120, "Relative SE (120 traps)", ylims = c(0, 1.75))
+
+#plot of empirical SE for both trap lvls
+plot_metric(summary.combined,
+            yvar = "RSE_model",
+            sevar = "RSE_model_se",
+            ylab = "Relative SE (model)",
+            yline = NULL,
+            plot.title = "Relative SE (model)",
+            ylims = c(0, 1.25))
+```
+
+# Coverage plots
+
+```{r echo = FALSE,  fig.height=12}
+#Coverage for both trap lvls
+plot_metric(summary.combined,
+            yvar = "coverage",
+            sevar = "cov_se",
+            ylab = "Coverage probability",
+            yline = 0.95,
+            plot.title = "Coverage",
+            ylims = c(0.8, 1.0))
+```
+
+# Boxplots of relative standard errors
 
 ```{r echo=FALSE, results='asis', warning=FALSE,  fig.height = 12}
 Boxplot.general(AllResults.combined,
-                plot.title = "Boxplots of Standard Errors",
-                yvar = "se",
+                plot.title = "Boxplots of Relative Standard Errors",
+                yvar = "relSE",
                 show_ref = FALSE)
 ```
-
-It is a little difficult to see what is going on in the consolidated plot, I think due to the small number of extreme values that stretches the axes. Here they are again with finer control per axis:
 
 ```{r echo=FALSE, results='asis', warning=FALSE,  fig.height = 6}
 walk(names(design_groups), function(group_name) {
@@ -818,64 +754,89 @@ walk(names(design_groups), function(group_name) {
 
 ### Grids
 
-- For 800 m spacing SE’s for all parameters skewed to the right (apart from S2 L0)
-- Improved for 700 m spacing, some skewness for S2 D and S2 sigma.
-- With 120 traps there are very few outliers, at 800 m spacing the most for S1 D and for 700 m spacing the most for S2 sigma
+- relatively high D se's for S2, a bit more for 700 m spacing
 
 ### Clusters
 
-- OS spacing: skewness for S2 D and sigma (as with bias)
-- 2 \* sigma spacing: se’s quite tightly clustered for both strata and all parameters
-- With 120 traps there are very few outliers for both spacings
+-   OS spacing: relatively high dispersion in D for S2, otherwise very similar across strata
 
-### GA4
 
-#### S1 values
+### GA4 / GA5
 
-- More positive skewness in D for S2, and slightly more for S1 in sigma ses
-- With 120 traps there are very few outliers
-
-#### S2 values
-
-- Slight positive skewness in D for both strata, and more skew for S2 in sigma ses
-- With 120 traps some skew for S1 D is evident
-
-#### Avg values
-
-- Positive skewness across parameters, more so for S1
-- With 120 traps some skew for S1 D is evident with a few outliers for S1 sigma
-
-#### Both values
-
-- Some skew in S2 sigma but otherwise quite balanced
-- Max-min similar
-- With 120 traps tight dbns with few outliers, same for max-min
-
-### GA5
-
-#### S1 values
-
-- More positive skewness in D for S2, and slightly more for S1 in sigma ses
-- With 120 traps there are very few outliers
-
-#### S2 values
-
-- Slight positive skew in D and sigma (mainly for S2)
-- With 120 traps very slight +ve skew in S1 D
-
-#### Avg values
-
-- Positive skewness in D, especially for S1
-- Slight skew in other parameters across both strata
-- Even with 120 traps substantial +ve skew in S1 D and some skew in S1 L0
-
-#### Both values
-
-- Very slight +ve skew in D for both, and sigma especially for S2
-- Max-min more skew for S2 D, and for sigma both are slightly skew
-- With 120 traps few outliers and mostly symmetrical dbns, with max-min a tiny bit more skewness in D and sigma for S1
+- very similar across variants and across strata
+- slightly higher se for S1 when using GA4 Avg and in S2 when using GA4 S2 or Both
+- GA5 Avg has slightly higher se for S1 compared to S2
+- coverage in D for GA4 positively biased for both strata when using S2 values but better when using GA5
+- coverage for $\sigma$ negatively biased in S1 when using GA4 or GA5 Avg, even with 120 traps. And negatively biased in S2 when using both sets of values with GA4
 
 ### Lacework
 
-- Very slight skew in D and sigma for S2
-- With 120 traps few outliers and mostly symmetrical dbns
+-  Well balanced
+
+# Excluded reps
+
+```{r echo = FALSE}
+df_excl <- AllResults.combined %>%   # or your combined df
+  mutate(traps = factor(traps, levels = c("40", "120"))) %>%
+  group_by(sim, design, stratum, traps) %>%
+  summarise(
+    bad_sim = any(is.na(estimate)),
+    .groups = "drop"
+  ) %>%
+  group_by(design, stratum, traps) %>%
+  summarise(
+    n_bad   = sum(bad_sim),
+    n_sims  = n(),
+    prop_bad = n_bad / n_sims,
+    .groups = "drop"
+  )
+```
+
+```{r echo = FALSE,  fig.height=5}
+ggplot(df_excl,
+       aes(x = design,
+           y = prop_bad,
+           fill = stratum)) +
+  
+  # ✅ bars (side-by-side within each design)
+  geom_col(
+    position = position_dodge(width = 0.75),
+    width = 0.7
+  ) +
+  
+    # ✅ separate panels for 40 vs 120 traps
+  facet_wrap(~ traps) +
+  
+  # ✅ nice colours for strata
+  scale_fill_manual(
+    name = "Stratum",
+    values = c(
+      "S1" = "#1b9e77",
+      "S2" = "#d95f02"
+    ),
+    labels = c(
+      "S1" = "Stratum 1",
+      "S2" = "Stratum 2"
+    )
+  ) +
+  
+  # ✅ show % on axis
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+  ) +
+  
+  # ✅ theme
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 60, hjust = 1),
+    legend.position = "top",
+    strip.text = element_text(size = 12)
+  ) +
+  
+  # ✅ labels
+  labs(
+    y = "Proportion excluded",
+    x = "Design",
+    title = "Simulation exclusion %"
+  )
+```

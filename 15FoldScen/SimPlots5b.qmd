@@ -1,0 +1,456 @@
+---
+title: "Plots from Simulations (500 reps)"
+format:
+  pdf
+editor: visual
+---
+
+```{r echo = FALSE, include=FALSE}
+#| context: setup
+library(knitr)
+library(secr)
+library(purrr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(patchwork)
+
+load("AllResults3.RData")
+AllResults40 <- Allresults_3[[1]]
+AllResults120 <- Allresults_3[[2]]
+AllResults40$traps  <- "40"
+AllResults120$traps <- "120"
+AllResults.combined <- bind_rows(AllResults40, AllResults120)
+AllResults.combined$traps <- factor(AllResults.combined$traps, levels = c("40", "120"))
+AllResults.combined$relSE <- AllResults.combined$se / AllResults.combined$truth
+
+#control order of design factor
+AllResults.combined <- AllResults.combined %>%
+  mutate(
+      design = factor(
+        design,
+        levels = c(
+          "Grid 700m", "Grid 800m",
+          "Cluster (OS)", "Cluster (2 Sig)",
+          "Lacework",
+          "GA4 S1", "GA4 S2", "GA4 Avg", "GA4 Both",
+          "GA5 S1", "GA5 S2", "GA5 Avg", "GA5 Both",
+          "Two Stage"
+        )
+      )
+    )
+
+design_groups <- list(
+  "Grids with 800 m spacing" = c("Grid 800m"),
+  "Grids with 700 m spacing" = c("Grid 700m"),
+  "Clusters - OS spacing" = c("Cluster (OS)"),
+  "Clusters - 2 sigma spacing" = c("Cluster (2 Sig)"),
+  "GA4 - S1 values" = c("GA4 S1"),
+  "GA4 - S2 values" = c("GA4 S2"),
+  "GA4 - Avg values" = c("GA4 Avg"),
+  "GA4 - Both values" = c("GA4 Both"),
+  "GA5 - S1 values" = c("GA5 S1"),
+  "GA5 - S2 values" = c("GA5 S2"),
+  "GA5 - Avg values" = c("GA5 Avg"),
+  "GA5 - Both values" = c("GA5 Both"),
+  "Lacework" = c("Lacework",
+                 "Two Stage" = c("2 Stage"))
+)
+params <- c("D", "L0", "Sig")
+```
+
+```{r echo = FALSE}
+# define functions first
+make.summary <- function(df) {
+  df %>%
+    
+    # ✅ STEP 1: row-wise calculations
+    mutate(
+      lower = estimate - 1.96 * se,
+      upper = estimate + 1.96 * se,
+      covered = (lower <= truth) & (upper >= truth)
+    ) %>%
+    
+    # ✅ STEP 2: summarise
+    group_by(design, param, stratum) %>%
+    summarise(
+      n = n(),
+      mean_est = mean(estimate, na.rm = TRUE),
+      sd_est = sd(estimate, na.rm = TRUE),
+      mean_se = mean(se, na.rm = TRUE),
+      sd_se = sd(se, na.rm = TRUE),
+      truth = first(truth),
+
+      # ✅ coverage (now works)
+      coverage = mean(covered, na.rm = TRUE),
+      cov_se = sqrt(coverage * (1 - coverage) / n),
+      
+      # Precision
+      RSE_emp = sd_est / truth,
+      RSE_model = mean_se / truth,
+
+      # ✅ NEW: SE of precision measures
+      RSE_emp_se   = (sd_est / truth) / sqrt(2 * (n - 1)),
+      RSE_model_se = (sd_se / sqrt(n)) / truth,
+      
+      # Bias
+      RB = (mean_est - truth) / truth,
+      RB_se = sd_est / (sqrt(n) * truth),
+      
+      .groups = "drop"
+    ) %>%
+    
+    # ✅ STEP 3: formatting / labels (unchanged)
+    mutate(
+      design_group = case_when(
+        grepl("Grid", design) ~ "Grid",
+        grepl("Cluster", design) | grepl("Lacework", design) ~ "Cluster",
+        grepl("GA4", design) ~ "GA4",
+        grepl("GA5", design) ~ "GA5",
+        grepl("Two Stage", design) ~ "GA5",
+        TRUE ~ "Other"
+      ),
+      
+      design_group = factor(
+        design_group,
+        levels = c("Grid", "Cluster", "GA4", "GA5", "2 Stage")
+      ),
+      
+      param = case_when(
+        param == "D"  ~ "Density",
+        param == "L0" ~ "lambda[0]",
+        param == "Sig" ~ "sigma"
+      ),
+      
+      design = factor(
+        design,
+        levels = c(
+          "Grid 700m", "Grid 800m",
+          "Cluster (OS)", "Cluster (2 Sig)",
+          "Lacework",
+          "GA4 S1", "GA4 S2", "GA4 Avg", "GA4 Both", "GA4 Both (max-min)",
+          "GA5 S1", "GA5 S2", "GA5 Avg", "GA5 Both", "GA5 BothMax"
+        ),
+        labels = c(
+          "Gr.700", "Gr.800",
+          "Cl(OS)", "Cl(2 Sig)",
+          "LW",
+          "GA4 S1", "GA4 S2", "GA4 Avg", "GA4 Both", "GA4 Both (max-min)",
+          "GA5 S1", "GA5 S2", "GA5 Avg", "GA5 Both", "GA5 BothMax"
+        )
+      )
+    )
+}
+
+#revised general plotting function
+Metric.plot <- function(sum.df, plot.title, param_select, metric = "RB", ylims = NULL,
+                        facet_traps = TRUE) {
+  
+  df <- sum.df %>%
+    filter(param == param_select)
+  
+  # ✅ metric logic (unchanged)
+  if (metric == "RB") {
+    
+    if (param_select == "Density") {
+      ylab <- "Relative Bias (Density)"
+    } else if (param_select == "lambda[0]") {
+      ylab <- expression(Relative~Bias~"(" * lambda[0] * ")")
+    } else if (param_select == "sigma") {
+      ylab <- expression(Relative~Bias~"(" * sigma * ")")
+    }
+    
+    yvar <- "RB"
+    sevar <- "RB_se"
+    ref_line <- 0
+    
+  } else if (metric == "RSE") {
+    
+    if (param_select == "Density") {
+      ylab <- "Relative SE (Density)"
+    } else if (param_select == "lambda[0]") {
+      ylab <- expression(Relative~SE~"(" * lambda[0] * ")")
+    } else if (param_select == "sigma") {
+      ylab <- expression(Relative~SE~"(" * sigma * ")")
+    }
+    
+    yvar <- "RSE_emp"
+    sevar <- "RSE_emp_se"
+    ref_line <- NULL
+    
+  } else if (metric == "coverage") {
+    
+    if (param_select == "Density") {
+      ylab <- "Coverage (Density)"
+    } else if (param_select == "lambda[0]") {
+      ylab <- expression(Coverage~"(" * lambda[0] * ")")
+    } else if (param_select == "sigma") {
+      ylab <- expression(Coverage~"(" * sigma * ")")
+    }
+    
+    yvar <- "coverage"
+    sevar <- "cov_se"
+    ref_line <- 0.95
+  }
+  
+  # ✅ aesthetics depend on mode
+  if (facet_traps) {
+    base_aes <- aes(x = design,
+                    y = .data[[yvar]],
+                    colour = design_group)
+  } else {
+    base_aes <- aes(x = design,
+                    y = .data[[yvar]],
+                    colour = design_group,
+                    shape = traps,
+                    group = interaction(design_group, traps))
+  }
+  
+  p <- ggplot(df, base_aes) +
+    
+    # ✅ shading
+    annotate("rect", xmin = 0.5, xmax = 2.5, ymin = -Inf, ymax = Inf,
+             fill = "#1b9e77", alpha = 0.08) +
+    annotate("rect", xmin = 2.5, xmax = 5.5, ymin = -Inf, ymax = Inf,
+             fill = "#d95f02", alpha = 0.08) +
+    annotate("rect", xmin = 5.5, xmax = 9.5, ymin = -Inf, ymax = Inf,
+             fill = "#6a51a3", alpha = 0.08) +
+    annotate("rect", xmin = 9.5, xmax = 13.5, ymin = -Inf, ymax = Inf,
+             fill = "#9e9ac8", alpha = 0.08) +
+    annotate("rect", xmin = 13.5, xmax = 14.5, ymin = -Inf, ymax = Inf,
+             fill = "#bcbddc", alpha = 0.08) +
+    
+    # ✅ data
+    geom_point(size = 1.8,
+               position = if (facet_traps)
+                 position_identity()
+               else
+                 position_dodge(width = 0.5)) +
+    
+    geom_errorbar(
+      aes(ymin = .data[[yvar]] - 2 * .data[[sevar]],
+          ymax = .data[[yvar]] + 2 * .data[[sevar]]),
+      width = 0.2,
+      position = if (facet_traps)
+        position_identity()
+      else
+        position_dodge(width = 0.5)
+    )
+  
+  # ✅ faceting logic
+  if (facet_traps) {
+    
+    p <- p + facet_grid(
+      ~ stratum + traps,
+      labeller = labeller(
+        stratum = c("S1" = "Stratum 1",
+                    "S2" = "Stratum 2"),
+        traps = c("40" = "40 traps",
+                  "120" = "120 traps")
+      )
+    )
+    
+  } else {
+    
+    p <- p + facet_wrap(
+      ~ stratum,
+      labeller = labeller(
+        stratum = c("S1" = "Stratum 1",
+                    "S2" = "Stratum 2")
+      )
+    ) +
+      
+      scale_shape_manual(
+        name = "Traps",
+        values = c("40" = 16, "120" = 17)
+      )
+  }
+  
+  # ✅ colours
+  p <- p + scale_colour_manual(
+    name = "Design type",
+    values = c(
+      "Grid" = "#1b9e77",
+      "Cluster" = "#d95f02",
+      "GA4" = "#6a51a3",
+      "GA5" = "#9e9ac8",
+      "2 Stage" = "#bcbddc"
+    )
+  ) +
+    
+    theme_bw() +
+    theme(
+      axis.text.x = element_text(size = 7, angle = 60, hjust = 1),
+      axis.text.y = element_text(size = 8),
+      axis.title = element_text(size = 9),
+    
+      strip.text = element_text(size = 7),
+    
+      legend.position = "top",
+      legend.title = element_text(size = 9),
+      legend.text = element_text(size = 8),
+    
+      panel.spacing = unit(0.25     , "lines"),
+      plot.margin = margin(0.5, 0.5, 0.5, 0.5),
+    ) +
+    
+    labs(
+      y = ylab,
+      x = "Design",
+      title = plot.title
+    )
+  
+  # ✅ reference line
+  if (!is.null(ref_line)) {
+    p <- p + geom_hline(yintercept = ref_line,
+                        linetype = "dashed")
+  }
+  
+  # ✅ limits
+  if (!is.null(ylims)) {
+    p <- p + coord_cartesian(ylim = ylims)
+  }
+  
+  return(p)
+}
+
+#combine plots using patchwork
+Combine.plots <- function(p1, p2, p3, global_title = NULL, tag_levels = "A", legend_position = "top", compact = TRUE) {
+
+  # ✅ Base combination
+  p_comb <- (p1 / p2 / p3) +
+    plot_layout(
+      guides = "collect",   # ✅ shared legend
+      heights = c(1, 1, 1)  # equal heights
+    )
+
+  # ✅ Compact theme for vertical space
+  if (compact) {
+    p_comb <- p_comb &
+      theme(
+        legend.position = legend_position,
+        legend.title = element_text(size = 9),
+        legend.text = element_text(size = 8),
+
+        axis.text.x = element_text(size = 7, angle = 70, hjust = 1),
+        axis.text.y = element_text(size = 8),
+        axis.title = element_text(size = 9),
+
+        strip.text = element_text(size = 9),
+
+        panel.spacing = unit(0.3, "lines"),
+        plot.margin = margin(2, 2, 2, 2)
+      )
+  }
+
+  # ✅ Add labels + title
+  p_comb <- p_comb +
+    plot_annotation(
+      title = global_title,
+      tag_levels = tag_levels
+    )
+
+  return(p_comb)
+}
+```
+
+# Simulation setup
+
+- Strata 1: D = 0.05 ; sigma = 200 m ; L0 = 2
+
+- Strata 2: D = 0.0033 ; sigma = 3000 m ; L0 = 0.133
+
+This version plots both trap levels together to see if the three plots together can render properly
+
+```{r echo = FALSE}
+#create summaries
+summary.40 <- make.summary(AllResults40)
+summary.120 <- make.summary(AllResults120)
+summary.40$traps  <- "40"
+summary.120$traps <- "120"
+summary.combined <- dplyr::bind_rows(summary.40, summary.120)
+summary.combined$traps <- factor(summary.combined$traps, levels = c("40", "120"))
+```
+
+```{r echo = FALSE}
+#create plots
+
+#RB plots per parameter
+D.RB <- Metric.plot(summary.combined,
+            plot.title = "RB (Density)",
+            param_select = "Density",
+            metric = "RB",
+            facet_traps = FALSE,
+            ylims=c(-0.1,1))
+
+#Rel SE plots (model-based)
+D.RSE <- Metric.plot(summary.combined,
+                    plot.title = "RSE (Density)",
+                    param_select = "Density",
+                    metric = "RSE",
+                    facet_traps = FALSE,
+                    ylims=c(0,1))
+
+#coverage plots
+D.cov <- Metric.plot(summary.combined,
+                     plot.title = "Coverage (Density)",
+                     param_select = "Density",
+                     metric = "coverage",
+                     facet_traps = FALSE,
+                     ylims=c(0.75,1))
+
+#again with traps faceted
+D.RB2 <- Metric.plot(summary.combined,
+            plot.title = "RB (Density)",
+            param_select = "Density",
+            metric = "RB",
+            facet_traps = TRUE,
+            ylims=c(-0.1,1))
+
+#Rel SE plots (model-based)
+D.RSE2 <- Metric.plot(summary.combined,
+                    plot.title = "RSE (Density)",
+                    param_select = "Density",
+                    metric = "RSE",
+                    facet_traps = TRUE,
+                    ylims=c(0,1))
+
+#coverage plots
+D.cov2 <- Metric.plot(summary.combined,
+                     plot.title = "Coverage (Density)",
+                     param_select = "Density",
+                     metric = "coverage",
+                     facet_traps = TRUE,
+                     ylims=c(0.75,1))
+```
+
+
+# Plots for Density
+
+```{r echo = FALSE,  fig.height = 9, fig.width = 7}
+Combine.plots(D.RB, D.RSE, D.cov,
+  global_title = "Performance for Density"
+)
+```
+
+```{r echo = FALSE,  fig.height = 9, fig.width = 7}
+Combine.plots(D.RB2, D.RSE2, D.cov2,
+  global_title = "Performance for Density"
+)
+```
+
+
+# ways to include existing figs
+
+![Performance wrt Density](figures/D1.pdf)
+
+or with a code chunk:
+
+
+```{r echo=FALSE, fig.cap="Performance  for Density", out.width="80%"}
+knitr::include_graphics("figures/D11.pdf")
+```
+
+
+
+
