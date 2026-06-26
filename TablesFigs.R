@@ -7,6 +7,9 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(patchwork)
+library(gtable)
+library(grid)
+library(ggplotify)
 
 # table of parameter estimates per strata
 
@@ -219,7 +222,8 @@ ggsave("15FoldScen/figures/Sig1.pdf", plot = plot.sig1, width = 7, height = 9)
 ###################################
 #a plot of different realisations, for 40 traps
 #objs with various proposed designs pasted into dir below
-setwd("~/Git/SCR-Design/15FoldScen/Cluster/ProposedDesigns")
+setwd("~/Git/SCRDesign/15FoldScen/Cluster/ProposedDesigns")
+setwd("~/Documents/Git/SCRDesign/15FoldScen/Cluster/ProposedDesigns")
 
 load("SCRObjs.RData")
 
@@ -469,30 +473,23 @@ ga4.pad.40 <- bind_rows(
   tibble(
     x = 0, y = 0,
     design = "dummy",
-    design_label = " "
+    design_label = "dummy"
   )
 )
 
-levels_all_ga4 <- c(levels(GA4.40$design_label), " ")
+levels_all_ga4 <- c(levels(GA4.40$design_label), "dummy")
 ga4.pad.40$design_label <- factor(ga4.pad.40$design_label, levels = levels_all_ga4)
 
-mask_pad_sys <- bind_rows(
-  msk,
-  tibble(
-    x = 0,
-    y = 0,
-    design = "dummy",
-    design_label = " "
-  )
-)
-
-mask_pad_sys$design_label <- factor(mask_pad$design_label, levels = levels_all_sys)
-
-p.GA2.40 <- plot.design(GA2.40, msk, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL)
-p.syspad.40 <- plot.design(sys.pad.40, msk, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL, levels_all = levels_all_sys)
-p.GA4pad.40 <- plot.design(ga4.pad.40, msk, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL, levels_all = levels_all_ga4)
+p.GA2.40 <- plot.design(GA2.40, msk, view = "full", ndim1 = 1, ndim2 = 5, 
+                        point.size = 0.5, title.expr = NULL)
+p.syspad.40 <- plot.design(sys.pad.40, msk, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL, 
+                           point.size = 0.5, buffer.prop = 0.05, levels_all = levels_all_sys)
+p.GA4pad.40 <- plot.design(ga4.pad.40, msk, view = "full", ndim1 = 1, ndim2 = 5, 
+                           point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga4)
 
 all.40.plot <- Combine.layoutplots(p.syspad.40, p.GA4pad.40,p.GA2.40)
+
+setwd("~/Documents/Git/SCRDesign")
 ggsave("15FoldScen/figures/All40.pdf", plot = all.40.plot, width = 270, height = 190, units = "mm")
 
 ###############
