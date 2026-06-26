@@ -81,9 +81,10 @@ design_groups <- list(
   "GA5 - S2 values" = c("GA5 S2"),
   "GA5 - Avg values" = c("GA5 Avg"),
   "GA5 - Both values" = c("GA5 Both"),
-  "Lacework" = c("Lacework",
-                 "Two Stage" = c("2 Stage"))
-)
+  "Lacework" = c("Lacework"),
+  "Two Stage" = c("2 Stage")
+  )
+
 params <- c("D", "L0", "Sig")
 
 #create summaries
@@ -120,7 +121,7 @@ D.cov <- Metric.plot(summary.combined,
 
 #again with traps faceted
 D.RB2 <- Metric.plot(summary.combined,
-                     plot.title = "RB (Density)",
+                     plot.title = NULL,
                      param_select = "Density",
                      metric = "RB",
                      facet_traps = TRUE,
@@ -128,7 +129,7 @@ D.RB2 <- Metric.plot(summary.combined,
 
 #Rel SE plots (model-based)
 D.RSE2 <- Metric.plot(summary.combined,
-                      plot.title = "RSE (Density)",
+                      plot.title = NULL,
                       param_select = "Density",
                       metric = "RSE",
                       facet_traps = TRUE,
@@ -136,7 +137,7 @@ D.RSE2 <- Metric.plot(summary.combined,
 
 #coverage plots
 D.cov2 <- Metric.plot(summary.combined,
-                      plot.title = "Coverage (Density)",
+                      plot.title = NULL,
                       param_select = "Density",
                       metric = "coverage",
                       facet_traps = TRUE,
@@ -154,31 +155,31 @@ plot.D2 <-Combine.plots(D.RB2, D.RSE2, D.cov2,
 ggsave("15FoldScen/figures/D1.pdf", plot = plot.D1, width = 7, height = 9)
 ggsave("15FoldScen/figures/D2.pdf", plot = plot.D2, width = 7, height = 9)
 
-#plots for L0, trap lvls plotted together
+#plots for L0
 L0.RB <- Metric.plot(summary.combined,
-                    plot.title = expression(RB~"("*lambda[0]*")"),
+                    plot.title = NULL,
                     param_select = "lambda[0]",
                     metric = "RB",
-                    facet_traps = FALSE,
+                    facet_traps = TRUE,
                     ylims=c(-0.1,1))
 
 #Rel SE plots (model-based)
 L0.RSE <- Metric.plot(summary.combined,
-                     plot.title = expression(RSE~"("*lambda[0]*")"),
+                     plot.title = NULL,
                      param_select = "lambda[0]",
                      metric = "RSE",
-                     facet_traps = FALSE,
+                     facet_traps = TRUE,
                      ylims=c(0,1))
 
 #coverage plots
 L0.cov <- Metric.plot(summary.combined,
-                     plot.title = expression(Coverage~"("*lambda[0]*")"),
+                     plot.title = NULL,
                      param_select = "lambda[0]",
                      metric = "coverage",
-                     facet_traps = FALSE,
+                     facet_traps = TRUE,
                      ylims=c(0.8,1))
 
-#combine in two different ways
+#combine
 plot.L01 <- Combine.plots(L0.RB, L0.RSE, L0.cov,
                          global_title = expression("Performance of "~lambda[0])
 )
@@ -186,26 +187,26 @@ ggsave("15FoldScen/figures/L01.pdf", plot = plot.L01, width = 7, height = 9)
 
 #plots for sigma, trap lvls plotted together
 sig.RB <- Metric.plot(summary.combined,
-                     plot.title = expression(RB~"("*sigma*")"),
+                     plot.title = NULL,
                      param_select = "sigma",
                      metric = "RB",
-                     facet_traps = FALSE,
+                     facet_traps = TRUE,
                      ylims=c(-0.1,0.5))
 
 #Rel SE plots (model-based)
 sig.RSE <- Metric.plot(summary.combined,
-                      plot.title = expression(RSE~"("*sigma*")"),
+                      plot.title = NULL,
                       param_select = "sigma",
                       metric = "RSE",
-                      facet_traps = FALSE,
+                      facet_traps = TRUE,
                       ylims=c(0,0.5))
 
 #coverage plots
 sig.cov <- Metric.plot(summary.combined,
-                      plot.title = expression(Coverage~"("*sigma*")"),
+                      plot.title = NULL,
                       param_select = "sigma",
                       metric = "coverage",
-                      facet_traps = FALSE,
+                      facet_traps = TRUE,
                       ylims=c(0.8,1))
 
 #combine in two different ways
@@ -292,7 +293,7 @@ sys.40 <- sys.40 %>%
 msk <- SCR.objs$Full[[1]]
 
 #use fn
-sys40.plot <- plot.design.zoom(sys.40, msk, title = "Systematic trap configurations (40 traps)", symbol = 3, point.size = 1)
+sys40.plot <- plot.design(sys.40, msk, view = "full", ndim2 = 4, title = "Systematic trap configurations (40 traps)")
 
 setwd("~/Git/SCR-Design")
 ggsave("15FoldScen/figures/sys40.pdf", plot = sys40.plot, width = 9, height = 9)
@@ -319,7 +320,7 @@ GA4.40 <- GA4.40 %>%
       )
   )
 
-GA4.40.plot <- plot.design.fixed(GA4.40, msk, title.expr = expression(GA[4]~"trap configurations (40 traps)"))
+GA4.40.plot <- plot.design(GA4.40, msk,  view = "full", ndim2 = 4, title.expr = expression(GA[4]~"trap configurations (40 traps)"))
 
 #GA5
 GA5.40 <- bind_rows(ga51, ga52, ga53, ga54)
@@ -341,7 +342,7 @@ GA5.40 <- GA5.40 %>%
     ))
   )
 
-GA5.40.plot <- plot.design.fixed(GA5.40, msk, title.expr = expression(GA[5]~"trap configurations (40 traps)"))
+GA5.40.plot <- plot.design(GA5.40, msk, view = "full", ndim2 = 4, title.expr = expression(GA[5]~"trap configurations (40 traps)"))
 
 ggsave("15FoldScen/figures/GA440.pdf", plot = GA4.40.plot, width = 9, height = 9)
 ggsave("15FoldScen/figures/GA540.pdf", plot = GA5.40.plot, width = 9, height = 9)
@@ -375,9 +376,9 @@ opt.40 <- opt.40 %>%
     ))
   )
 
-opt.40.plot <- plot.design.fixed(opt.40, msk, title.expr = expression(GA[4]~"and"~GA[5]~"trap configurations (40 traps)"))
+opt.40.plot <- plot.design(opt.40, msk, view = "full", ndim1 = 2, ndim2 = 4, title.expr = expression(GA[4]~"and"~GA[5]~"trap configurations (40 traps)"))
 
-ggsave("15FoldScen/figures/Opt40.pdf", plot = opt.40.plot, width = 7, height = 9.5)
+ggsave("15FoldScen/figures/Opt40.pdf", plot = opt.40.plot, width = 270, height = 190, units = "mm")
 
 #and both sets in one plot
 opt2.40 <- bind_rows(ga41, ga42, ga43, ga44,
@@ -411,9 +412,88 @@ opt2.40 <- opt2.40 %>%
     ))
   )
 
-opt2.40.plot <- plot.design.fixed(opt2.40, msk, title.expr = "Optimised trap configurations (40 traps)")
+opt2.40.plot <- plot.design(opt2.40, msk, view = "full", ndim1 = 3, ndim2 = 4, title.expr = "Optimised trap configurations (40 traps)")
 
 ggsave("15FoldScen/figures/Opt240.pdf", plot = opt2.40.plot, width = 7, height = 9.5)
+
+#all together, build each row by itself and then combine
+
+p.sys.40 <- plot.design(sys.40, msk, view = "full", ndim1 = 1, ndim2 = 4, title.expr = NULL)
+p.GA4.40 <- plot.design(GA4.40, msk, view = "full", ndim1 = 1, ndim2 = 4, title.expr = NULL)
+
+#put GA5 and 2 stage together
+GA2.40 <- bind_rows(ga51, ga52, ga53, ga54,
+                     ga2)
+
+GA2.40 <- GA2.40 %>%
+  mutate(
+    design_label = case_when(
+      design == "GA5 S1" ~ "GA[5]~S[1]",
+      design == "GA5 S2" ~ "GA[5]~S[2]",
+      design == "GA5 Avg" ~ "GA[5]~Avg",
+      design == "GA5 Both" ~ "GA[5]~Both",
+      design == "Two Stage" ~ "Two~Stage",
+      TRUE ~ design
+    ),
+    design_label = factor(design_label, levels = c(
+      "GA[5]~S[1]",
+      "GA[5]~S[2]",
+      "GA[5]~Avg",
+      "GA[5]~Both",
+      "Two~Stage"
+    ))
+  )
+
+p.GA2.40 <- plot.design(GA2.40, msk, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL)
+
+#combine
+all.40.plot <- Combine.layoutplots(p.sys.40, p.GA4.40,p.GA2.40)
+
+ggsave("15FoldScen/figures/All40.pdf", plot = all.40.plot, width = 270, height = 190, units = "mm")
+
+#now adding dummy panels to get proper alignment
+sys.pad.40 <- bind_rows(
+  sys.40,
+  tibble(
+    x = 0, y = 0,
+    design = "dummy",
+    design_label = "dummy"
+  )
+)
+
+levels_all_sys <- c(levels(sys.40$design_label), "dummy")
+sys.pad.40$design_label <- factor(sys.pad.40$design_label, levels = levels_all_sys)
+
+ga4.pad.40 <- bind_rows(
+  GA4.40,
+  tibble(
+    x = 0, y = 0,
+    design = "dummy",
+    design_label = " "
+  )
+)
+
+levels_all_ga4 <- c(levels(GA4.40$design_label), " ")
+ga4.pad.40$design_label <- factor(ga4.pad.40$design_label, levels = levels_all_ga4)
+
+mask_pad_sys <- bind_rows(
+  msk,
+  tibble(
+    x = 0,
+    y = 0,
+    design = "dummy",
+    design_label = " "
+  )
+)
+
+mask_pad_sys$design_label <- factor(mask_pad$design_label, levels = levels_all_sys)
+
+p.GA2.40 <- plot.design(GA2.40, msk, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL)
+p.syspad.40 <- plot.design(sys.pad.40, msk, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL, levels_all = levels_all_sys)
+p.GA4pad.40 <- plot.design(ga4.pad.40, msk, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL, levels_all = levels_all_ga4)
+
+all.40.plot <- Combine.layoutplots(p.syspad.40, p.GA4pad.40,p.GA2.40)
+ggsave("15FoldScen/figures/All40.pdf", plot = all.40.plot, width = 270, height = 190, units = "mm")
 
 ###############
 #for 120 traps
