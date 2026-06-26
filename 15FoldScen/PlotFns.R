@@ -768,7 +768,8 @@ plot.design <- function(design.df, mask, buffer.prop = 0.2, inset_box_size = 0.2
       space = "fixed",
       labeller = labeller(
         strip_label = function(x) {
-          ifelse(x == "dummy", list(""), lapply(x, function(l) str2expression(l)))
+          out <- ifelse(x == "dummy", "''", x)
+          label_parsed(data.frame(strip_label = out, stringsAsFactors = FALSE))
         }
       )
     ) +
