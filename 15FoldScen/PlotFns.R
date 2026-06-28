@@ -345,7 +345,8 @@ Combine.layoutplots <- function(p1, p2, p3, global_title = NULL, tag_levels = "A
   p_comb <- (p1 / p2 / p3) +
     plot_layout(
       guides = "collect",
-      heights = heights
+      heights = heights,
+      widths = rep(1, 5)
     )
   
   # ---------------------------
@@ -363,236 +364,6 @@ Combine.layoutplots <- function(p1, p2, p3, global_title = NULL, tag_levels = "A
 
 #plots of panels of realised designs
 #latest function that allows one to either zoom in on the common array or use the full area
-plot.design <- function(design.df, mask, buffer.prop = 0.2, inset_box_size = 0.2, inset_pad = 0.06, view = c("crop", "full"), point.size = 1, trap.colour = "#d95f02", 
-                        mask.size = 0.4, symbol = 16, ndim1 = 1, ndim2 = 4, title.expr = NULL, levels_all = NULL) {
-
-  view <- match.arg(view)
-  
-  mask_df <- as.data.frame(mask)
-  
-  # ---------------------------
-  # 1. Full mask extent
-  # ---------------------------
-  full_mask_min_x <- min(mask_df$x)
-  full_mask_max_x <- max(mask_df$x)
-  full_mask_min_y <- min(mask_df$y)
-  full_mask_max_y <- max(mask_df$y)
-  
-  full_mask_width  <- full_mask_max_x - full_mask_min_x
-  full_mask_height <- full_mask_max_y - full_mask_min_y
-  
-  # ---------------------------
-  # 2. Bounds (KEY FIX: shared for crop)
-  # ---------------------------
-  if (view == "full") {
-    
-    bounds <- design.df %>%
-      distinct(design) %>%
-      mutate(
-        xmin = full_mask_min_x,
-        xmax = full_mask_max_x,
-        ymin = full_mask_min_y,
-        ymax = full_mask_max_y
-      )
-  } else {  # crop view → shared bounds
-    
-    global_bounds <- design.df %>%
-      summarise(
-        xmin = min(x),
-        xmax = max(x),
-        ymin = min(y),
-        ymax = max(y)
-      ) %>%
-      mutate(
-        xbuf = buffer.prop * (xmax - xmin),
-        ybuf = buffer.prop * (ymax - ymin),
-        xmin = xmin - xbuf,
-        xmax = xmax + xbuf,
-        ymin = ymin - ybuf,
-        ymax = ymax + ybuf
-      )
-    
-    bounds <- design.df %>%
-      distinct(design) %>%
-      crossing(global_bounds)
-  }
-  
-  # add labels
-  bounds <- bounds %>%
-    left_join(design.df %>% distinct(design, design_label),
-              by = "design")
-  
-  # ensure facet order is stable (important for "top-left")
-  design_levels <- levels(design.df$design_label)
-  
-  bounds$design_label <- factor(bounds$design_label, levels = design_levels)
-  design.df$design_label <- factor(design.df$design_label, levels = design_levels)
-
-  design.df <- design.df %>%
-    left_join(bounds, by = c("design", "design_label"))
-  
-  # ---------------------------
-  # 3. Mask for plotting
-  # ---------------------------
-  
-  mask_rep <- mask_df %>%
-    crossing(bounds)
-  
-  mask_rep <- mask_rep %>%
-    filter(!(design_label == " " & design != "dummy"))
-  
-  if (!is.null(levels_all)) {
-    mask_rep$design_label <- factor(mask_rep$design_label, levels = levels_all)
-  }
-  
-  mask_plot <- mask_rep %>%
-    filter(
-      x >= xmin, x <= xmax,
-      y >= ymin, y <= ymax
-    )
-  
-  # ---------------------------
-  # 4. Inset (ONLY for crop)
-  # ---------------------------
-  if (view == "crop") {
-    
-    inset_outer <- bounds %>%
-      mutate(
-        crop_width  = xmax - xmin,
-        crop_height = ymax - ymin,
-        
-        margin_x = 0.04 * crop_width,
-        margin_y = 0.04 * crop_height,
-        
-        w = inset_box_size * crop_width,
-        h = w * full_mask_height / full_mask_width,
-        
-        xmin_o = xmax - margin_x - w,
-        xmax_o = xmax - margin_x,
-        ymin_o = ymax - margin_y - h,
-        ymax_o = ymax - margin_y
-      )
-    
-    inset_inner <- inset_outer %>%
-      mutate(
-        xmin_i = xmin_o + inset_pad * w,
-        xmax_i = xmax_o - inset_pad * w,
-        ymin_i = ymin_o + inset_pad * h,
-        ymax_i = ymax_o - inset_pad * h
-      )
-    
-    inset_crop <- inset_inner %>%
-      mutate(
-        wi = xmax_i - xmin_i,
-        hi = ymax_i - ymin_i,
-        
-        xmin_c = xmin_i + ((xmin - full_mask_min_x)/full_mask_width) * wi,
-        xmax_c = xmin_i + ((xmax - full_mask_min_x)/full_mask_width) * wi,
-        ymin_c = ymin_i + ((ymin - full_mask_min_y)/full_mask_height) * hi,
-        ymax_c = ymin_i + ((ymax - full_mask_min_y)/full_mask_height) * hi
-      )
-    
-    # ✅ Keep inset ONLY in top-left panel
-    inset_target <- "Grid~800"
-    
-    inset_outer <- inset_outer %>% filter(design_label == inset_target)
-    inset_inner <- inset_inner %>% filter(design_label == inset_target)
-    inset_crop  <- inset_crop  %>% filter(design_label == inset_target)
-                                          
-  }
-  
-  # ---------------------------
-  # 5. Plot
-  # ---------------------------
-  
-  label_lookup <- levels_all
-  label_lookup[label_lookup == " "] <- ""
-  
-  design.df$strip_label <- label_lookup[as.integer(factor(design.df$design_label, levels = levels_all))]
-  mask_rep$strip_label  <- label_lookup[as.integer(factor(mask_rep$design_label,  levels = levels_all))]
-  mask_plot$strip_label  <- label_lookup[as.integer(factor(mask_plot$design_label,  levels = levels_all))]
-  
-  p <- ggplot() +
-    
-    # ✅ this forces facet structure (including dummy)
-    geom_blank(
-      data = mask_rep,
-      aes(x, y)
-    ) +
-    
-    geom_point(
-      data = mask_rep %>% filter(design_label == " "),
-      aes(x, y),
-      alpha = 0  # invisible
-    ) +
-  
-    geom_point(
-      data = mask_plot %>% filter(design_label != " "),
-      aes(x, y),
-      colour = "grey88",
-      size = mask.size
-    ) +
-    
-    geom_point(
-      data = design.df %>% filter(design_label != " "),
-      aes(x, y),
-      colour = trap.colour,
-      shape = symbol,
-      size = point.size
-    )
-  
-  # inset (crop view only)
-  if (view == "crop") {
-    
-    p <- p +
-      geom_rect(
-        data = inset_outer,
-        aes(xmin = xmin_o, xmax = xmax_o,
-            ymin = ymin_o, ymax = ymax_o),
-        fill = NA, colour = "black"
-      ) +
-      
-      geom_rect(
-        data = inset_inner,
-        aes(xmin = xmin_i, xmax = xmax_i,
-            ymin = ymin_i, ymax = ymax_i),
-        fill = "grey88", colour = NA
-      ) +
-      
-      geom_rect(
-        data = inset_crop,
-        aes(xmin = xmin_c, xmax = xmax_c,
-            ymin = ymin_c, ymax = ymax_c),
-        colour = "red", fill = NA
-      )
-  }
-  
-  p <- p +
-    facet_grid(
-      . ~ factor(strip_label, levels = label_lookup),
-      scales = "fixed",
-      space = "fixed",
-      labeller = label_parsed
-    ) +
-    coord_equal() +
-    theme_bw() +
-    theme(
-      panel.grid = element_blank(),
-      axis.title = element_blank(),
-      axis.text.x  = element_blank(),
-      axis.ticks.x = element_blank(),
-      axis.text.y  = element_blank(),
-      axis.ticks.y = element_blank()
-    )
-  
-  if (!is.null(title.expr)) {
-    p <- p + labs(title = title.expr)
-  }
-  
-  return(p)
-}
-
-
 plot.design <- function(design.df, mask, buffer.prop = 0.2, inset_box_size = 0.2, inset_pad = 0.06,
                         view = c("crop", "full"), point.size = 1, trap.colour = "#d95f02", 
                         mask.size = 0.4, symbol = 16, ndim1 = 1, ndim2 = 4,
@@ -659,24 +430,26 @@ plot.design <- function(design.df, mask, buffer.prop = 0.2, inset_box_size = 0.2
   mask_rep <- mask_df %>%
     crossing(bounds)
 
-  # remove ALL dummy-expanded rows
-  mask_rep <- mask_rep %>%
-    filter(design_label != " ")
-  
-  # add exactly ONE dummy row back
-  dummy_row <- data.frame(
-    x = full_mask_min_x,
-    y = full_mask_min_y,
-    design = "dummy",
-    design_label = " ",
-    xmin = full_mask_min_x,
-    xmax = full_mask_max_x,
-    ymin = full_mask_min_y,
-    ymax = full_mask_max_y,
-    stringsAsFactors = FALSE
-  )
-  
-  mask_rep <- bind_rows(mask_rep, dummy_row)
+  if (!is.null(levels_all)) {
+    # remove ALL dummy-expanded rows
+    mask_rep <- mask_rep %>%
+      filter(design_label != "dummy")
+    
+    # add exactly ONE dummy row back
+    dummy_row <- data.frame(
+      x = full_mask_min_x,
+      y = full_mask_min_y,
+      design = "dummy",
+      design_label = "dummy",
+      xmin = full_mask_min_x,
+      xmax = full_mask_max_x,
+      ymin = full_mask_min_y,
+      ymax = full_mask_max_y,
+      stringsAsFactors = FALSE
+    )
+    
+    mask_rep <- bind_rows(mask_rep, dummy_row)
+  }
   
   mask_plot <- mask_rep %>%
     filter(
@@ -687,37 +460,43 @@ plot.design <- function(design.df, mask, buffer.prop = 0.2, inset_box_size = 0.2
   # ---------------------------
   # ✅ 4. LABEL TABLE (
   # ---------------------------
-  label_lookup <- levels_all
-  label_lookup[label_lookup == " "] <- "dummy"
-  
-  label_df <- data.frame(
-    design_label = levels_all,                          # use exactly what's in your factor
-    strip_label  = ifelse(levels_all == "dummy", "dummy", as.character(levels_all)),
-    stringsAsFactors = FALSE
-  )
-  
-  cat("levels_all:", levels_all, "\n")
-  cat("unique design_label in design.df:", unique(as.character(design.df$design_label)), "\n")
-  
-  design.df <- design.df %>% 
-    filter(design_label %in% label_df$design_label) %>%
-    left_join(label_df, by = "design_label")
-  
-  mask_rep <- mask_rep %>%
-    filter(design_label %in% label_df$design_label) %>%
-    left_join(label_df, by = "design_label")
-  
-  mask_plot <- mask_plot %>%
-    filter(design_label %in% label_df$design_label) %>%
-    left_join(label_df, by = "design_label")
-  
-  # Factor with explicit levels — NA will never appear
-  strip_levels <- label_df$strip_label  # e.g. c("Grid 200", "Grid 400", ..., "dummy")
+  if (!is.null(levels_all)) {
+    
+    label_df <- data.frame(
+      design_label = levels_all,
+      strip_label  = ifelse(levels_all == "dummy", "dummy", as.character(levels_all)),
+      stringsAsFactors = FALSE
+    )
+    
+    design.df <- design.df %>% 
+      filter(design_label %in% label_df$design_label) %>%
+      left_join(label_df, by = "design_label")
+    
+    mask_rep <- mask_rep %>%
+      filter(design_label %in% label_df$design_label) %>%
+      left_join(label_df, by = "design_label")
+    
+    mask_plot <- mask_plot %>%
+      filter(design_label %in% label_df$design_label) %>%
+      left_join(label_df, by = "design_label")
+    
+    strip_levels <- label_df$strip_label
+    
+  } else {
+    
+    # No dummy — strip_label is just design_label as character
+    design.df$strip_label <- design.df$design_label
+    mask_rep$strip_label  <- mask_rep$design_label
+    mask_plot$strip_label <- mask_plot$design_label
+    
+    strip_levels <- levels(design.df$design_label)
+    
+  }
   
   design.df$strip_label <- factor(design.df$strip_label, levels = strip_levels)
   mask_rep$strip_label  <- factor(mask_rep$strip_label,  levels = strip_levels)
   mask_plot$strip_label <- factor(mask_plot$strip_label, levels = strip_levels)
-  
+
   # ---------------------------
   # 5. Plot
   # ---------------------------
@@ -729,27 +508,28 @@ plot.design <- function(design.df, mask, buffer.prop = 0.2, inset_box_size = 0.2
       aes(x, y)
     ) +
     
-    # ✅ force dummy to exist
     geom_point(
-      data = mask_rep %>% filter(design_label == " "),
-      aes(x, y),
-      alpha = 0
-    ) +
-    
-    geom_point(
-      data = mask_plot %>% filter(design_label != " "),
+      data = mask_plot %>% filter(design_label != "dummy"),
       aes(x, y),
       colour = "grey88",
       size = mask.size
     ) +
     
     geom_point(
-      data = design.df %>% filter(design_label != " "),
+      data = design.df %>% filter(design_label != "dummy"),
       aes(x, y),
       colour = trap.colour,
       shape = symbol,
       size = point.size
     )
+  
+  if (!is.null(levels_all)) {
+    p <- p + geom_point(
+      data = mask_rep %>% filter(design_label == "dummy"),
+      aes(x, y),
+      alpha = 0
+    )
+  }
   
   # ---------------------------
   # ✅ FACET (FINAL STABLE VERSION)
@@ -757,7 +537,7 @@ plot.design <- function(design.df, mask, buffer.prop = 0.2, inset_box_size = 0.2
   
   # Named display vector for labeller
   strip_display <- setNames(
-    ifelse(strip_levels == "dummy", "", strip_levels),
+    ifelse(strip_levels == "dummy", "''", strip_levels),
     strip_levels
   )
   
@@ -766,12 +546,7 @@ plot.design <- function(design.df, mask, buffer.prop = 0.2, inset_box_size = 0.2
       . ~ strip_label,
       scales = "fixed",
       space = "fixed",
-      labeller = labeller(
-        strip_label = function(x) {
-          out <- ifelse(x == "dummy", "''", x)
-          label_parsed(data.frame(strip_label = out, stringsAsFactors = FALSE))
-        }
-      )
+      labeller = as_labeller(strip_display, default = label_parsed)
     ) +
     coord_equal() +
     theme_bw() +
@@ -781,14 +556,16 @@ plot.design <- function(design.df, mask, buffer.prop = 0.2, inset_box_size = 0.2
       axis.text.x = element_blank(),
       axis.ticks.x = element_blank(),
       axis.text.y = element_blank(),
-      axis.ticks.y = element_blank()
+      axis.ticks.y = element_blank(),
+      strip.background = element_blank(),
+      panel.border = element_blank()
     )
   
   if (!is.null(title.expr)) {
     p <- p + labs(title = title.expr)
   }
-  
-  return(p)
+
+  return(p)  
 }
 
 
