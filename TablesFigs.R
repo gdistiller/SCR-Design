@@ -501,6 +501,8 @@ ggsave("15FoldScen/figures/All40.pdf", plot = all.40.plot, width = 270, height =
 setwd("~/Git/SCR-Design/15FoldScen/Cluster/ProposedDesigns")
 load("GridDesigns120.RData")
 load("GADesigns120.RData")
+load("LWdesigns.RData")
+load("GA2StageDesigns.RData") 
 
 #extract coordinates and put all in one df
 
@@ -541,7 +543,8 @@ ga53b <- as.data.frame(GA.designs.120$G5Avg[[1]]) %>%
 ga54b <- as.data.frame(GA.designs.120$G5Both[[1]]) %>%
   mutate(design = "GA5 Both")
 
-#ga2 needed still for 120 traps
+ga2b <- as.data.frame(GA.designs.120$G5Both[[1]]) %>%
+  mutate(design = "Two Stage")
 
 #first deal with systematic designs
 sys.120 <- bind_rows(sys1b, sys2b, sys3b, sys4b)
@@ -652,3 +655,67 @@ opt.120 <- opt.120 %>%
 opt.120.plot <- plot.design.fixed(opt.120, msk, title.expr = expression(GA[4]~"and"~GA[5]~"trap configurations (120 traps)"))
 
 ggsave("15FoldScen/figures/Opt120.pdf", plot = opt.120.plot, width = 7, height = 9.5)
+
+##################################################
+#put GA5 and 2 stage together
+GA2.120 <- bind_rows(ga51b, ga52b, ga53b, ga54b,
+                    ga2b)
+
+GA2.120 <- GA2.120 %>%
+  mutate(
+    design_label = case_when(
+      design == "GA5 S1" ~ "GA[5]~S[1]",
+      design == "GA5 S2" ~ "GA[5]~S[2]",
+      design == "GA5 Avg" ~ "GA[5]~Avg",
+      design == "GA5 Both" ~ "GA[5]~Both",
+      design == "Two Stage" ~ "Two~Stage",
+      TRUE ~ design
+    ),
+    design_label = factor(design_label, levels = c(
+      "GA[5]~S[1]",
+      "GA[5]~S[2]",
+      "GA[5]~Avg",
+      "GA[5]~Both",
+      "Two~Stage"
+    ))
+  )
+
+p.GA2.120 <- plot.design(GA2.120, msk, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL)
+
+#combine
+all.120.plot <- Combine.layoutplots(p.sys.120, p.GA4.120,p.GA2.120)
+
+ggsave("15FoldScen/figures/All120.pdf", plot = all.120.plot, width = 270, height = 190, units = "mm")
+
+#now adding dummy panels to get proper alignment
+sys.pad.120 <- bind_rows(
+  sys.120,
+  tibble(
+    x = 0, y = 0,
+    design = "dummy",
+    design_label = "dummy"
+  )
+)
+
+levels_all_sys <- c(levels(sys.120$design_label), "dummy")
+sys.pad.120$design_label <- factor(sys.pad.120$design_label, levels = levels_all_sys)
+
+ga4.pad.120 <- bind_rows(
+  GA4.120,
+  tibble(
+    x = 0, y = 0,
+    design = "dummy",
+    design_label = " "
+  )
+)
+
+levels_all_ga4 <- c(levels(GA4.120$design_label), " ")
+ga4.pad.120$design_label <- factor(ga4.pad.120$design_label, levels = levels_all_ga4)
+
+p.GA2.120 <- plot.design(GA2.120, msk, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL)
+p.syspad.120 <- plot.design(sys.pad.120, msk, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL, levels_all = levels_all_sys)
+p.GA4pad.120 <- plot.design(ga4.pad.120, msk, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL, levels_all = levels_all_ga4)
+
+all.120.plot <- Combine.layoutplots(p.syspad.120, p.GA4pad.120,p.GA2.120)
+ggsave("15FoldScen/figures/All120.pdf", plot = all.40.plot, width = 270, height = 190, units = "mm")
+
