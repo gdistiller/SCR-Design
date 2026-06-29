@@ -7,9 +7,6 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(patchwork)
-library(gtable)
-library(grid)
-library(ggplotify)
 
 # table of parameter estimates per strata
 
@@ -222,8 +219,8 @@ ggsave("15FoldScen/figures/Sig1.pdf", plot = plot.sig1, width = 7, height = 9)
 ###################################
 #a plot of different realisations, for 40 traps
 #objs with various proposed designs pasted into dir below
-setwd("~/Git/SCRDesign/15FoldScen/Cluster/ProposedDesigns")
-setwd("~/Documents/Git/SCRDesign/15FoldScen/Cluster/ProposedDesigns")
+setwd("~/Git/SCR-Design/15FoldScen/Cluster/ProposedDesigns")
+setwd("~/Documents/Git/SCR-Design/15FoldScen/Cluster/ProposedDesigns")
 
 load("SCRObjs.RData")
 
@@ -295,12 +292,14 @@ sys.40 <- sys.40 %>%
   )
 
 msk <- SCR.objs$Full[[1]]
+msk.red <- SCR.objs$Full[[2]]
+#msk.red used to  show realisations that excl the buffer
 
 #use fn
 sys40.plot <- plot.design(sys.40, msk, view = "full", ndim2 = 4, title = "Systematic trap configurations (40 traps)")
 
 setwd("~/Git/SCR-Design")
-ggsave("15FoldScen/figures/sys40.pdf", plot = sys40.plot, width = 9, height = 9)
+ggsave("15FoldScen/figures/sys40.pdf", plot = sys40.plot, width = 9, height = 6)
 
 ################################################################################
 #now optimised designs plotted on full extent
@@ -348,10 +347,11 @@ GA5.40 <- GA5.40 %>%
 
 GA5.40.plot <- plot.design(GA5.40, msk, view = "full", ndim2 = 4, title.expr = expression(GA[5]~"trap configurations (40 traps)"))
 
-ggsave("15FoldScen/figures/GA440.pdf", plot = GA4.40.plot, width = 9, height = 9)
-ggsave("15FoldScen/figures/GA540.pdf", plot = GA5.40.plot, width = 9, height = 9)
+ggsave("15FoldScen/figures/GA440.pdf", plot = GA4.40.plot, width = 9, height = 6)
+ggsave("15FoldScen/figures/GA540.pdf", plot = GA5.40.plot, width = 9, height = 6)
 
 #and both sets in one plot
+#current fn doesn't support this, needs adjustment
 opt.40 <- bind_rows(ga41, ga42, ga43, ga44,
                     ga51, ga52, ga53, ga54)
 
@@ -422,9 +422,6 @@ ggsave("15FoldScen/figures/Opt240.pdf", plot = opt2.40.plot, width = 7, height =
 
 #all together, build each row by itself and then combine
 
-p.sys.40 <- plot.design(sys.40, msk, view = "full", ndim1 = 1, ndim2 = 4, title.expr = NULL)
-p.GA4.40 <- plot.design(GA4.40, msk, view = "full", ndim1 = 1, ndim2 = 4, title.expr = NULL)
-
 #put GA5 and 2 stage together
 GA2.40 <- bind_rows(ga51, ga52, ga53, ga54,
                      ga2)
@@ -447,13 +444,6 @@ GA2.40 <- GA2.40 %>%
       "Two~Stage"
     ))
   )
-
-p.GA2.40 <- plot.design(GA2.40, msk, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL)
-
-#combine
-all.40.plot <- Combine.layoutplots(p.sys.40, p.GA4.40,p.GA2.40)
-
-ggsave("15FoldScen/figures/All40.pdf", plot = all.40.plot, width = 270, height = 190, units = "mm")
 
 #now adding dummy panels to get proper alignment
 sys.pad.40 <- bind_rows(
@@ -480,26 +470,27 @@ ga4.pad.40 <- bind_rows(
 levels_all_ga4 <- c(levels(GA4.40$design_label), "dummy")
 ga4.pad.40$design_label <- factor(ga4.pad.40$design_label, levels = levels_all_ga4)
 
-p.GA2.40 <- plot.design(GA2.40, msk, view = "full", ndim1 = 1, ndim2 = 5, 
+p.GA2.40 <- plot.design(GA2.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
                         point.size = 0.5, title.expr = NULL)
-p.syspad.40 <- plot.design(sys.pad.40, msk, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL, 
+p.syspad.40 <- plot.design(sys.pad.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL, 
                            point.size = 0.5, buffer.prop = 0.05, levels_all = levels_all_sys)
-p.GA4pad.40 <- plot.design(ga4.pad.40, msk, view = "full", ndim1 = 1, ndim2 = 5, 
+p.GA4pad.40 <- plot.design(ga4.pad.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
                            point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga4)
 
 all.40.plot <- Combine.layoutplots(p.syspad.40, p.GA4pad.40,p.GA2.40)
 
-setwd("~/Documents/Git/SCRDesign")
+setwd("~/Git/SCR-Design")
 ggsave("15FoldScen/figures/All40.pdf", plot = all.40.plot, width = 270, height = 190, units = "mm")
 
 ###############
 #for 120 traps
+#version xxb is from ngen = 500
 ###############
 setwd("~/Git/SCR-Design/15FoldScen/Cluster/ProposedDesigns")
 load("GridDesigns120.RData")
 load("GADesigns120.RData")
 load("LWdesigns.RData")
-load("GA2StageDesigns.RData") 
+load("GA2StageDesignsb.RData") 
 
 #extract coordinates and put all in one df
 
@@ -540,7 +531,7 @@ ga53b <- as.data.frame(GA.designs.120$G5Avg[[1]]) %>%
 ga54b <- as.data.frame(GA.designs.120$G5Both[[1]]) %>%
   mutate(design = "GA5 Both")
 
-ga2b <- as.data.frame(GA.designs.120$G5Both[[1]]) %>%
+ga2b <- as.data.frame(GA2StageDesigns$`120 traps`[[1]]) %>%
   mutate(design = "Two Stage")
 
 #first deal with systematic designs
@@ -566,10 +557,10 @@ sys.120 <- sys.120 %>%
 msk <- SCR.objs$Full[[1]]
 
 #use fn
-sys120.plot <- plot.design.zoom(sys.120, msk, title = "Systematic trap configurations (120 traps)", symbol = 3, point.size = 1)
+sys120.plot <- plot.design(sys.120, msk, view = "full", title = "Systematic trap configurations (120 traps)")
 
 setwd("~/Git/SCR-Design")
-ggsave("15FoldScen/figures/sys120.pdf", plot = sys120.plot, width = 9, height = 9)
+ggsave("15FoldScen/figures/sys120.pdf", plot = sys120.plot, width = 9, height = 6)
 
 #######################################################################################
 #now optimised designs plotted on full extent
@@ -593,7 +584,7 @@ GA4.120 <- GA4.120 %>%
     )
   )
 
-GA4.120.plot <- plot.design.fixed(GA4.120, msk, title.expr = expression(GA[4]~"trap configurations (120 traps)"))
+GA4.120.plot <- plot.design(GA4.120, msk, view = "full", title.expr = expression(GA[4]~"trap configurations (120 traps)"))
 
 #GA5
 GA5.120 <- bind_rows(ga51b, ga52b, ga53b, ga54b)
@@ -615,12 +606,13 @@ GA5.120 <- GA5.120 %>%
     ))
   )
 
-GA5.120.plot <- plot.design.fixed(GA5.120, msk, title.expr = expression(GA[5]~"trap configurations (120 traps)"))
+GA5.120.plot <- plot.design(GA5.120, msk, view = "full", title.expr = expression(GA[5]~"trap configurations (120 traps)"))
 
-ggsave("15FoldScen/figures/GA4120.pdf", plot = GA4.120.plot, width = 9, height = 9)
-ggsave("15FoldScen/figures/GA5120.pdf", plot = GA5.120.plot, width = 9, height = 9)
+ggsave("15FoldScen/figures/GA4120.pdf", plot = GA4.120.plot, width = 9, height = 6)
+ggsave("15FoldScen/figures/GA5120.pdf", plot = GA5.120.plot, width = 9, height = 6)
 
 #and both sets in one plot
+#current fn no lomnger works for this so need to adjust if want GA4 and GA5 in 2 * 4 grid
 opt.120 <- bind_rows(ga41b, ga42b, ga43b, ga44b,
                     ga51b, ga52b, ga53b, ga54b)
 
@@ -649,7 +641,8 @@ opt.120 <- opt.120 %>%
     ))
   )
 
-opt.120.plot <- plot.design.fixed(opt.120, msk, title.expr = expression(GA[4]~"and"~GA[5]~"trap configurations (120 traps)"))
+opt.120.plot <- plot.design(opt.120, msk, view = "full", 
+                            ndim1 = 2, ndim2 = 4, title.expr = expression(GA[4]~"and"~GA[5]~"trap configurations (120 traps)"))
 
 ggsave("15FoldScen/figures/Opt120.pdf", plot = opt.120.plot, width = 7, height = 9.5)
 
@@ -677,13 +670,6 @@ GA2.120 <- GA2.120 %>%
     ))
   )
 
-p.GA2.120 <- plot.design(GA2.120, msk, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL)
-
-#combine
-all.120.plot <- Combine.layoutplots(p.sys.120, p.GA4.120,p.GA2.120)
-
-ggsave("15FoldScen/figures/All120.pdf", plot = all.120.plot, width = 270, height = 190, units = "mm")
-
 #now adding dummy panels to get proper alignment
 sys.pad.120 <- bind_rows(
   sys.120,
@@ -702,17 +688,24 @@ ga4.pad.120 <- bind_rows(
   tibble(
     x = 0, y = 0,
     design = "dummy",
-    design_label = " "
+    design_label = "dummy"
   )
 )
 
-levels_all_ga4 <- c(levels(GA4.120$design_label), " ")
+levels_all_ga4 <- c(levels(GA4.120$design_label), "dummy")
 ga4.pad.120$design_label <- factor(ga4.pad.120$design_label, levels = levels_all_ga4)
 
-p.GA2.120 <- plot.design(GA2.120, msk, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL)
-p.syspad.120 <- plot.design(sys.pad.120, msk, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL, levels_all = levels_all_sys)
-p.GA4pad.120 <- plot.design(ga4.pad.120, msk, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL, levels_all = levels_all_ga4)
+#create trap locs with slightly larger extent to prevent LW spilling over
+obj.lw <- create.extent(sigma = 3000, buff.factor = 2.900, res = 200)
+trap.locs.lw <- obj.lw [[2]]
+
+#use slightly larger trap loc extent to prevent LW traps spilling out of panel 
+p.GA2.120 <- plot.design(GA2.120, trap.locs.lw, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL)
+p.syspad.120 <- plot.design(sys.pad.120, trap.locs.lw, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL, levels_all = levels_all_sys)
+p.GA4pad.120 <- plot.design(ga4.pad.120, trap.locs.lw, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga4)
 
 all.120.plot <- Combine.layoutplots(p.syspad.120, p.GA4pad.120,p.GA2.120)
-ggsave("15FoldScen/figures/All120.pdf", plot = all.40.plot, width = 270, height = 190, units = "mm")
+
+setwd("~/Git/SCR-Design")
+ggsave("15FoldScen/figures/All120.pdf", plot = all.120.plot, width = 270, height = 190, units = "mm")
 

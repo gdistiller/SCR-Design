@@ -364,9 +364,8 @@ Combine.layoutplots <- function(p1, p2, p3, global_title = NULL, tag_levels = "A
 
 #plots of panels of realised designs
 #latest function that allows one to either zoom in on the common array or use the full area
-plot.design <- function(design.df, mask, buffer.prop = 0.2, inset_box_size = 0.2, inset_pad = 0.06,
-                        view = c("crop", "full"), point.size = 1, trap.colour = "#d95f02", 
-                        mask.size = 0.4, symbol = 16, ndim1 = 1, ndim2 = 4,
+plot.design <- function(design.df, mask, buffer.prop = 0.2, view = c("crop", "full"), point.size = 1, 
+                        trap.colour = "#d95f02", mask.size = 0.4, symbol = 16, ndim1 = 1, ndim2 = 4,
                         title.expr = NULL, levels_all = NULL) {
   
   view <- match.arg(view)
@@ -464,7 +463,7 @@ plot.design <- function(design.df, mask, buffer.prop = 0.2, inset_box_size = 0.2
     
     label_df <- data.frame(
       design_label = levels_all,
-      strip_label  = ifelse(levels_all == "dummy", "dummy", as.character(levels_all)),
+      strip_label  = as.character(levels_all),
       stringsAsFactors = FALSE
     )
     
