@@ -46,7 +46,7 @@ make.summary <- function(df) {
         grepl("Cluster", design) | grepl("Lacework", design) ~ "Cluster",
         grepl("GA4", design) ~ "GA4",
         grepl("GA5", design) ~ "GA5",
-        grepl("TwoStage", design) ~ "2 Stage",
+        grepl("Two Stage", design) ~ "2 Stage",
         TRUE ~ "Other"
       ),
       
@@ -69,14 +69,14 @@ make.summary <- function(df) {
           "Lacework",
           "GA4 S1", "GA4 S2", "GA4 Avg", "GA4 Both",
           "GA5 S1", "GA5 S2", "GA5 Avg", "GA5 Both",
-          "TwoStage"
+          "Two Stage"
         ),
         labels = c(
           "Gr.700", "Gr.800",
           "Cl(OS)", "Cl(2 Sig)",
           "LW",
-          "GA4 S1", "GA4 S2", "GA4 Avg", "GA4 Both", 
-          "GA5 S1", "GA5 S2", "GA5 Avg", "GA5 Both",
+          "GA4 G1", "GA4 G2", "GA4 Avg", "GA4 Both", 
+          "GA5 G1", "GA5 G2", "GA5 Avg", "GA5 Both",
           "2 Stage"
         )
       )
@@ -185,8 +185,8 @@ Metric.plot <- function(sum.df, plot.title, param_select, metric = "RB", ylims =
     p <- p + facet_grid(
       traps ~  stratum,
       labeller = labeller(
-        stratum = c("S1" = "Stratum 1",
-                    "S2" = "Stratum 2"),
+        stratum = c("S1" = "Group 1",
+                    "S2" = "Group 2"),
         traps = c("40" = "40 traps",
                   "120" = "120 traps")
       )
@@ -197,8 +197,8 @@ Metric.plot <- function(sum.df, plot.title, param_select, metric = "RB", ylims =
     p <- p + facet_wrap(
       ~ stratum,
       labeller = labeller(
-        stratum = c("S1" = "Stratum 1",
-                    "S2" = "Stratum 2")
+        stratum = c("S1" = "Group 1",
+                    "S2" = "Group 2")
       )
     ) +
       
