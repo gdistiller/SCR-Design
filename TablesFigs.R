@@ -137,7 +137,7 @@ excl40.plot <- ggplot(df_excl,
     title = "Simulation exclusion rates"
   )
 
-ggsave("15FoldScen/figures/Excl40.pdf", plot = excl40.plot, width = 85, height = 60, units = "mm")
+ggsave("15FoldScen/figures/Excl40.pdf", plot = excl40.plot, width = 85, height = 85, units = "mm")
 
 #################################################################
 #figs created in ggplot and saved
