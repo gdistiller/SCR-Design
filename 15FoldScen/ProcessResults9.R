@@ -431,6 +431,19 @@ LW120.clean <- merge(LW120.red1, LW120.red2, by = "row", all.x = TRUE, all.y = T
 
 LW.120 <- construct_df(LW120.clean, design_name = "Lacework", true_vals = truth_df)
 
+##########
+#Two Stage
+##########
+
+load("15FoldScen/Cluster/Sims/120Traps/TwoStageResults120b.RData")
+
+TwoStage120.red1 <- find.rogue(TwoStage.120.results[,c(1:6)], mag = mag.factor, true = c(0.05, 2, 200))
+TwoStage120.red2 <- find.rogue(TwoStage.120.results[,c(7:12)], mag = mag.factor, true = c(0.05/15, 2/15, 3000))
+TwoStage120.clean <- merge(TwoStage120.red1, TwoStage120.red2, by = "row", all.x = TRUE, all.y = TRUE)
+
+TwoStage.120 <- construct_df(TwoStage120.clean, design_name = "TwoStage", true_vals = truth_df)
+
+
 ################################################################
 
 all_results_120_3 <- bind_rows(
@@ -446,7 +459,8 @@ all_results_120_3 <- bind_rows(
   GA5.S1.120,
   GA5.S2.120,
   GA5.Avg.120,
-  GA5.Both.120)
+  GA5.Both.120,
+  TwoStage.120)
 
 Allresults_3 <- list("40 traps" = all_results_40_3, "120 traps" = all_results_120_3)
 save(Allresults_3, file = "15FoldScen/AllResults3.RData")

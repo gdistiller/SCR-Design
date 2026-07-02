@@ -62,23 +62,6 @@ AllResults40 <- AllResults40 %>%
     )
   )
 
-design_groups <- list(
-  "Grids with 800 m spacing" = c("Grid 800m"),
-  "Grids with 700 m spacing" = c("Grid 700m"),
-  "Clusters - OS spacing" = c("Cluster (OS)"),
-  "Clusters - 2 sigma spacing" = c("Cluster (2 Sig)"),
-  "GA4 - G1 values" = c("GA4 G1"),
-  "GA4 - G2 values" = c("GA4 G2"),
-  "GA4 - Avg values" = c("GA4 Avg"),
-  "GA4 - Both values" = c("GA4 Both"),
-  "GA5 - G1 values" = c("GA5 G1"),
-  "GA5 - G2 values" = c("GA5 G2"),
-  "GA5 - Avg values" = c("GA5 Avg"),
-  "GA5 - Both values" = c("GA5 Both"),
-  "Lacework" = c("Lacework",
-                 "Two Stage" = c("2 Stage"))
-)
-
 df_excl <- AllResults40%>%
   group_by(sim, design, stratum) %>%
   summarise(
@@ -139,6 +122,40 @@ excl40.plot <- ggplot(df_excl,
 
 ggsave("15FoldScen/figures/Excl40.pdf", plot = excl40.plot, width = 85, height = 85, units = "mm")
 
+AllResults120 <- Allresults_3[[2]]
+AllResults120$design[AllResults120$design=="TwoStage"] <- "Two Stage"
+
+#confirm nothing dropped with 120 traps
+#control order of design factor
+AllResults120 <- AllResults120 %>%
+  mutate(
+    design = factor(
+      design,
+      levels = c(
+        "Grid 700m", "Grid 800m",
+        "Cluster (OS)", "Cluster (2 Sig)",
+        "Lacework",
+        "GA4 S1", "GA4 S2", "GA4 Avg", "GA4 Both",
+        "GA5 S1", "GA5 S2", "GA5 Avg", "GA5 Both",
+        "Two Stage"
+      )
+    )
+  )
+
+df_excl_120 <- AllResults120%>%
+  group_by(sim, design, stratum) %>%
+  summarise(
+    bad_sim = any(is.na(estimate)),
+    .groups = "drop"
+  ) %>%
+  group_by(design, stratum) %>%
+  summarise(
+    n_bad   = sum(bad_sim),
+    n_sims  = n(),
+    prop_bad = n_bad / n_sims,
+    .groups = "drop"
+  )
+
 #################################################################
 #figs created in ggplot and saved
 #needs make.summary, Metric.plot and Combine.plots fns
@@ -148,6 +165,8 @@ load("15FoldScen/AllResults3.RData")
 AllResults40 <- Allresults_3[[1]]
 AllResults40$design[AllResults40$design=="TwoStage"] <- "Two Stage"
 AllResults120 <- Allresults_3[[2]]
+AllResults120$design[AllResults120$design=="TwoStage"] <- "Two Stage"
+
 AllResults40$traps  <- "40"
 AllResults120$traps <- "120"
 AllResults.combined <- bind_rows(AllResults40, AllResults120)
