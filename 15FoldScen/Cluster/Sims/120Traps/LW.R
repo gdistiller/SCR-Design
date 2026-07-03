@@ -1,11 +1,11 @@
-#April 2026, simulations to evaluate lacework designs for 15 fold scen, for 120 traps
+#July2026, simulations to evaluate lacework designs for 15 fold scen, for 120 traps
 #pass secrdesign a list of traps so can't use foreach
 #using 20 cores
 #LW designs with 2 sigma spacing of 400 / 6000 ad a radius of 1000.
 #using my own function to fit models to data simulated by secrdesign, 
 #tried to use foreach but can't get nice collation of results
 #reverting to rather using numcores
-#this version does 500 reps and uses 20 cores
+#this version does 500 reps and uses 40 cores, and shifts the trap locs up by 1km
 
 rm(list=ls())
 
@@ -62,7 +62,7 @@ DiffFactor <- 15
 sigma1 = 200 ; sigma2 = sigma1*DiffFactor ; sigma <- c(sigma1, sigma2)
 L01 <- 2 ; L02 <- L01/DiffFactor ; L0 <- c(L01,L02)
 D1 <- 0.05 ; D2 <- D1 / DiffFactor ; D <- c(D1, D2)
-nT <- 120 ; nreps <- 500 ; cores <- 20
+nT <- 120 ; nreps <- 500 ; cores <- 40
   
 scen <- make.scenarios (trapsindex = 1, detectfn = 'HHN', D = D1, lambda0 = L01, 
                         sigma = sigma1, noccasions = 1, groups = c('S1','S2'))
@@ -72,9 +72,11 @@ scen$D[S2] <- D2
 scen$lambda0[S2] <- L02
 scen$sigma[S2] <- sigma2
 
+lwlist$`120 traps`$y <- lwlist$`120 traps`$y + 1000
+
 LW.120.Data <- Sim.data(scenario.df = scen, nreps = nreps, traplist = lwlist$`120 traps`, masklist = mask)
 LW.120.results <- Fit.models(Data.obj = LW.120.Data, nrep = nreps, numcores = cores)
-save.image("LWResults120.RData")
+save.image("LWResults120b.RData")
 
 
 ###################################################################
