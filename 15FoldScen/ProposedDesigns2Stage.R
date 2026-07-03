@@ -110,11 +110,26 @@ GA2Stage40 <- lapply(GA2Stage40, `[[`, 1)
 GA2StageDesigns <- list("40 traps" = GA2Stage40)
 #created without 120 traps while that is running
 
-#120 traps
+#120 traps, first doing with set from ngen = 300
+setwd("C:/Users/Greg/OneDrive - University of Cape Town/Documents/Git/SCRDesign/15FoldScen/Cluster/ProposedDesigns/120Traps")
+
+load("GA2Stage120c.RData")
 GA2Stage120 <- TwoStage.120.list[names(TwoStage.120.list) == "Proposed design"]
 GA2Stage120 <- lapply(GA2Stage120, `[[`, 1)
 
 GA2StageDesigns <- list("40 traps" = GA2Stage40, "120 traps" = GA2Stage120)
 
 save(GA2StageDesigns, file = "Cluster/Sims/GA2StageDesigns.RData")
+
+#and again using version b with ngen = 500
+setwd("C:/Users/Greg/OneDrive - University of Cape Town/Documents/Git/SCRDesign/15FoldScen/Cluster/ProposedDesigns/120Traps")
+
+load("GA2Stage120b.RData")
+GA2Stage120 <- TwoStage.120.list[names(TwoStage.120.list) == "Proposed design"]
+GA2Stage120 <- lapply(GA2Stage120, `[[`, 1)
+
+GA2StageDesigns <- list("40 traps" = GA2Stage40, "120 traps" = GA2Stage120)
+
+save(GA2StageDesigns, file = "Cluster/Sims/GA2StageDesignsb.RData")
+
 
