@@ -266,6 +266,9 @@ lwlist <- list("40 traps" = lw.40.1, "120 traps" = lw.120.1)
 
 save(lwlist, file = "15FoldScen/Cluster/Sims/LWdesigns.RData")
 
+#note that I reran sims for 120 after realising the bottom traps spilled into the buffer
+#I adjust the y coord by 1 km in the sim script
+
 ##########################################################
 #collate GA designs
 #now uses version _3 to get 500 reps
