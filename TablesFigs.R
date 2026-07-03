@@ -568,6 +568,30 @@ GA2.40 <- GA2.40 %>%
     ))
   )
 
+#put GA4 and 2 stage together
+GA2b.40 <- bind_rows(ga41, ga42, ga43, ga44,
+                    ga2)
+
+GA2b.40 <- GA2b.40 %>%
+  mutate(
+    design_label = case_when(
+      design == "GA4 G1" ~ "GA[4]~G[1]",
+      design == "GA4 G2" ~ "GA[4]~G[2]",
+      design == "GA4 Avg" ~ "GA[4]~Avg",
+      design == "GA4 Both" ~ "GA[4]~Both",
+      design == "Two Stage" ~ "Two~Stage",
+      TRUE ~ design
+    ),
+    design_label = factor(design_label, levels = c(
+      "GA[4]~G[1]",
+      "GA[4]~G[2]",
+      "GA[4]~Avg",
+      "GA[4]~Both",
+      "Two~Stage"
+    ))
+  )
+
+
 #now adding dummy panels to get proper alignment
 sys.pad.40 <- bind_rows(
   sys.40,
@@ -593,17 +617,35 @@ ga4.pad.40 <- bind_rows(
 levels_all_ga4 <- c(levels(GA4.40$design_label), "dummy")
 ga4.pad.40$design_label <- factor(ga4.pad.40$design_label, levels = levels_all_ga4)
 
+ga5.pad.40 <- bind_rows(
+  GA5.40,
+  tibble(
+    x = 0, y = 0,
+    design = "dummy",
+    design_label = "dummy"
+  )
+)
+
+levels_all_ga5 <- c(levels(GA5.40$design_label), "dummy")
+ga5.pad.40$design_label <- factor(ga5.pad.40$design_label, levels = levels_all_ga5)
+
 p.GA2.40 <- plot.design(GA2.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
+                        point.size = 0.5, title.expr = NULL)
+p.GA2b.40 <- plot.design(GA2b.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
                         point.size = 0.5, title.expr = NULL)
 p.syspad.40 <- plot.design(sys.pad.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL, 
                            point.size = 0.5, buffer.prop = 0.05, levels_all = levels_all_sys)
 p.GA4pad.40 <- plot.design(ga4.pad.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
                            point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga4)
+p.GA5pad.40 <- plot.design(ga5.pad.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
+                           point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga5)
 
 all.40.plot <- Combine.layoutplots(p.syspad.40, p.GA4pad.40,p.GA2.40)
+all.40.plotb <- Combine.layoutplots(p.syspad.40, p.GA2b.40, p.GA5pad.40)
 
 setwd("~/Git/SCR-Design")
 ggsave("15FoldScen/figures/All40.pdf", plot = all.40.plot, width = 270, height = 190, units = "mm")
+ggsave("15FoldScen/figures/All40b.pdf", plot = all.40.plotb, width = 270, height = 190, units = "mm")
 
 ###############
 #for 120 traps
@@ -680,6 +722,9 @@ sys.120 <- sys.120 %>%
 msk <- SCR.objs$Full[[1]]
 
 #use fn
+#move lacework coords up a few hundred meters
+
+sys.120$y[sys.120$design=="Lacework"] <- sys.120$y[sys.120$design=="Lacework"] + 1000
 sys120.plot <- plot.design(sys.120, msk, view = "full", title = "Systematic trap configurations (120 traps)")
 
 setwd("~/Git/SCR-Design")
@@ -794,6 +839,29 @@ GA2.120 <- GA2.120 %>%
     ))
   )
 
+#put GA4 and 2 stage together, optimisation of stage 2 is GA4
+GA2b.120 <- bind_rows(ga41b, ga42b, ga43b, ga44b,
+                     ga2b)
+
+GA2b.120 <- GA2b.120 %>%
+  mutate(
+    design_label = case_when(
+      design == "GA4 G1" ~ "GA[4]~G[1]",
+      design == "GA4 G2" ~ "GA[4]~G[2]",
+      design == "GA4 Avg" ~ "GA[4]~Avg",
+      design == "GA4 Both" ~ "GA[4]~Both",
+      design == "Two Stage" ~ "Two~Stage",
+      TRUE ~ design
+    ),
+    design_label = factor(design_label, levels = c(
+      "GA[4]~G[1]",
+      "GA[4]~G[2]",
+      "GA[4]~Avg",
+      "GA[4]~Both",
+      "Two~Stage"
+    ))
+  )
+
 #now adding dummy panels to get proper alignment
 sys.pad.120 <- bind_rows(
   sys.120,
@@ -819,17 +887,36 @@ ga4.pad.120 <- bind_rows(
 levels_all_ga4 <- c(levels(GA4.120$design_label), "dummy")
 ga4.pad.120$design_label <- factor(ga4.pad.120$design_label, levels = levels_all_ga4)
 
-#create trap locs with slightly larger extent to prevent LW spilling over
-obj.lw <- create.extent(sigma = 3000, buff.factor = 2.800, res = 200)
-trap.locs.lw <- obj.lw [[2]]
+ga5.pad.120 <- bind_rows(
+  GA5.120,
+  tibble(
+    x = 0, y = 0,
+    design = "dummy",
+    design_label = "dummy"
+  )
+)
 
-#use slightly larger trap loc extent to prevent LW traps spilling out of panel 
-p.GA2.120 <- plot.design(GA2.120, trap.locs.lw, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL)
-p.syspad.120 <- plot.design(sys.pad.120, trap.locs.lw, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL, levels_all = levels_all_sys)
-p.GA4pad.120 <- plot.design(ga4.pad.120, trap.locs.lw, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga4)
+levels_all_ga5 <- c(levels(GA5.120$design_label), "dummy")
+ga5.pad.120$design_label <- factor(ga5.pad.120$design_label, levels = levels_all_ga5)
+
+#decided to shift coords for LW traps up rather than adjust buffer
+#create trap locs to plot without buffer
+obj <- create.extent(sigma = 3000, buff.factor = 3, res = 200)
+trap.locs <- obj [[2]]
+
+###########################################################
+#have put 2 stage with GA4, still displaying in middle row for now
+
+p.GA2.120 <- plot.design(GA2.120, trap.locs, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL)
+p.GA2b.120 <- plot.design(GA2b.120, trap.locs, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL)
+p.syspad.120 <- plot.design(sys.pad.120, trap.locs, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL, levels_all = levels_all_sys)
+p.GA4pad.120 <- plot.design(ga4.pad.120, trap.locs, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga4)
+p.GA5pad.120 <- plot.design(ga5.pad.120, trap.locs, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga5)
 
 all.120.plot <- Combine.layoutplots(p.syspad.120, p.GA4pad.120,p.GA2.120)
+all.120.plotb <- Combine.layoutplots(p.syspad.120, p.GA2b.120, p.GA5pad.120)
 
 setwd("~/Git/SCR-Design")
 ggsave("15FoldScen/figures/All120.pdf", plot = all.120.plot, width = 270, height = 190, units = "mm")
+ggsave("15FoldScen/figures/All120b.pdf", plot = all.120.plotb, width = 270, height = 190, units = "mm")
 
