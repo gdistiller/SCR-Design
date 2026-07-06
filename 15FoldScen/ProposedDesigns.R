@@ -83,7 +83,7 @@ grid.1600.120 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, s
                                lambda0 = NULL, sigma.buff = NULL, grid.spacing = mean(sigma), 
                                criterion = 4, n.reps = nreps, grid = TRUE, nT = nT2)
 
-#adding in new spacing lvl of 550 m
+#adding in new spacing lvl of 550 m and 600 m
 grid.550.40 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, sigma = NULL, 
                                lambda0 = NULL, sigma.buff = NULL, grid.spacing = 550, 
                                criterion = 4, n.reps = nreps, grid = TRUE, nT = nT1)
@@ -92,7 +92,23 @@ grid.550.120 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, si
                                 lambda0 = NULL, sigma.buff = NULL, grid.spacing = 550, 
                                 criterion = 4, n.reps = nreps, grid = TRUE, nT = nT2)
 
-#GENERATE AND ADD TO "GridDesigns.RData" and "GridDesigns120.RData"
+grid.600.40 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, sigma = NULL, 
+                              lambda0 = NULL, sigma.buff = NULL, grid.spacing = 600, 
+                              criterion = 4, n.reps = nreps, grid = TRUE, nT = nT1)
+
+grid.600.120 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, sigma = NULL, 
+                               lambda0 = NULL, sigma.buff = NULL, grid.spacing = 600, 
+                               criterion = 4, n.reps = nreps, grid = TRUE, nT = nT2)
+
+load("15FoldScen/Cluster/Sims/40Traps/GridDesigns40.RData")
+grid.designs.40$`550 m` <- grid.550.40
+grid.designs.40$`600 m` <- grid.600.40
+save(grid.designs.40, file = "15FoldScen/Cluster/Sims/40Traps/GridDesigns40.RData")
+
+load("15FoldScen/Cluster/Sims/120Traps/GridDesigns120.RData")
+grid.designs.120$`550 m` <- grid.550.120
+grid.designs.120$`600 m` <- grid.600.120
+save(grid.designs.120, file = "15FoldScen/Cluster/Sims/120Traps/GridDesigns120.RData")
 
 #########################################################
 #Systematic clustered designs
