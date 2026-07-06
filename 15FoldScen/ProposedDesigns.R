@@ -1,5 +1,6 @@
-#May 2026, incls OS and clustered designs
+#July 2026, incls OS and clustered designs
 #this code generates the grid designs, the GA designs are done on the cluster
+#July added new spacing of 550
 #cluster files are all combined into a GADesigns file at the end
 
 library(secrdesign)
@@ -81,6 +82,17 @@ grid.1600.40 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, si
 grid.1600.120 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, sigma = NULL, 
                                lambda0 = NULL, sigma.buff = NULL, grid.spacing = mean(sigma), 
                                criterion = 4, n.reps = nreps, grid = TRUE, nT = nT2)
+
+#adding in new spacing lvl of 550 m
+grid.550.40 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, sigma = NULL, 
+                               lambda0 = NULL, sigma.buff = NULL, grid.spacing = 550, 
+                               criterion = 4, n.reps = nreps, grid = TRUE, nT = nT1)
+
+grid.550.120 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, sigma = NULL, 
+                                lambda0 = NULL, sigma.buff = NULL, grid.spacing = 550, 
+                                criterion = 4, n.reps = nreps, grid = TRUE, nT = nT2)
+
+#GENERATE AND ADD TO "GridDesigns.RData" and "GridDesigns120.RData"
 
 #########################################################
 #Systematic clustered designs
