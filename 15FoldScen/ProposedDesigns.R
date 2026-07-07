@@ -280,6 +280,7 @@ save(lwlist, file = "15FoldScen/Cluster/Sims/LWdesigns.RData")
 #I adjust the y coord by 1 km in the sim script
 
 #doing for another set of OS spacings (500 / 1200)
+#need to adjust K in the fn and then run environment(make.lacework) <- asNamespace("secr”)
 smallspacing <- 500
 bigspacing <- 1200
 
@@ -297,16 +298,14 @@ lw <- make.lacework(region = region,
 
 ## Manually remove some traps so end up with the same number of traps as other designs
 lw.40.1 <- crop_to_n(lw$x, lw$y, N = 40, xy_ratio = 1)
-lw.40.2 <- crop_to_n(lw$x, lw$y, N = 40, xy_ratio = 2)
 
 lw.120.1 <- crop_to_n(lw$x, lw$y, N = 120, xy_ratio = 1)
-lw.120.2 <- crop_to_n(lw$x, lw$y, N = 120, xy_ratio = 2)
+
 
 lw.40.1 <- read.traps(data = lw.40.1$points, detector = "count")
-lw.40.2 <- read.traps(data = lw.40.2$points, detector = "count")
 
 lw.120.1 <- read.traps(data = lw.120.1$points, detector = "count")
-lw.120.2 <- read.traps(data = lw.120.2$points, detector = "count")
+
 
 plot(mask)
 plot(lw.40.1, add = TRUE)
