@@ -92,8 +92,6 @@ grid.550.120 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, si
                                 lambda0 = NULL, sigma.buff = NULL, grid.spacing = 550, 
                                 criterion = 4, n.reps = nreps, grid = TRUE, nT = nT2)
 
-#GENERATE AND ADD TO "GridDesigns.RData" and "GridDesigns120.RData"
-
 #########################################################
 #Systematic clustered designs
 #Going with 10 clusters of 2x2
@@ -280,6 +278,39 @@ save(lwlist, file = "15FoldScen/Cluster/Sims/LWdesigns.RData")
 
 #note that I reran sims for 120 after realising the bottom traps spilled into the buffer
 #I adjust the y coord by 1 km in the sim script
+
+#doing for another set of OS spacings (500 / 1200)
+smallspacing <- 500
+bigspacing <- 1200
+
+region = data.frame(x = c(min(mask$x), min(mask$x), max(mask$x), max(mask$x)),
+                    y = c(min(mask$y), max(mask$y), max(mask$y), min(mask$y)))
+
+# make the design 
+lwrot <- 45
+lw <- make.lacework(region = region, 
+                    spacing = c(bigspacing, smallspacing),  
+                    rotate = lwrot,
+                    radius = 1000,
+                    detector = "count", 
+                    keep.design = TRUE)
+
+## Manually remove some traps so end up with the same number of traps as other designs
+lw.40.1 <- crop_to_n(lw$x, lw$y, N = 40, xy_ratio = 1)
+lw.40.2 <- crop_to_n(lw$x, lw$y, N = 40, xy_ratio = 2)
+
+lw.120.1 <- crop_to_n(lw$x, lw$y, N = 120, xy_ratio = 1)
+lw.120.2 <- crop_to_n(lw$x, lw$y, N = 120, xy_ratio = 2)
+
+lw.40.1 <- read.traps(data = lw.40.1$points, detector = "count")
+lw.40.2 <- read.traps(data = lw.40.2$points, detector = "count")
+
+lw.120.1 <- read.traps(data = lw.120.1$points, detector = "count")
+lw.120.2 <- read.traps(data = lw.120.2$points, detector = "count")
+
+plot(mask)
+plot(lw.40.1, add = TRUE)
+
 
 ##########################################################
 #collate GA designs
