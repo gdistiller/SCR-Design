@@ -1,5 +1,5 @@
 #July 2026, simulations to evaluate grid designs for 15 fold scen
-#new version using a different spacing of 550
+#new version using a different spacing of 550 and 600
 
 rm(list=ls())
 

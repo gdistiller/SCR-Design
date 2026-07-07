@@ -1,5 +1,5 @@
 #July 2026, simulations to evaluate grid designs for 15 fold scen
-#new version using a different spacing of 550
+#new version using a different spacing of 550 and 600
 
 rm(list=ls())
 
@@ -46,9 +46,9 @@ Fit.models <- function(Data.obj, nrep, numcores = 4){
 ###################################################################
 
 load("SCRObjs.RData")
-load("GridDesigns.RData") 
+load("GridDesigns40.RData") 
 
-mask <- res.objs[[1]]
+mask <- SCR.objs$Full[[1]]
 
 #Set values for both strata
 DiffFactor <- 15
@@ -65,11 +65,11 @@ scen$D[S2] <- D2
 scen$lambda0[S2] <- L02
 scen$sigma[S2] <- sigma2
 
-Grid.550.Data <- Sim.data(scenario.df = scen, nreps = 1, traplist = grid.designs$`550 m`, masklist = mask)
+Grid.550.Data <- Sim.data(scenario.df = scen, nreps = 1, traplist = grid.designs.40$`550 m`, masklist = mask)
 Grid.550.results <- Fit.models(Data.obj = Grid.550.Data, nrep = nreps, numcores = cores)
 save.image("GridseResults40.RData")
 
-Grid.600.Data <- Sim.data(scenario.df = scen, nreps = 1, traplist = grid.designs$`600 m`, masklist = mask)
+Grid.600.Data <- Sim.data(scenario.df = scen, nreps = 1, traplist = grid.designs.40$`600 m`, masklist = mask)
 Grid.600.results <- Fit.models(Data.obj = Grid.600.Data, nrep = nreps, numcores = cores)
 save.image("GridseResults40.RData")
 
