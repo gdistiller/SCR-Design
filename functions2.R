@@ -497,8 +497,8 @@ getCrit2G_abs <- function(
   
   critval <- switch(
     criterion,
-    mean = mean(c(minnr1, minnr2)),
-    min = min(minnr1, minnr2)
+    mean = -mean(c(minnr1, minnr2)),
+    min = -min(minnr1, minnr2)
   )
   
   c(S, En1, En2, Er1, Er2, critval * CF)
