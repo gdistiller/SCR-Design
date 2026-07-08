@@ -147,7 +147,7 @@ Grid40.800.clean <- merge(Grid40.800.red1, Grid40.800.red2, by = "row", all.x = 
 
 Grid800.40 <- construct_df(Grid40.800.clean, design_name = "Grid 800m", true_vals = truth_df)
 
-#700 m spacing (OS)
+#700 m spacing (OS1)
 load("15FoldScen/Cluster/Sims/40Traps/OSGridsResults40b.RData")
 
 Grid40.700.red1 <- find.rogue(Grid.700.results[,c(1:6)], mag = mag.factor, true = c(0.05, 2, 200))
@@ -155,6 +155,15 @@ Grid40.700.red2 <- find.rogue(Grid.700.results[,c(7:12)], mag = mag.factor, true
 Grid40.700.clean <- merge(Grid40.700.red1, Grid40.700.red2, by = "row", all.x = TRUE, all.y = TRUE)
 
 Grid700.40 <- construct_df(Grid40.700.clean, design_name = "Grid 700m", true_vals = truth_df)
+
+#600 m spacing (OS2) ; after changing the obj fn for the 2G OS
+load("15FoldScen/Cluster/Sims/40Traps/GridseResults40.RData")
+
+Grid40.600.red1 <- find.rogue(Grid.600.results[,c(1:6)], mag = mag.factor, true = c(0.05, 2, 200))
+Grid40.600.red2 <- find.rogue(Grid.600.results[,c(7:12)], mag = mag.factor, true = c(0.05/15, 2/15, 3000))
+Grid40.600.clean <- merge(Grid40.600.red1, Grid40.600.red2, by = "row", all.x = TRUE, all.y = TRUE)
+
+Grid600.40 <- construct_df(Grid40.600.clean, design_name = "Grid 600m", true_vals = truth_df)
 
 #cluster (os spacing)
 load("15FoldScen/Cluster/Sims/40Traps/Clusters1b.RData")
@@ -270,6 +279,7 @@ TwoStage.40 <- construct_df(TwoStage40.clean, design_name = "TwoStage", true_val
 all_results_40_3 <- bind_rows(
   Grid800.40,
   Grid700.40,
+  Grid600.40,
   ClusterOS.40,
   Cluster2Sig.40,
   LW.40,
