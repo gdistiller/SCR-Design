@@ -388,7 +388,7 @@ optimalSpacing2G <- function(
     detectfn2 = "HHN",
     xsigma = 4,
     spacing_m = seq(200, 4000, 200),
-    criterion = c("sum_min", "all_min"),
+    criterion = c("mean", "min"),
     CF = 1.0,
     ...
 ) {
@@ -492,10 +492,13 @@ getCrit2G_abs <- function(
   En1 <- En1[1]
   En2 <- En2[1]
   
+  minnr1 <- 1 /sqrt(min(En1, Er1))
+  minnr2 <- 1 /sqrt(min(En2, Er2))
+  
   critval <- switch(
     criterion,
-    sum_min = min(En1 + En2, Er1 + Er2),
-    all_min = min(En1, En2, Er1, Er2)
+    mean = mean(c(minnr1, minnr2)),
+    min = min(minnr1, minnr2)
   )
   
   c(S, En1, En2, Er1, Er2, critval * CF)
