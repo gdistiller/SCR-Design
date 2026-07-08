@@ -46,6 +46,7 @@ writeLines(tab1, "15FoldScen/tables/tab1.tex")
 load("15FoldScen/AllResults3.RData")
 AllResults40 <- Allresults_3[[1]]
 AllResults40$design[AllResults40$design=="TwoStage"] <- "Two Stage"
+AllResults40 <- subset(AllResults40, design != "Grid 700m")
 
 #control order of design factor
 AllResults40 <- AllResults40 %>%
@@ -125,6 +126,7 @@ ggsave("15FoldScen/figures/Excl40.pdf", plot = excl40.plot, width = 85, height =
 
 AllResults120 <- Allresults_3[[2]]
 AllResults120$design[AllResults120$design=="TwoStage"] <- "Two Stage"
+AllResults120 <- subset(AllResults120, design != "Grid 700m")
 
 #confirm nothing dropped with 120 traps
 #control order of design factor
