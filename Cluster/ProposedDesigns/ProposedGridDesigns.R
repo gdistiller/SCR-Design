@@ -59,7 +59,7 @@ GridKEval <- function(polygon, sigma1, K, nT, nreps){
   for (k in 2:K){
     sigma2 <- k * sigma1
     h = sigma1^0.5 * sigma2^0.5
-    h = round(h/100)*100
+    h = round(h/10)*10
     GridK.list[[k-1]] <- Proposed.traps(poly = polygon, alltraps = NULL, D = NULL, sigma = NULL, 
                       lambda0 = NULL, sigma.buff = NULL, grid.spacing = h, 
                       criterion = 4, n.reps = nreps, grid = TRUE, nT = nT)
