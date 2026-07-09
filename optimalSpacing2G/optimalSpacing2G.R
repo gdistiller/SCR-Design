@@ -1,7 +1,7 @@
 ##############################################################################
 ## Two-group optimal spacing (absolute spacing search)
 ## Poisson only, no simulation block
-## Objective: maximise either min(En1 + En2, Er1 + Er2) or min(En1, En2, Er1, Er2)
+## Objective: maximise expected-capture criteria or minimise CV criteria
 ##############################################################################
 
 optimalSpacing2G <- function(
@@ -14,7 +14,10 @@ optimalSpacing2G <- function(
     detectfn2 = "HHN",
     xsigma = 4,
     spacing_m = seq(200, 4000, 200),
-    criterion = c("sum_min", "all_min"),
+    criterion = c(
+      "sum_min", "all_min", "min_mean", "min_max",
+      "max_mean_En2", "max_min_En2"
+    ),
     CF = 1.0,
     ...
 ) {
@@ -62,7 +65,10 @@ optimalSpacing2G <- function(
   )
   values <- do.call(rbind, values)
   values <- as.data.frame(values)
-  names(values) <- c("spacing", "En1", "En2", "Er1", "Er2", "crit")
+  names(values) <- c(
+    "spacing", "En1", "En2", "Er1", "Er2",
+    "CV1", "CV2", "En2plus1", "En2plus2", "crit"
+  )
 
   opt <- if (!is.na(CF) && nrow(values) > 0 && diff(range(values$spacing)) > 0) {
     interpCritMax(values)
@@ -73,6 +79,7 @@ optimalSpacing2G <- function(
   out <- list(
     values = values,
     optimum.spacing = opt$minimum,
+    optimum.crit = opt$objective,
     maximum.crit = opt$objective,
     criterion = criterion,
     traps.base = traps0,
@@ -117,19 +124,33 @@ getCrit2G_abs <- function(
   Er2 <- En2[2]
   En1 <- En1[1]
   En2 <- En2[1]
+  CV1 <- 1 / sqrt(min(En1, Er1))
+  CV2 <- 1 / sqrt(min(En2, Er2))
+  En2plus1 <- secrdesign::En2(D1, trapS, mask, detectpar1, noccasions, detectfn1)[2] * nrepeats
+  En2plus2 <- secrdesign::En2(D2, trapS, mask, detectpar2, noccasions, detectfn2)[2] * nrepeats
 
   critval <- switch(
     criterion,
     sum_min = min(En1 + En2, Er1 + Er2),
-    all_min = min(En1, En2, Er1, Er2)
+    all_min = min(En1, En2, Er1, Er2),
+    min_mean = -mean(c(CV1, CV2)),
+    min_max = -max(CV1, CV2),
+    max_mean_En2 = En2plus1 + En2plus2,
+    max_min_En2 = min(En2plus1, En2plus2)
   )
 
-  c(S, En1, En2, Er1, Er2, critval * CF)
+  c(S, En1, En2, Er1, Er2, CV1, CV2, En2plus1, En2plus2, critval * CF)
 }
 
 ##############################################################################
 
 interpCritMax <- function(values) {
+  ok <- is.finite(values$spacing) & is.finite(values$crit)
+  values <- values[ok, ]
+  if (nrow(values) < 2 || diff(range(values$spacing)) <= 0) {
+    return(list(minimum = NA, objective = NA))
+  }
+
   f <- approxfun(values$spacing, values$crit, rule = 2)
   opt <- optimize(f, interval = range(values$spacing), maximum = TRUE)
   list(minimum = opt$maximum, objective = opt$objective)
