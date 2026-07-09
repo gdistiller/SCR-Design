@@ -65,7 +65,7 @@ scen$D[S2] <- D2
 scen$lambda0[S2] <- L02
 scen$sigma[S2] <- sigma2
 
-Grid.K2.Data <- Sim.data(scenario.df = scen, nreps = 1, traplist = gridK.40$K2[1:4], masklist = mask)
+Grid.K2.Data <- Sim.data(scenario.df = scen, nreps = 1, traplist = gridK.40$K2, masklist = mask)
 Grid.K2.results <- Fit.models(Data.obj = Grid.K2.Data, nrep = nreps, numcores = cores)
 save.image("GridResults40Ka.RData")
 
