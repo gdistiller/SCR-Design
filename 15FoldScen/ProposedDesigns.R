@@ -13,6 +13,7 @@ library(terra)
 rm(list=ls())
 
 source("functions2.R")
+source('optimalSpacing2G/optimalSpacing2G.R')
 
 #Set values for both strata
 sigma1 = 200 ; sigma2 = 3000  ; sigma <- c(sigma1, sigma2)
@@ -37,26 +38,74 @@ plot(trap.locs, add = T)
 
 #create grid designs using optimal spacing, sum_min,  all_min critertia for two classes
 #result does not seem sensitive to spacing of base grid
-grid <- make.grid(7,7,1000, detector = "count")
-spacing.sum.min <- optimalSpacing2G(D1 = D1, D2 = D2,
-                                    traps0 = grid,
-                                    detectpar1 = list(lambda0 = L01, sigma = sigma1),
-                                    detectpar2 = list(lambda0 = L02, sigma = sigma2),
-                                    noccasions = 1,
-                                    criterion = c("sum_min"), # sum_min
-                                    spacing_m = seq(0,5000,10))
-spacing.sum.min$optimum.spacing
 
-spacing.all.min <- optimalSpacing2G(D1 = D1, D2 = D2,
-                                    traps0 = grid,
+#create traps obj for OS
+## Fixed-T near-square rectangular trap grid
+nxtraps <- floor(sqrt(nT1))
+while (nT1 %% nxtraps != 0) nxtraps <- nxtraps - 1
+nytraps <- nT1 / nxtraps
+
+traps40 <- make.grid(
+  nx = nxtraps,
+  ny = nytraps,
+  spacing = 3000,
+  detector = "count"
+)
+
+#OS for 40 traps using OS 2G, and switching to min_max CV
+spacing.meanCV <- optimalSpacing2G(D1 = D1, D2 = D2,
+                                    traps0 = traps40,
                                     detectpar1 = list(lambda0 = L01, sigma = sigma1),
                                     detectpar2 = list(lambda0 = L02, sigma = sigma2),
                                     noccasions = 1,
-                                    criterion = c("all_min"), # all_min
+                                    criterion = c("min_mean_CV"),
                                     spacing_m = seq(0,5000,10))
-spacing.all.min$optimum.spacing
+spacing.meanCV $optimum.spacing
+
+spacing.minmaxCV <- optimalSpacing2G(D1 = D1, D2 = D2,
+                                    traps0 = traps40,
+                                    detectpar1 = list(lambda0 = L01, sigma = sigma1),
+                                    detectpar2 = list(lambda0 = L02, sigma = sigma2),
+                                    noccasions = 1,
+                                    criterion = c("min_max_CV"),
+                                    spacing_m = seq(0,5000,10))
+spacing.minmaxCV$optimum.spacing
+#so 600 m spacing seems right for 40 traps
+
+#OS for 120 traps using OS 2G, and switching to min_max CV
+nxtraps <- floor(sqrt(nT2))
+while (nT2 %% nxtraps != 0) nxtraps <- nxtraps - 1
+nytraps <- nT2 / nxtraps
+
+traps120 <- make.grid(
+  nx = nxtraps,
+  ny = nytraps,
+  spacing = 3000,
+  detector = "count"
+)
+
+spacing.meanCV <- optimalSpacing2G(D1 = D1, D2 = D2,
+                                   traps0 = traps120,
+                                   detectpar1 = list(lambda0 = L01, sigma = sigma1),
+                                   detectpar2 = list(lambda0 = L02, sigma = sigma2),
+                                   noccasions = 1,
+                                   criterion = c("min_mean_CV"),
+                                   spacing_m = seq(0,5000,10))
+spacing.meanCV $optimum.spacing
+
+spacing.minmaxCV <- optimalSpacing2G(D1 = D1, D2 = D2,
+                                     traps0 = traps120,
+                                     detectpar1 = list(lambda0 = L01, sigma = sigma1),
+                                     detectpar2 = list(lambda0 = L02, sigma = sigma2),
+                                     noccasions = 1,
+                                     criterion = c("min_max_CV"),
+                                     spacing_m = seq(0,5000,10))
+spacing.minmaxCV$optimum.spacing
+
+#so spacings of 2300 or 1300, going with minmaxCV of 1300
 
 #use the spacing from all.min of 700 m
+#redundant, see below
 grid.sum.min.40 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, sigma = NULL, 
                                lambda0 = NULL, sigma.buff = NULL, grid.spacing = 700, 
                                criterion = 4, n.reps = nreps, grid = TRUE, nT = nT1)
@@ -83,13 +132,13 @@ grid.1600.120 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, s
                                lambda0 = NULL, sigma.buff = NULL, grid.spacing = mean(sigma), 
                                criterion = 4, n.reps = nreps, grid = TRUE, nT = nT2)
 
-#adding in new spacing lvl of 550 m
-grid.550.40 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, sigma = NULL, 
-                               lambda0 = NULL, sigma.buff = NULL, grid.spacing = 550, 
+#adding in new spacing lvl of 600 m, and 1300 for 120 traps
+grid.600.40 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, sigma = NULL, 
+                               lambda0 = NULL, sigma.buff = NULL, grid.spacing = 600, 
                                criterion = 4, n.reps = nreps, grid = TRUE, nT = nT1)
 
-grid.550.120 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, sigma = NULL, 
-                                lambda0 = NULL, sigma.buff = NULL, grid.spacing = 550, 
+grid.1300.120 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, sigma = NULL, 
+                                lambda0 = NULL, sigma.buff = NULL, grid.spacing = 1300, 
                                 criterion = 4, n.reps = nreps, grid = TRUE, nT = nT2)
 
 #########################################################
@@ -97,52 +146,44 @@ grid.550.120 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, si
 #Going with 10 clusters of 2x2
 #first find within and between optimal spacing using strata 1 for within a S2 for btwn
 #using 2G fn so I dont need a bunch of new fns
-#also some issue with dfcast (similar to secr_valid.detecfn)
-grid <- make.grid(7,7,1000, detector = "count")
+#crit makes no diff since only one set of values given
+
 spacing.within <- optimalSpacing2G(D1 = D1, D2 = D1,
-                                   traps0 = grid,
+                                   traps0 = traps,
                                    detectpar1 = list(lambda0 = L01, sigma = sigma1),
                                    detectpar2 = list(lambda0 = L01, sigma = sigma1),
                                    noccasions = 1,
-                                   criterion = c("sum_min"), # sum_min
-                                   spacing_m = seq(0,1000,100))
+                                   criterion = c("min_mean_CV"),
+                                   spacing_m = seq(0,5000,10))
 spacing.within$optimum.spacing
 
-grid2 <- make.grid(7,7,1000, detector = "count")
 spacing.btwn <- optimalSpacing2G(D1 = D2, D2 = D2,
-                                 traps0 = grid2,
+                                 traps0 = traps,
                                  detectpar1 = list(lambda0 = L02, sigma = sigma2),
                                  detectpar2 = list(lambda0 = L02, sigma = sigma2),
                                  noccasions = 1,
-                                 criterion = c("sum_min"), # sum_min
-                                 spacing_m = seq(0,10000,100))
+                                 criterion = c("min_mean_CV"),
+                                 spacing_m = seq(0,5000,10))
 spacing.btwn$optimum.spacing
+#for 40 traps get 530 and 980 so going with 500 / 1000
 
 #generate a between-cluster grid for cluster centroids, so nT here is 10 or 30
 #slightly increase the buffer, for 2x2 grids with 500 m spacing this is sqrt(2*250^2) or 353
+#within spacing is 500 and btwn 1000
 res.objs1 <- create.extent(sigma = 3000, buff.factor = 3.12, res = 200)
 mask1 <- res.objs1[[1]]
 clust.locs1 <- res.objs1[[2]]
 clustlocs.sf1 <- res.objs1[[3]]
 
 clusters.os.40 <- Proposed.traps(poly = clustlocs.sf1, alltraps = NULL, D = NULL, sigma = NULL, 
-                              lambda0 = NULL, sigma.buff = NULL, grid.spacing = spacing.btwn$optimum.spacing + spacing.within$optimum.spacing, 
+                              lambda0 = NULL, sigma.buff = NULL, grid.spacing = 1500, 
                               criterion = 4, n.reps = 500, grid = TRUE, nT = 10)
 
-clusters.os.120 <- Proposed.traps(poly = clustlocs.sf1, alltraps = NULL, D = NULL, sigma = NULL, 
-                                 lambda0 = NULL, sigma.buff = NULL, grid.spacing = spacing.btwn$optimum.spacing + spacing.within$optimum.spacing, 
-                                 criterion = 4, n.reps = 500, grid = TRUE, nT = 30)
-
-plot(mask, axes = T)
+plot(mask1, axes = T)
 plot(clusters.os.40[[1]], add = T)
-plot(clusters.os.120[[1]], add = T)
 
 # Wrapper that generates one full set of clustered trap coordinates
 trap.list.os.40 <- lapply(clusters.os.40, function(centroids) {
-  make_cluster_traps(centroids, spacing = 500, n_rows = 2, n_cols = 2)
-})
-
-trap.list.os.120 <- lapply(clusters.os.120, function(centroids) {
   make_cluster_traps(centroids, spacing = 500, n_rows = 2, n_cols = 2)
 })
 
@@ -150,19 +191,61 @@ trap.secr.list.os.40 <- lapply(trap.list.os.40, function(traps) {
   read.traps(data = traps[, c("x", "y")], detector = "count")
 })
 
+
+plot(mask1, axes = T)
+plot(trap.secr.list.os.40[[1]], add = T)
+
+Enrm(D = D1, trap.secr.list.os.40[[1]], mask1, detectpar = list(lambda0 = L01, sigma = sigma1), noccasions = 1)
+Enrm(D = D2, trap.secr.list.os.40[[1]], mask1, detectpar = list(lambda0 = L02, sigma = sigma2), noccasions = 1)
+
+#120 traps
+spacing.within120 <- optimalSpacing2G(D1 = D1, D2 = D1,
+                                   traps0 = traps120,
+                                   detectpar1 = list(lambda0 = L01, sigma = sigma1),
+                                   detectpar2 = list(lambda0 = L01, sigma = sigma1),
+                                   noccasions = 1,
+                                   criterion = c("min_mean_CV"),
+                                   spacing_m = seq(0,5000,10))
+spacing.within120$optimum.spacing
+
+spacing.btwn120 <- optimalSpacing2G(D1 = D2, D2 = D2,
+                                 traps0 = traps120,
+                                 detectpar1 = list(lambda0 = L02, sigma = sigma2),
+                                 detectpar2 = list(lambda0 = L02, sigma = sigma2),
+                                 noccasions = 1,
+                                 criterion = c("min_mean_CV"),
+                                 spacing_m = seq(0,5000,10))
+spacing.btwn120$optimum.spacing
+
+#so going with 600 within and 1700 btwn
+#slightly increase the buffer, for 2x2 grids with 600 m spacing this is sqrt(2*300^2) or 425
+res.objs2 <- create.extent(sigma = 3000, buff.factor = 3.14, res = 200)
+mask2 <- res.objs2[[1]]
+clust.locs2 <- res.objs2[[2]]
+clustlocs.sf2 <- res.objs2[[3]]
+
+clusters.os.120 <- Proposed.traps(poly = clustlocs.sf2, alltraps = NULL, D = NULL, sigma = NULL, 
+                                 lambda0 = NULL, sigma.buff = NULL, grid.spacing = 2300, 
+                                 criterion = 4, n.reps = 500, grid = TRUE, nT = 30)
+
+
+plot(mask2, axes = T)
+plot(clusters.os.120[[5]], add = T)
+
+# Wrapper that generates one full set of clustered trap coordinates
+trap.list.os.120 <- lapply(clusters.os.120, function(centroids) {
+  make_cluster_traps(centroids, spacing = 600, n_rows = 2, n_cols = 2)
+})
+
 trap.secr.list.os.120 <- lapply(trap.list.os.120, function(traps) {
   read.traps(data = traps[, c("x", "y")], detector = "count")
 })
 
-plot(mask1, axes = T)
-plot(trap.secr.list.os.40[[10]], add = T)
-        plot(trap.secr.list.os.120[[10]], add = T)
+plot(mask2, axes = T)
+plot(trap.secr.list.os.120[[5]], add = T)
 
-Enrm(D = D1, trap.secr.list.os.40[[1]], mask, detectpar = list(lambda0 = L01, sigma = sigma1), noccasions = 1)
-Enrm(D = D2, trap.secr.list.os.40[[1]], mask, detectpar = list(lambda0 = L02, sigma = sigma2), noccasions = 1)
-
-Enrm(D = D1, trap.secr.list.os.120[[1]], mask, detectpar = list(lambda0 = L01, sigma = sigma1), noccasions = 1)
-Enrm(D = D2, trap.secr.list.os.120[[1]], mask, detectpar = list(lambda0 = L02, sigma = sigma2), noccasions = 1)
+Enrm(D = D1, trap.secr.list.os.120[[1]], mask1, detectpar = list(lambda0 = L01, sigma = sigma1), noccasions = 1)
+Enrm(D = D2, trap.secr.list.os.120[[1]], mask1, detectpar = list(lambda0 = L02, sigma = sigma2), noccasions = 1)
 
 #again with 2 sigma spacing (400 / 6000)
 #slightly increase the buffer, for 2x2 grids with 400 m spacing this is sqrt(2*200^2) or 282.84
@@ -210,7 +293,7 @@ Enrm(D = D2, trap.secr.list.os.40[[1]], mask, detectpar = list(lambda0 = L02, si
 Enrm(D = D1, trap.secr.list.os.120[[1]], mask, detectpar = list(lambda0 = L01, sigma = sigma1), noccasions = 1)
 Enrm(D = D2, trap.secr.list.os.120[[1]], mask, detectpar = list(lambda0 = L02, sigma = sigma2), noccasions = 1)
 
-#save designs
+#save designs (bit old, if rerunning all use next block)
 grid.designs.40 <- list("700 m (2G opt)" = grid.sum.min.40, "800 m" = grid.800.40, "Avg sigma" = grid.1600.40, 
                      "Cluster (opt)" = trap.secr.list.os.40, "Cluster (2 sig)" = trap.secr.list.2sig.40)
 
