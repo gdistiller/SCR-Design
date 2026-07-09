@@ -35,7 +35,7 @@ Fit.models <- function(Data.obj, nrep, numcores = 4){
                  dimnames = list(NULL, c("D1", "D1.se", "L01", "L01.se", "Sig1", "Sig1.se", "D2", "D2.se", "L02", "L02.se", "Sig2", "Sig2.se")))
   for (i in 1:nrep){
     CH <- Data.obj$output[[i]][[1]]
-    mod <- secr.fit(CH, detectfn = 'HHN', mask = mask, model = list(D~g, sigma~g, lambda0~g), groups = "group", ncores = numcores)
+    mod <- secr.fit(CH, detectfn = 'HHN', mask = mask, model = list(D~g, sigma~g, lambda0~g), groups = "group", ncores = numcores, trace = F)
     temp1 <- unlist(predict(mod)[[1]][,2:3])
     temp2 <- unlist(predict(mod)[[2]][,2:3])
     ests[i,] <- c(temp1[c(1,4,2,5,3,6)], temp2[c(1,4,2,5,3,6)])
@@ -66,7 +66,7 @@ scen$lambda0[S2] <- L02
 scen$sigma[S2] <- sigma2
 
 Grid.K11.Data <- Sim.data(scenario.df = scen, nreps = 1, traplist = gridK.40$K11, masklist = mask)
-Grid.K11.results <- Fit.models(Data.obj = Grid.600.K11.Data, nrep = nreps, numcores = cores)
+Grid.K11.results <- Fit.models(Data.obj = Grid.K11.Data, nrep = nreps, numcores = cores)
 save.image("GridResults40Kc.RData")
 
 DiffFactor <- 12
@@ -83,7 +83,7 @@ scen$lambda0[S2] <- L02
 scen$sigma[S2] <- sigma2
 
 Grid.K12.Data <- Sim.data(scenario.df = scen, nreps = 1, traplist = gridK.40$K12, masklist = mask)
-Grid.K12.results <- Fit.models(Data.obj = Grid.600.K12.Data, nrep = nreps, numcores = cores)
+Grid.K12.results <- Fit.models(Data.obj = Grid.K12.Data, nrep = nreps, numcores = cores)
 save.image("GridResults40Kc.RData")
 
 DiffFactor <- 13
@@ -100,7 +100,7 @@ scen$lambda0[S2] <- L02
 scen$sigma[S2] <- sigma2
 
 Grid.K13.Data <- Sim.data(scenario.df = scen, nreps = 1, traplist = gridK.40$K13, masklist = mask)
-Grid.K13.results <- Fit.models(Data.obj = Grid.600.K13.Data, nrep = nreps, numcores = cores)
+Grid.K13.results <- Fit.models(Data.obj = Grid.K13.Data, nrep = nreps, numcores = cores)
 save.image("GridResults40Kc.RData")
 
 DiffFactor <- 14
@@ -117,7 +117,7 @@ scen$lambda0[S2] <- L02
 scen$sigma[S2] <- sigma2
 
 Grid.K14.Data <- Sim.data(scenario.df = scen, nreps = 1, traplist = gridK.40$K14, masklist = mask)
-Grid.K14.results <- Fit.models(Data.obj = Grid.600.K14.Data, nrep = nreps, numcores = cores)
+Grid.K14.results <- Fit.models(Data.obj = Grid.K14.Data, nrep = nreps, numcores = cores)
 save.image("GridResults40Kc.RData")
 
 ###################################################################

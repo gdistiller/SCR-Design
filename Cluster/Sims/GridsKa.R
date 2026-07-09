@@ -35,7 +35,7 @@ Fit.models <- function(Data.obj, nrep, numcores = 4){
                  dimnames = list(NULL, c("D1", "D1.se", "L01", "L01.se", "Sig1", "Sig1.se", "D2", "D2.se", "L02", "L02.se", "Sig2", "Sig2.se")))
   for (i in 1:nrep){
     CH <- Data.obj$output[[i]][[1]]
-    mod <- secr.fit(CH, detectfn = 'HHN', mask = mask, model = list(D~g, sigma~g, lambda0~g), groups = "group", ncores = numcores)
+    mod <- secr.fit(CH, detectfn = 'HHN', mask = mask, model = list(D~g, sigma~g, lambda0~g), groups = "group", ncores = numcores, trace = F)
     temp1 <- unlist(predict(mod)[[1]][,2:3])
     temp2 <- unlist(predict(mod)[[2]][,2:3])
     ests[i,] <- c(temp1[c(1,4,2,5,3,6)], temp2[c(1,4,2,5,3,6)])
@@ -65,8 +65,8 @@ scen$D[S2] <- D2
 scen$lambda0[S2] <- L02
 scen$sigma[S2] <- sigma2
 
-Grid.K2.Data <- Sim.data(scenario.df = scen, nreps = 1, traplist = gridK.40$K2, masklist = mask)
-Grid.K2.results <- Fit.models(Data.obj = Grid.600.K2.Data, nrep = nreps, numcores = cores)
+Grid.K2.Data <- Sim.data(scenario.df = scen, nreps = 1, traplist = gridK.40$K2[1:4], masklist = mask)
+Grid.K2.results <- Fit.models(Data.obj = Grid.K2.Data, nrep = nreps, numcores = cores)
 save.image("GridResults40Ka.RData")
 
 DiffFactor <- 3
@@ -83,7 +83,7 @@ scen$lambda0[S2] <- L02
 scen$sigma[S2] <- sigma2
 
 Grid.K3.Data <- Sim.data(scenario.df = scen, nreps = 1, traplist = gridK.40$K3, masklist = mask)
-Grid.K3.results <- Fit.models(Data.obj = Grid.600.K3.Data, nrep = nreps, numcores = cores)
+Grid.K3.results <- Fit.models(Data.obj = Grid.K3.Data, nrep = nreps, numcores = cores)
 save.image("GridResults40Ka.RData")
 
 DiffFactor <- 4
@@ -100,7 +100,7 @@ scen$lambda0[S2] <- L02
 scen$sigma[S2] <- sigma2
 
 Grid.K4.Data <- Sim.data(scenario.df = scen, nreps = 1, traplist = gridK.40$K4, masklist = mask)
-Grid.K4.results <- Fit.models(Data.obj = Grid.600.K4.Data, nrep = nreps, numcores = cores)
+Grid.K4.results <- Fit.models(Data.obj = Grid.K4.Data, nrep = nreps, numcores = cores)
 save.image("GridResults40Ka.RData")
 
 DiffFactor <- 5
@@ -117,7 +117,7 @@ scen$lambda0[S2] <- L02
 scen$sigma[S2] <- sigma2
 
 Grid.K5.Data <- Sim.data(scenario.df = scen, nreps = 1, traplist = gridK.40$K5, masklist = mask)
-Grid.K5.results <- Fit.models(Data.obj = Grid.600.K5.Data, nrep = nreps, numcores = cores)
+Grid.K5.results <- Fit.models(Data.obj = Grid.K5.Data, nrep = nreps, numcores = cores)
 save.image("GridResults40Ka.RData")
 
 DiffFactor <- 6
@@ -134,7 +134,7 @@ scen$lambda0[S2] <- L02
 scen$sigma[S2] <- sigma2
 
 Grid.K6.Data <- Sim.data(scenario.df = scen, nreps = 1, traplist = gridK.40$K6, masklist = mask)
-Grid.K6.results <- Fit.models(Data.obj = Grid.600.K6.Data, nrep = nreps, numcores = cores)
+Grid.K6.results <- Fit.models(Data.obj = Grid.K6.Data, nrep = nreps, numcores = cores)
 save.image("GridResults40Ka.RData")
 
 ###################################################################
