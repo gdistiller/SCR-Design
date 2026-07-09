@@ -303,6 +303,9 @@ grid.designs.120 <- list("700 m (2G opt)" = grid.sum.min.120, "800 m" = grid.800
 save(grid.designs.40, file = "15FoldScen/Cluster/Sims/40Traps/GridDesigns40.RData")
 save(grid.designs.120, file = "15FoldScen/Cluster/Sims/120Traps/GridDesigns120.RData")
 
+save(grid.designs.40, file = "15FoldScen/Cluster/ProposedDesigns/40Traps/GridDesigns40.RData")
+save(grid.designs.120, file = "15FoldScen/Cluster/ProposedDesigns/120Traps/GridDesigns120.RData")
+
 ##########################################################
 #lacework
 ##########################################################
