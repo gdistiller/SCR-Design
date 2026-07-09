@@ -1,7 +1,12 @@
 ##############################################################################
-## Two-group optimal spacing (absolute spacing search)
-## Poisson only, no simulation block
-## Objective: maximise expected-capture criteria or minimise CV criteria
+## Two-group optimal spacing (numerical search over absolute spacings)
+## Possible objectives: for two groups A and B
+## "sum_min" = maximize min(En_A + En_B, Er_A + Er_B)
+## "all_min" = maximize min(En_A, EnB, Er_A, Er_B)
+## "min_mean_CV" = minimize mean(CV_A, CV_B)
+## "min_max_CV" = minimize max(CV_A, CV_B)
+## "max_mean_En2" = maximise mean(En2_A, En2_B) where En2 = n animals on >1 trap
+## "max_min_En2" = maximise min(En2_A, En2_B)
 ##############################################################################
 
 optimalSpacing2G <- function(
@@ -15,14 +20,26 @@ optimalSpacing2G <- function(
     xsigma = 4,
     spacing_m = seq(200, 4000, 200),
     criterion = c(
-      "sum_min", "all_min", "min_mean", "min_max",
+      "sum_min", "all_min", "min_mean_CV", "min_max_CV",
       "max_mean_En2", "max_min_En2"
     ),
     CF = 1.0,
     ...
 ) {
 
-  criterion <- match.arg(criterion)
+  valid_criteria <- c(
+    "sum_min", "all_min", "min_mean_CV", "min_max_CV",
+    "max_mean_En2", "max_min_En2"
+  )
+  if (missing(criterion)) {
+    criterion <- valid_criteria[1]
+  } else if (length(criterion) != 1 || !criterion %in% valid_criteria) {
+    stop(
+      "'criterion' must be one of: ",
+      paste(sQuote(valid_criteria), collapse = ", "),
+      call. = FALSE
+    )
+  }
 
   detectfn1 <- secr:::secr_valid.detectfn(detectfn1, valid = c(0, 1, 2, 14:19))
   detectfn2 <- secr:::secr_valid.detectfn(detectfn2, valid = c(0, 1, 2, 14:19))
@@ -70,15 +87,22 @@ optimalSpacing2G <- function(
     "CV1", "CV2", "En2plus1", "En2plus2", "crit"
   )
 
-  opt <- if (!is.na(CF) && nrow(values) > 0 && diff(range(values$spacing)) > 0) {
-    interpCritMax(values)
+  opt <- if (!is.na(CF) && nrow(values) > 0) {
+    ok <- is.finite(values$spacing) & is.finite(values$crit)
+    if (any(ok)) {
+      finite_values <- values[ok, , drop = FALSE]
+      optrow <- finite_values[which.max(finite_values$crit), ]
+      list(spacing = optrow$spacing, objective = optrow$crit)
+    } else {
+      list(spacing = NA, objective = NA)
+    }
   } else {
-    list(minimum = NA, objective = NA)
+    list(spacing = NA, objective = NA)
   }
 
   out <- list(
     values = values,
-    optimum.spacing = opt$minimum,
+    optimum.spacing = opt$spacing,
     optimum.crit = opt$objective,
     maximum.crit = opt$objective,
     criterion = criterion,
@@ -133,30 +157,14 @@ getCrit2G_abs <- function(
     criterion,
     sum_min = min(En1 + En2, Er1 + Er2),
     all_min = min(En1, En2, Er1, Er2),
-    min_mean = -mean(c(CV1, CV2)),
-    min_max = -max(CV1, CV2),
+    min_mean_CV = -mean(c(CV1, CV2)),
+    min_max_CV = -max(CV1, CV2),
     max_mean_En2 = En2plus1 + En2plus2,
     max_min_En2 = min(En2plus1, En2plus2)
   )
 
   c(S, En1, En2, Er1, Er2, CV1, CV2, En2plus1, En2plus2, critval * CF)
 }
-
-##############################################################################
-
-interpCritMax <- function(values) {
-  ok <- is.finite(values$spacing) & is.finite(values$crit)
-  values <- values[ok, ]
-  if (nrow(values) < 2 || diff(range(values$spacing)) <= 0) {
-    return(list(minimum = NA, objective = NA))
-  }
-
-  f <- approxfun(values$spacing, values$crit, rule = 2)
-  opt <- optimize(f, interval = range(values$spacing), maximum = TRUE)
-  list(minimum = opt$maximum, objective = opt$objective)
-}
-
-##############################################################################
 
 scale_traps <- function(traps, scalefac) {
   tr <- traps

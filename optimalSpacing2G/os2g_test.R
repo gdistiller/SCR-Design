@@ -1,87 +1,181 @@
 library(secrdesign)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
 source('optimalSpacing2G/optimalSpacing2G.R')
-grid <- make.grid(7,7,50)
-os1 = optimalSpacing(D = 5, traps = grid, detectpar = list(lambda0 = 0.2, sigma = 40), 
-               noccasions = 5, plt = FALSE)
-os1$rotRSE$optimum.spacing
 
-os2 = optimalSpacing2G(D1 = 5, D2 = 5,
-                 traps0 = grid,
-                 detectpar1 = list(lambda0 = 0.2, sigma = 40),
-                 detectpar2 = list(lambda0 = 0.2, sigma = 40),
-                 noccasions = 5,
-                 criterion = c("sum_min"), # all_min
-                 spacing_m = seq(0,120,1))
+## User settings
+T <- 40                  # number of traps
+noccasions <- 1           # change if needed
+H <- seq(100, 3000, 50)   # candidate spacings, metres
 
-os2$optimum.spacing
-xx=os2$values
-xx[1,]
-xx[xx$spacing == round(os2$optimum.spacing), ]
+## Group-specific SCR parameters
+sigma <- c(200, 3000)
+lambda0 <- c(2, 2 / 15)
+D <- c(1 / 20, 1 / 300)   # animals / hectare
 
-os2 = optimalSpacing2G(D1 = 5, D2 = 5,
-                       traps0 = grid,
-                       detectpar1 = list(lambda0 = 0.2, sigma = 80),
-                       detectpar2 = list(lambda0 = 0.2, sigma = 40),
-                       noccasions = 5,
-                       criterion = c("sum_min"), # all_min
-                       spacing_m = seq(0,120,1))
+## Fixed-T near-square rectangular trap grid
+nxtraps <- floor(sqrt(T))
+while (T %% nxtraps != 0) nxtraps <- nxtraps - 1
+nytraps <- T / nxtraps
 
-os2$optimum.spacing
-xx=os2$values
-xx[xx$spacing == round(os2$optimum.spacing), ]
+traps <- make.grid(
+  nx = nxtraps,
+  ny = nytraps,
+  spacing = 3000,
+  detector = "count"
+)
 
-os2_all = optimalSpacing2G(D1 = 5, D2 = 5,
-                           traps0 = grid,
-                           detectpar1 = list(lambda0 = 0.2, sigma = 40),
-                           detectpar2 = list(lambda0 = 0.2, sigma = 40),
-                           noccasions = 5,
-                           criterion = "all_min",
-                           spacing_m = seq(40,120,1))
+mask <- make.mask(traps, buffer = 9000, spacing = 200)
 
-os2_mean = optimalSpacing2G(D1 = 5, D2 = 5,
-                            traps0 = grid,
-                            detectpar1 = list(lambda0 = 0.2, sigma = 40),
-                            detectpar2 = list(lambda0 = 0.2, sigma = 40),
-                            noccasions = 5,
-                            criterion = "min_mean",
-                            spacing_m = seq(40,120,1))
+## optimalSpacing per group
 
-os2_max = optimalSpacing2G(D1 = 5, D2 = 5,
-                           traps0 = grid,
-                           detectpar1 = list(lambda0 = 0.2, sigma = 40),
-                           detectpar2 = list(lambda0 = 0.2, sigma = 40),
-                           noccasions = 5,
-                           criterion = "min_max",
-                           spacing_m = seq(40,120,1))
+os.G1 = optimalSpacing(D = D[1], 
+                       traps = traps, 
+                       detectpar = list(lambda0 = lambda0[1], sigma = sigma[1]), 
+                       noccasions = 1, 
+                       plt = FALSE)
 
-stopifnot(isTRUE(all.equal(os2_mean$values$CV1,
-                           1 / sqrt(pmin(os2_mean$values$En1, os2_mean$values$Er1)))))
-stopifnot(isTRUE(all.equal(os2_mean$values$CV2,
-                           1 / sqrt(pmin(os2_mean$values$En2, os2_mean$values$Er2)))))
-stopifnot(isTRUE(all.equal(os2_mean$values$crit,
-                           -rowMeans(os2_mean$values[, c("CV1", "CV2")]))))
-stopifnot(isTRUE(all.equal(os2_max$values$crit,
-                           -pmax(os2_max$values$CV1, os2_max$values$CV2))))
-stopifnot(abs(os2_all$optimum.spacing - os2_mean$optimum.spacing) < 1)
-stopifnot(abs(os2_mean$optimum.spacing - os2_max$optimum.spacing) < 1)
+os.G2 = optimalSpacing(D = D[2], 
+                       traps = traps, 
+                       detectpar = list(lambda0 = lambda0[2], sigma = sigma[2]), 
+                       noccasions = 1, 
+                       plt = FALSE)
 
-os2_en2_sum = optimalSpacing2G(D1 = 5, D2 = 5,
-                               traps0 = grid,
-                               detectpar1 = list(lambda0 = 0.2, sigma = 40),
-                               detectpar2 = list(lambda0 = 0.2, sigma = 40),
-                               noccasions = 5,
-                               criterion = "max_mean_En2",
-                               spacing_m = seq(40,120,1))
+os.G1$rotRSE$optimum.spacing
+os.G2$rotRSE$optimum.spacing
 
-os2_en2_min = optimalSpacing2G(D1 = 5, D2 = 5,
-                               traps0 = grid,
-                               detectpar1 = list(lambda0 = 0.2, sigma = 40),
-                               detectpar2 = list(lambda0 = 0.2, sigma = 40),
-                               noccasions = 5,
-                               criterion = "max_min_En2",
-                               spacing_m = seq(40,120,1))
+# max(min(n1 + n2, r1 + r2))
+os2.sum_min = optimalSpacing2G(D1 = D[1], D2 = D[2],
+                               traps0 = traps,
+                               detectpar1 = list(lambda0 = lambda0[1], sigma = sigma[1]),
+                               detectpar2 = list(lambda0 = lambda0[2], sigma = sigma[2]),
+                               noccasions = 1,
+                               criterion = c("sum_min"), 
+                               spacing_m = seq(100,2000,50))
 
-stopifnot(isTRUE(all.equal(os2_en2_sum$values$crit,
-                           os2_en2_sum$values$En2plus1 + os2_en2_sum$values$En2plus2)))
-stopifnot(isTRUE(all.equal(os2_en2_min$values$crit,
-                           pmin(os2_en2_min$values$En2plus1, os2_en2_min$values$En2plus2))))
+# max(min(n1, n2, r1, r2))
+os2.all_min = optimalSpacing2G(D1 = D[1], D2 = D[2],
+                               traps0 = traps,
+                               detectpar1 = list(lambda0 = lambda0[1], sigma = sigma[1]),
+                               detectpar2 = list(lambda0 = lambda0[2], sigma = sigma[2]),
+                               noccasions = 1,
+                               criterion = c("all_min"), 
+                               spacing_m = seq(100,2000,50))
+
+# min(mean(CV1, CV2))
+os2.min_mean_CV = optimalSpacing2G(D1 = D[1], D2 = D[2],
+                                   traps0 = traps,
+                                   detectpar1 = list(lambda0 = lambda0[1], sigma = sigma[1]),
+                                   detectpar2 = list(lambda0 = lambda0[2], sigma = sigma[2]),
+                                   noccasions = 1,
+                                   criterion = c("min_mean_CV"),
+                                   spacing_m = seq(100,2000,50))
+
+# min(max(CV1, CV2))
+os2.min_max_CV = optimalSpacing2G(D1 = D[1], D2 = D[2],
+                                  traps0 = traps,
+                                  detectpar1 = list(lambda0 = lambda0[1], sigma = sigma[1]),
+                                  detectpar2 = list(lambda0 = lambda0[2], sigma = sigma[2]),
+                                  noccasions = 1,
+                                  criterion = c("min_max_CV"),
+                                  spacing_m = seq(100,2000,50))
+
+# max((En2_1 + En2_2))
+os2.max_mean_En2 = optimalSpacing2G(D1 = D[1], D2 = D[2],
+                                    traps0 = traps,
+                                    detectpar1 = list(lambda0 = lambda0[1], sigma = sigma[1]),
+                                    detectpar2 = list(lambda0 = lambda0[2], sigma = sigma[2]),
+                                    noccasions = 1,
+                                    criterion = c("max_mean_En2"),
+                                    spacing_m = seq(100,2000,50))
+
+# max(min(En2_1, En2_2))
+os2.max_min_En2 = optimalSpacing2G(D1 = D[1], D2 = D[2],
+                                   traps0 = traps,
+                                   detectpar1 = list(lambda0 = lambda0[1], sigma = sigma[1]),
+                                   detectpar2 = list(lambda0 = lambda0[2], sigma = sigma[2]),
+                                   noccasions = 1,
+                                   criterion = c("max_min_En2"), 
+                                   spacing_m = seq(100,2000,50))
+
+# compare
+os2.sum_min$optimum.spacing
+os2.all_min$optimum.spacing
+os2.min_mean_CV$optimum.spacing
+os2.min_max_CV$optimum.spacing
+os2.max_mean_En2$optimum.spacing
+os2.max_min_En2$optimum.spacing
+
+# hold G1 fixed (D[1], lambda0[1], sigma[1]) and vary G2 as factor of G1.
+# for each value, find optimal spacing using criterion = "min_mean_CV"
+
+os.by_k = list()
+for(k in 1:15){
+  
+  st = k * sigma[1]
+  lt = lambda0[1] / k
+  Dt = D[1] / k 
+  
+  os.by_k[[k]] = optimalSpacing2G(D1 = D[1], D2 = Dt,
+                                  traps0 = traps,
+                                  detectpar1 = list(lambda0 = lambda0[1], sigma = sigma[1]),
+                                  detectpar2 = list(lambda0 = lt, sigma = st),
+                                  noccasions = 1,
+                                  criterion = c("min_mean_CV"),
+                                  spacing_m = seq(0,1500,50))
+  
+}
+
+os.by_k_all <- sapply(os.by_k, function(z) z$optimum.spacing)
+os.by_k_all
+
+os.t = os.by_k[[15]]$values
+
+# plot how CV1 and CV2 change with spacing and k
+os_df <- do.call(rbind, lapply(os.by_k, `[[`, "values"))
+os_long <- os_df %>%
+  mutate(k = rep(1:15, each = 31)) |> 
+  pivot_longer(
+    cols = c(CV1, CV2),
+    names_to = "CV",
+    values_to = "value"
+  )
+
+ggplot(os_long, aes(x = spacing, y = value, colour = CV)) +
+  geom_line() +
+  facet_wrap(~ k) +
+  labs(
+    x = "Spacing",
+    y = "CV",
+    colour = "Criterion"
+  ) +
+  theme_bw()
+
+# manually check results for k = 10, spacing = 50 (note: works out)
+kk = 10; ss = 50
+xx = os.by_k[[kk]]$values
+xx[xx$spacing == ss, ]
+
+# verify
+traps2 <- make.grid(
+  nx = nxtraps, 
+  ny = nytraps,
+  spacing = ss,
+  detector = "count"
+)
+
+# group 1
+Enrm(D = D[1] , 
+     traps = traps2, 
+     mask = mask,
+     detectpar = list(lambda0 = lambda0[1], sigma = sigma[1]), 
+     noccasions = 1)
+
+# group 2
+Enrm(D = D[1] / kk, 
+     traps = traps2, 
+     mask = mask,
+     detectpar = list(lambda0 = lambda0[1] / kk, sigma = sigma[1] * kk), 
+     noccasions = 1)
