@@ -3,8 +3,8 @@
 ## Possible objectives: for two groups A and B
 ## "sum_min" = maximize min(En_A + En_B, Er_A + Er_B)
 ## "all_min" = maximize min(En_A, EnB, Er_A, Er_B)
-## "min_mean_CV" = minimize mean(CV_A, CV_B)
-## "min_max_CV" = minimize max(CV_A, CV_B)
+## "min_mean_CV" = maximize -mean(CV_A, CV_B)
+## "min_max_CV" = maximize -max(CV_A, CV_B)
 ## "max_mean_En2" = maximise mean(En2_A, En2_B) where En2 = n animals on >1 trap
 ## "max_min_En2" = maximise min(En2_A, En2_B)
 ##############################################################################
