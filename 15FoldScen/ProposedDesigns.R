@@ -60,7 +60,7 @@ spacing.meanCV <- optimalSpacing2G(D1 = D1, D2 = D2,
                                     noccasions = 1,
                                     criterion = c("min_mean_CV"),
                                     spacing_m = seq(0,5000,10))
-spacing.meanCV $optimum.spacing
+spacing.meanCV$optimum.spacing
 
 spacing.minmaxCV <- optimalSpacing2G(D1 = D1, D2 = D2,
                                     traps0 = traps40,
@@ -70,7 +70,7 @@ spacing.minmaxCV <- optimalSpacing2G(D1 = D1, D2 = D2,
                                     criterion = c("min_max_CV"),
                                     spacing_m = seq(0,5000,10))
 spacing.minmaxCV$optimum.spacing
-#so 600 m spacing seems right for 40 traps
+#550 / 590, so 600 m spacing seems right for 40 traps
 
 #OS for 120 traps using OS 2G, and switching to min_max CV
 nxtraps <- floor(sqrt(nT2))
@@ -102,7 +102,7 @@ spacing.minmaxCV <- optimalSpacing2G(D1 = D1, D2 = D2,
                                      spacing_m = seq(0,5000,10))
 spacing.minmaxCV$optimum.spacing
 
-#so spacings of 2300 or 1300, going with minmaxCV of 1300
+#so spacings of 2310 or 1270, going with minmaxCV of 1300
 
 #use the spacing from all.min of 700 m
 #redundant, see below
@@ -132,7 +132,7 @@ grid.1600.120 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, s
                                lambda0 = NULL, sigma.buff = NULL, grid.spacing = mean(sigma), 
                                criterion = 4, n.reps = nreps, grid = TRUE, nT = nT2)
 
-#adding in new spacing lvl of 600 m, and 1300 for 120 traps
+#adding in new spacing lvl of 600 m for 40 and 1300 for 120 traps
 grid.600.40 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, sigma = NULL, 
                                lambda0 = NULL, sigma.buff = NULL, grid.spacing = 600, 
                                criterion = 4, n.reps = nreps, grid = TRUE, nT = nT1)
@@ -149,7 +149,7 @@ grid.1300.120 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, s
 #crit makes no diff since only one set of values given
 
 spacing.within <- optimalSpacing2G(D1 = D1, D2 = D1,
-                                   traps0 = traps,
+                                   traps0 = traps40,
                                    detectpar1 = list(lambda0 = L01, sigma = sigma1),
                                    detectpar2 = list(lambda0 = L01, sigma = sigma1),
                                    noccasions = 1,
@@ -158,7 +158,7 @@ spacing.within <- optimalSpacing2G(D1 = D1, D2 = D1,
 spacing.within$optimum.spacing
 
 spacing.btwn <- optimalSpacing2G(D1 = D2, D2 = D2,
-                                 traps0 = traps,
+                                 traps0 = traps40,
                                  detectpar1 = list(lambda0 = L02, sigma = sigma2),
                                  detectpar2 = list(lambda0 = L02, sigma = sigma2),
                                  noccasions = 1,
@@ -217,7 +217,7 @@ spacing.btwn120 <- optimalSpacing2G(D1 = D2, D2 = D2,
                                  spacing_m = seq(0,5000,10))
 spacing.btwn120$optimum.spacing
 
-#so going with 600 within and 1700 btwn
+#so 550 / 1690 so going with 600 within and 1700 btwn
 #slightly increase the buffer, for 2x2 grids with 600 m spacing this is sqrt(2*300^2) or 425
 res.objs2 <- create.extent(sigma = 3000, buff.factor = 3.14, res = 200)
 mask2 <- res.objs2[[1]]
@@ -395,6 +395,35 @@ lw.120.1 <- read.traps(data = lw.120.1$points, detector = "count")
 
 plot(mask)
 plot(lw.40.1, add = TRUE)
+
+#and no radius for 120 traps
+smallspacing <- 600
+bigspacing <- 6000
+
+region = data.frame(x = c(min(mask$x), min(mask$x), max(mask$x), max(mask$x)),
+                    y = c(min(mask$y), max(mask$y), max(mask$y), min(mask$y)))
+
+# make the design 
+lwrot <- 45
+lw <- make.lacework(region = region, 
+                    spacing = c(bigspacing, smallspacing),  
+                    rotate = lwrot,
+                    radius = NULL,
+                    detector = "count", 
+                    keep.design = TRUE)
+
+lw.120b.1 <- crop_to_n(lw$x, lw$y, N = 120, xy_ratio = 1)
+lw.120b.1 <- read.traps(data = lw.120b.1$points, detector = "count")
+
+plot(mask, axes = T)
+plot(lw.120b.1, add = TRUE)
+
+#save new LW 120 design
+load("15FoldScen/Cluster/Sims/LWdesigns.RData")
+
+lwlist$`120 trapsB` <- lw.120b.1
+
+save(lwlist, file = "15FoldScen/Cluster/Sims/LWdesigns.RData")
 
 
 ##########################################################
