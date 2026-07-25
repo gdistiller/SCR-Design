@@ -123,7 +123,7 @@ grid.800.120 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, si
                               lambda0 = NULL, sigma.buff = NULL, grid.spacing = 800, 
                               criterion = 4, n.reps = nreps, grid = TRUE, nT = nT2)
 
-#1600
+#1600 (not used)
 grid.1600.40 <- Proposed.traps(poly = traplocs.sf, alltraps = NULL, D = NULL, sigma = NULL, 
                            lambda0 = NULL, sigma.buff = NULL, grid.spacing = mean(sigma), 
                            criterion = 4, n.reps = nreps, grid = TRUE, nT = nT1)
@@ -249,20 +249,20 @@ Enrm(D = D2, trap.secr.list.os.120[[1]], mask1, detectpar = list(lambda0 = L02, 
 
 #again with 2 sigma spacing (400 / 6000)
 #slightly increase the buffer, for 2x2 grids with 400 m spacing this is sqrt(2*200^2) or 282.84
-res.objs2 <- create.extent(sigma = 3000, buff.factor = 3.095, res = 200)
-mask2 <- res.objs2[[1]]
-clust.locs2 <- res.objs2[[2]]
-clustlocs.sf2 <- res.objs2[[3]]
+res.objs3 <- create.extent(sigma = 3000, buff.factor = 3.095, res = 200)
+mask3 <- res.objs3[[1]]
+clust.locs3 <- res.objs3[[2]]
+clustlocs.sf3 <- res.objs3[[3]]
 
-clusters.2sig.40 <- Proposed.traps(poly = clustlocs.sf2, alltraps = NULL, D = NULL, sigma = NULL, 
+clusters.2sig.40 <- Proposed.traps(poly = clustlocs.sf3, alltraps = NULL, D = NULL, sigma = NULL, 
                                  lambda0 = NULL, sigma.buff = NULL, grid.spacing = 6400, 
                                  criterion = 4, n.reps = 500, grid = TRUE, nT = 10)
 
-clusters.2sig.120 <- Proposed.traps(poly = clustlocs.sf2, alltraps = NULL, D = NULL, sigma = NULL, 
+clusters.2sig.120 <- Proposed.traps(poly = clustlocs.sf3, alltraps = NULL, D = NULL, sigma = NULL, 
                                   lambda0 = NULL, sigma.buff = NULL, grid.spacing = 6400, 
                                   criterion = 4, n.reps = 500, grid = TRUE, nT = 30)
 
-plot(mask2, axes = T)
+plot(mask3, axes = T)
 plot(clusters.2sig.40[[1]], add = T)
 plot(clusters.2sig.120[[1]], add = T)
 
@@ -283,7 +283,7 @@ trap.secr.list.2sig.120 <- lapply(trap.list.2sig.120, function(traps) {
   read.traps(data = traps[, c("x", "y")], detector = "count")
 })
 
-plot(mask2, axes = T)
+plot(mask3, axes = T)
 plot(trap.secr.list.2sig.40[[10]], add = T)
 plot(trap.secr.list.2sig.120[[10]], add = T)
 
@@ -300,11 +300,19 @@ grid.designs.40 <- list("700 m (2G opt)" = grid.sum.min.40, "800 m" = grid.800.4
 grid.designs.120 <- list("700 m (2G opt)" = grid.sum.min.120, "800 m" = grid.800.120, "Avg sigma" = grid.1600.120, 
                         "Cluster (opt)" = trap.secr.list.os.120, "Cluster (2 sig)" = trap.secr.list.2sig.120)
 
+#current code to save design obj
+grid.designs.40 <- list("600 m (OS)" = grid.600.40, "800 m" = grid.800.40, "Cluster (OS)" = trap.secr.list.os.40, 
+                        "Cluster (2 sig)" = trap.secr.list.2sig.40)
+
+grid.designs.120 <- list("1300 m (OS)" = grid.1300.120, "800 m" = grid.800.120, "Cluster (OS)" = trap.secr.list.os.120,
+                         "Cluster (2 sig)" = trap.secr.list.2sig.120)
+
+
 save(grid.designs.40, file = "15FoldScen/Cluster/Sims/40Traps/GridDesigns40.RData")
 save(grid.designs.120, file = "15FoldScen/Cluster/Sims/120Traps/GridDesigns120.RData")
 
-save(grid.designs.40, file = "15FoldScen/Cluster/ProposedDesigns/40Traps/GridDesigns40.RData")
-save(grid.designs.120, file = "15FoldScen/Cluster/ProposedDesigns/120Traps/GridDesigns120.RData")
+save(grid.designs.40, file = "15FoldScen/Cluster/ProposedDesigns/GridDesigns40.RData")
+save(grid.designs.120, file = "15FoldScen/Cluster/ProposedDesigns/GridDesigns120.RData")
 
 ##########################################################
 #lacework

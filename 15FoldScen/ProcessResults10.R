@@ -8,8 +8,6 @@ library(secr)
 library(secrdesign)
 library(dplyr)
 library(tidyr)
-library(ggplot2)
-library(patchwork)
 
 ################
 #Functions
@@ -145,7 +143,17 @@ Grid40.600.red1 <- find.rogue(Grid.600.results[,c(1:6)], mag = mag.factor, true 
 Grid40.600.red2 <- find.rogue(Grid.600.results[,c(7:12)], mag = mag.factor, true = c(0.05/15, 2/15, 3000))
 Grid40.600.clean <- merge(Grid40.600.red1, Grid40.600.red2, by = "row", all.x = TRUE, all.y = TRUE)
 
-Grid600.40 <- construct_df(Grid40.600.clean, design_name = "Grid 600m", true_vals = truth_df)
+Grid600.40 <- construct_df(Grid40.600.clean, design_name = "Grid (OS)", true_vals = truth_df)
+
+#800 m spacing
+
+load("15FoldScen/Cluster/Sims/40Traps/GridsdResults40.RData")
+
+Grid40.800.red1 <- find.rogue(Grid.800.results[,c(1:6)], mag = mag.factor, true = c(0.05, 2, 200))
+Grid40.800.red2 <- find.rogue(Grid.800.results[,c(7:12)], mag = mag.factor, true = c(0.05/15, 2/15, 3000))
+Grid40.800.clean <- merge(Grid40.800.red1, Grid40.800.red2, by = "row", all.x = TRUE, all.y = TRUE)
+
+Grid800.40 <- construct_df(Grid40.800.clean, design_name = "Grid 800m", true_vals = truth_df)
 
 #cluster (OS spacing)
 load("15FoldScen/Cluster/Sims/40Traps/OSclusters40.RData")
@@ -255,11 +263,11 @@ TwoStage40.red1 <- find.rogue(TwoStage.40.results[,c(1:6)], mag = mag.factor, tr
 TwoStage40.red2 <- find.rogue(TwoStage.40.results[,c(7:12)], mag = mag.factor, true = c(0.05/15, 2/15, 3000))
 TwoStage40.clean <- merge(TwoStage40.red1, TwoStage40.red2, by = "row", all.x = TRUE, all.y = TRUE)
 
-TwoStage.40 <- construct_df(TwoStage40.clean, design_name = "TwoStage", true_vals = truth_df)
-
+TwoStage.40 <- construct_df(TwoStage40.clean, design_name = "Two Stage", true_vals = truth_df)
 
 all_results_40_4 <- bind_rows(
   Grid600.40,
+  Grid800.40,
   ClusterOS.40,
   Cluster2Sig.40,
   LW.40,
@@ -271,18 +279,28 @@ all_results_40_4 <- bind_rows(
   GA5.S2.40,
   GA5.Avg.40,
   GA5.Both.40,
-  TwoStage
+  TwoStage.40
   )
 
 #####################################
 
 #################
-#120 traps first
+#120 traps
 #################
 
 ###########################################################
 #Grid designs (incl grids with OS 2G, and clustered grids)
 ###########################################################
+
+#1300 m spacing (OS)
+
+load("15FoldScen/Cluster/Sims/120Traps/OSGridsResults120.RData")
+
+Grid120.1300.red1 <- find.rogue(Grid.1300.results[,c(1:6)], mag = mag.factor, true = c(0.05, 2, 200))
+Grid120.1300.red2 <- find.rogue(Grid.1300.results[,c(7:12)], mag = mag.factor, true = c(0.05/15, 2/15, 3000))
+Grid120.1300.clean <- merge(Grid120.1300.red1, Grid120.1300.red2, by = "row", all.x = TRUE, all.y = TRUE)
+
+Grid1300.120 <- construct_df(Grid120.1300.clean, design_name = "Grid (OS)", true_vals = truth_df)
 
 #800 m spacing
 
@@ -293,16 +311,6 @@ Grid120.800.red2 <- find.rogue(Grid.800.results[,c(7:12)], mag = mag.factor, tru
 Grid120.800.clean <- merge(Grid120.800.red1, Grid120.800.red2, by = "row", all.x = TRUE, all.y = TRUE)
 
 Grid800.120 <- construct_df(Grid120.800.clean, design_name = "Grid 800m", true_vals = truth_df)
-
-#1300 m spacing
-
-load("15FoldScen/Cluster/Sims/120Traps/OSGridsResults120.RData")
-
-Grid120.1300.red1 <- find.rogue(Grid.1300.results[,c(1:6)], mag = mag.factor, true = c(0.05, 2, 200))
-Grid120.1300.red2 <- find.rogue(Grid.1300.results[,c(7:12)], mag = mag.factor, true = c(0.05/15, 2/15, 3000))
-Grid120.1300.clean <- merge(Grid120.1300.red1, Grid120.1300.red2, by = "row", all.x = TRUE, all.y = TRUE)
-
-Grid1300.120 <- construct_df(Grid120.1300.clean, design_name = "Grid 1300m", true_vals = truth_df)
 
 #cluster (os spacing)
 load("15FoldScen/Cluster/Sims/120Traps/OSclusters120.RData")
@@ -428,7 +436,7 @@ LWB120.red1 <- find.rogue(LWB.120.results[,c(1:6)], mag = mag.factor, true = c(0
 LWB120.red2 <- find.rogue(LWB.120.results[,c(7:12)], mag = mag.factor, true = c(0.05/15, 2/15, 3000))
 LWB120.clean <- merge(LWB120.red1, LWB120.red2, by = "row", all.x = TRUE, all.y = TRUE)
 
-LWB.120 <- construct_df(LWB120.clean, design_name = "Lacework", true_vals = truth_df)
+LWB.120 <- construct_df(LWB120.clean, design_name = "Lacework (F)", true_vals = truth_df)
 
 ##########
 #Two Stage
@@ -440,14 +448,15 @@ TwoStage120.red1 <- find.rogue(TwoStage.120.results[,c(1:6)], mag = mag.factor, 
 TwoStage120.red2 <- find.rogue(TwoStage.120.results[,c(7:12)], mag = mag.factor, true = c(0.05/15, 2/15, 3000))
 TwoStage120.clean <- merge(TwoStage120.red1, TwoStage120.red2, by = "row", all.x = TRUE, all.y = TRUE)
 
-TwoStage.120 <- construct_df(TwoStage120.clean, design_name = "TwoStage", true_vals = truth_df)
+TwoStage.120 <- construct_df(TwoStage120.clean, design_name = "Two Stage", true_vals = truth_df)
 
 
 ################################################################
+#need to add Grid1300 and LWB
 
 all_results_120_4 <- bind_rows(
-  Grid800.120,
   Grid1300.120,
+  Grid800.120,
   ClusterOS.120,
   Cluster2Sig.120,
   LW.120,
