@@ -64,17 +64,17 @@ make.summary <- function(df) {
       design = factor(
         design,
         levels = c(
-          "Grid 700m", "Grid 800m",
+          "Grid (OS)", "Grid 800m",
           "Cluster (OS)", "Cluster (2 Sig)",
-          "Lacework",
+          "Lacework", "Lacework (F)",
           "GA4 S1", "GA4 S2", "GA4 Avg", "GA4 Both",
           "GA5 S1", "GA5 S2", "GA5 Avg", "GA5 Both",
           "Two Stage"
         ),
         labels = c(
-          "Gr.700", "Gr.800",
+          "Grid(OS)", "Grid.800",
           "Cl(OS)", "Cl(2 Sig)",
-          "LW",
+          "LW", "LW(f)",
           "GA4 G1", "GA4 G2", "GA4 Avg", "GA4 Both", 
           "GA5 G1", "GA5 G2", "GA5 Avg", "GA5 Both",
           "2 Stage"
