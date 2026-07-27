@@ -55,7 +55,7 @@ AllResults40 <- AllResults40 %>%
       levels = c(
         "Grid (OS)", "Grid 800m",
         "Cluster (OS)", "Cluster (2 Sig)",
-        "Lacework",
+        "Lacework", "Lacework (F)",
         "GA4 S1", "GA4 S2", "GA4 Avg", "GA4 Both",
         "GA5 S1", "GA5 S2", "GA5 Avg", "GA5 Both",
         "Two Stage"
@@ -134,7 +134,7 @@ AllResults120 <- AllResults120 %>%
       levels = c(
         "Grid (OS)", "Grid 800m",
         "Cluster (OS)", "Cluster (2 Sig)",
-        "Lacework",
+        "Lacework", "Lacework (F)",
         "GA4 S1", "GA4 S2", "GA4 Avg", "GA4 Both",
         "GA5 S1", "GA5 S2", "GA5 Avg", "GA5 Both",
         "Two Stage"
@@ -155,6 +155,8 @@ df_excl_120 <- AllResults120%>%
     prop_bad = n_bad / n_sims,
     .groups = "drop"
   )
+
+df_excl_120$prop_bad
 
 #################################################################
 #figs created in ggplot and saved
@@ -198,7 +200,9 @@ plot.D1 <- Combine.plots(D.RB, D.RSE, D.cov,
 )
 
 ggsave("15FoldScen/figures/D1.pdf", plot = plot.D1, width = 7, height = 9)
-ggsave("15FoldScen/figures/D2.pdf", plot = plot.D2, width = 7, height = 9)
+
+#2nd one old from when was trying diff plots
+#ggsave("15FoldScen/figures/D2.pdf", plot = plot.D2, width = 7, height = 9)
 
 #plots for L0
 L0.RB <- Metric.plot(summary.combined,
@@ -276,20 +280,17 @@ load("GA2StageDesigns.RData")
 
 #extract coordinates and put all in one df
 
-# extract designs
-sys1 <- as.data.frame(grid.designs.40$`600 m (OS)`[[2]]) %>%
-  mutate(design = "Grid (OS)")
-
-sys2 <- as.data.frame(grid.designs.40$`800 m`[[2]]) %>%
+# extract designs, exclude the OS grid as only need to show one
+sys1 <- as.data.frame(grid.designs.40$`800 m`[[2]]) %>%
   mutate(design = "Grid 800")
 
-sys3 <- as.data.frame(grid.designs.40$`Cluster (OS)`[[1]]) %>%
+sys2 <- as.data.frame(grid.designs.40$`Cluster (OS)`[[1]]) %>%
   mutate(design = "Cluster (OS)")
 
-sys4 <- as.data.frame(grid.designs.40$`Cluster (2 sig)`[[1]]) %>%
+sys3 <- as.data.frame(grid.designs.40$`Cluster (2 sig)`[[1]]) %>%
   mutate(design = "Cluster (2 sig)")
 
-sys5 <- as.data.frame(lwlist$`40 traps`) %>%
+sys4 <- as.data.frame(lwlist$`40 traps`) %>%
   mutate(design = "Lacework")
 
 ga41 <- as.data.frame(GA.designs.40$G4S1[[1]]) %>%
@@ -320,7 +321,7 @@ ga2 <- as.data.frame(GA2StageDesigns$`40 traps`[[1]]) %>%
   mutate(design = "Two Stage")
 
 #first deal with systematic designs
-sys.40 <- bind_rows(sys1, sys2, sys3, sys4, sys5)
+sys.40 <- bind_rows(sys1, sys2, sys3, sys4)
 
 #set labels to parse properly
 sys.40 <- sys.40 %>%
@@ -348,7 +349,8 @@ msk.red <- SCR.objs$Full[[2]]
 #use fn
 sys40.plot <- plot.design(sys.40, msk, view = "full", ndim2 = 4, title = "Systematic trap configurations (40 traps)")
 
-setwd("~/Git/SCR-Design")
+setwd("~/Git/SCRDesign_fresh")
+setwd("~/Documents/Git/SCRDesign_fresh")
 ggsave("15FoldScen/figures/sys40.pdf", plot = sys40.plot, width = 9, height = 6)
 
 ################################################################################
@@ -449,6 +451,18 @@ GA2b.40 <- GA2b.40 %>%
 
 
 #now adding dummy panels to get proper alignment
+sys.pad.40 <- bind_rows(
+  sys.40,
+  tibble(
+    x = 0, y = 0,
+    design = "dummy",
+    design_label = "dummy"
+  )
+)
+
+levels_all_sys <- c(levels(sys.40$design_label), "dummy")
+sys.pad.40$design_label <- factor(sys.pad.40$design_label, levels = levels_all_sys)
+
 ga4.pad.40 <- bind_rows(
   GA4.40,
   tibble(
@@ -477,14 +491,15 @@ p.GA2.40 <- plot.design(GA2.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5,
                         point.size = 0.5, title.expr = NULL)
 p.GA2b.40 <- plot.design(GA2b.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
                         point.size = 0.5, title.expr = NULL)
-
+p.syspad.40 <- plot.design(sys.pad.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL, 
+                           point.size = 0.5, buffer.prop = 0.05, levels_all = levels_all_sys)
 p.GA4pad.40 <- plot.design(ga4.pad.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
                            point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga4)
 p.GA5pad.40 <- plot.design(ga5.pad.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
                            point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga5)
 
-all.40.plot <- Combine.layoutplots(sys40.plot, p.GA4pad.40,p.GA2.40)
-all.40.plotb <- Combine.layoutplots(sys40.plot, p.GA2b.40, p.GA5pad.40)
+all.40.plot <- Combine.layoutplots(p.syspad.40, p.GA4pad.40,p.GA2.40)
+all.40.plotb <- Combine.layoutplots(p.syspad.40, p.GA2b.40, p.GA5pad.40)
 
 setwd("~/Git/SCR-Design")
 ggsave("15FoldScen/figures/All40.pdf", plot = all.40.plot, width = 270, height = 190, units = "mm")
@@ -494,31 +509,31 @@ ggsave("15FoldScen/figures/All40b.pdf", plot = all.40.plotb, width = 270, height
 #for 120 traps
 #version xxb is from ngen = 500
 ###############
-setwd("~/Git/SCR-Design/15FoldScen/Cluster/ProposedDesigns")
+setwd("~/Documents/Git/SCRDesign_fresh/15FoldScen/Cluster/Sims/120Traps")
+
 load("GridDesigns120.RData")
 load("GADesigns120.RData")
+
+setwd("~/Documents/Git/SCRDesign_fresh/15FoldScen/Cluster/Sims")
 load("LWdesigns.RData")
 load("GA2StageDesignsb.RData") 
 
 #extract coordinates and put all in one df
 
-# extract designs
-sys1b <- as.data.frame(grid.designs.120$`1300 m (OS)`[[2]]) %>%
-  mutate(design = "Grid 1300")
-
-sys2b <- as.data.frame(grid.designs.120$`800 m`[[2]]) %>%
+# extract designs, again exclude the OS grid
+sys1b <- as.data.frame(grid.designs.120$`800 m`[[2]]) %>%
   mutate(design = "Grid 800")
 
-sys3b <- as.data.frame(grid.designs.120$`Cluster (OS)`[[1]]) %>%
+sys2b <- as.data.frame(grid.designs.120$`Cluster (opt)`[[1]]) %>%
   mutate(design = "Cluster (OS)")
 
-sys4b <- as.data.frame(grid.designs.120$`Cluster (2 sig)`[[1]]) %>%
+sys3b <- as.data.frame(grid.designs.120$`Cluster (2 sig)`[[1]]) %>%
   mutate(design = "Cluster (2 sig)")
 
-sys5b <- as.data.frame(lwlist$`120 traps`) %>%
+sys4b <- as.data.frame(lwlist$`120 traps`) %>%
   mutate(design = "Lacework")
 
-sys6b <- as.data.frame(lwlist$`120 trapsB`) %>%
+sys5b <- as.data.frame(lwlist$`120 trapsB`) %>%
   mutate(design = "Lacework (F)")
 
 ga41b <- as.data.frame(GA.designs.120$G4S1[[1]]) %>%
@@ -555,15 +570,13 @@ sys.120 <- bind_rows(sys1b, sys2b, sys3b, sys4b, sys5b)
 sys.120 <- sys.120 %>%
   mutate(
     design_label = case_when(
-      design == "Grid (OS)" ~ "Grid~'(OS)'",
       design == "Grid 800" ~ "Grid~800",
       design == "Cluster (OS)" ~ "Cluster~'(OS)'",
       design == "Cluster (2 sig)" ~ "Cluster~(2*sigma)",
       design == "Lacework" ~ "Lacework",
-      design == "Lacework (F)" ~ "Lacework"
+      design == "Lacework (F)" ~ "Lacework (F)"
     ),
     design_label = factor(design_label, levels = c(
-      "Grid (OS)",
       "Grid~800",
       "Cluster~'(OS)'",
       "Cluster~(2*sigma)",
@@ -579,7 +592,7 @@ msk <- SCR.objs$Full[[1]]
 sys.120$y[sys.120$design=="Lacework"] <- sys.120$y[sys.120$design=="Lacework"] + 1000
 sys120.plot <- plot.design(sys.120, msk, view = "full", title = "Systematic trap configurations (120 traps)")
 
-setwd("~/Git/SCR-Design")
+setwd("~/Documents/Git/SCRDesign_fresh")
 ggsave("15FoldScen/figures/sys120.pdf", plot = sys120.plot, width = 9, height = 6)
 
 #######################################################################################

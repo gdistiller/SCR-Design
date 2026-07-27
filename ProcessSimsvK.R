@@ -139,3 +139,19 @@ p.RSE.K <- ggplot(CV.long,
   )
 
 ggsave("15FoldScen/figures/CV_vs_K.pdf", p.RSE.K, width = 6, height = 4)
+
+#calculating for K = 15 from main results file
+results.df <- Allresults_4[[1]]
+RSE.df <- results.df %>%
+  filter(design == "Grid 800m",
+         param == "D") %>%
+  group_by(stratum) %>%
+  summarise(
+    Truth = first(truth),
+    SD = sd(estimate, na.rm = T),
+    RSE = SD / Truth,
+    .groups = "drop"
+  )
+
+RSE.df
+#not sure why RSE for G1 is higher and lower for G2 than what I had before

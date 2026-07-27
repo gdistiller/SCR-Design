@@ -39,11 +39,12 @@ make.summary <- function(df) {
       .groups = "drop"
     ) %>%
     
-    # ✅ STEP 3: formatting / labels (unchanged)
+    # ✅ STEP 3: formatting / labels (
     mutate(
       design_group = case_when(
         grepl("Grid", design) ~ "Grid",
-        grepl("Cluster", design) | grepl("Lacework", design) ~ "Cluster",
+        grepl("Cluster", design) ~ "Cluster",
+        grepl("Lacework", design) ~ "Lacework",
         grepl("GA4", design) ~ "GA4",
         grepl("GA5", design) ~ "GA5",
         grepl("Two Stage", design) ~ "2 Stage",
@@ -52,7 +53,7 @@ make.summary <- function(df) {
       
       design_group = factor(
         design_group,
-        levels = c("Grid", "Cluster", "GA4", "GA5", "2 Stage")
+        levels = c("Grid", "Cluster", "Lacework", "GA4", "GA5", "2 Stage")
       ),
       
       param = case_when(
@@ -151,16 +152,24 @@ Metric.plot <- function(sum.df, plot.title, param_select, metric = "RB", ylims =
   p <- ggplot(df, base_aes) +
     
     # ✅ shading
+    # Design-type shading
     annotate("rect", xmin = 0.5, xmax = 2.5, ymin = -Inf, ymax = Inf,
-             fill = "#1b9e77", alpha = 0.08) +
-    annotate("rect", xmin = 2.5, xmax = 5.5, ymin = -Inf, ymax = Inf,
-             fill = "#d95f02", alpha = 0.08) +
-    annotate("rect", xmin = 5.5, xmax = 9.5, ymin = -Inf, ymax = Inf,
-             fill = "#4a1486", alpha = 0.08) +
-    annotate("rect", xmin = 9.5, xmax = 13.5, ymin = -Inf, ymax = Inf,
-             fill = "#6a51a3", alpha = 0.08) +
-    annotate("rect", xmin = 13.5, xmax = 14.5, ymin = -Inf, ymax = Inf,
-             fill = "#807dba", alpha = 0.08) +
+             fill = "#009E73", alpha = 0.05) +   # Grid
+    
+    annotate("rect", xmin = 2.5, xmax = 4.5, ymin = -Inf, ymax = Inf,
+             fill = "#D55E00", alpha = 0.05) +   # Cluster
+    
+    annotate("rect", xmin = 4.5, xmax = 6.5, ymin = -Inf, ymax = Inf,
+             fill = "#E69F00", alpha = 0.05) +   # Lacework
+    
+    annotate("rect", xmin = 6.5, xmax = 10.5, ymin = -Inf, ymax = Inf,
+             fill = "#0072B2", alpha = 0.05) +   # GA4
+    
+    annotate("rect", xmin = 10.5, xmax = 14.5, ymin = -Inf, ymax = Inf,
+             fill = "#56B4E9", alpha = 0.05) +   # GA5
+    
+    annotate("rect", xmin = 14.5, xmax = 15.5, ymin = -Inf, ymax = Inf,
+             fill = "#CC79A7", alpha = 0.05) +   # Two Stage
     
     # ✅ data
     geom_point(size = 2,
@@ -212,13 +221,21 @@ Metric.plot <- function(sum.df, plot.title, param_select, metric = "RB", ylims =
   p <- p + scale_colour_manual(
     name = "Design type",
     values = c(
-      "Grid" = "#1b9e77",
-      "Cluster" = "#d95f02",
-      "GA4" = "#4a1486",
-      "GA5" = "#6a51a3",
-      "2 Stage" = "#807dba"
+      "Grid" = "#009E73",      # green
+      "Cluster" = "#D55E00",   # orange
+      "Lacework" = "#E69F00",  # yellow-orange
+      "GA4" = "#0072B2",       # blue
+      "GA5" = "#56B4E9",       # sky blue
+      "2 Stage" = "#CC79A7"    # reddish purple
     )
   ) +
+    
+    guides(
+      colour = guide_legend(
+        nrow = 1,
+        byrow = TRUE
+      )
+    ) +
     
     theme_bw() +
     theme(
