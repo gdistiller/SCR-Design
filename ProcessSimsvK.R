@@ -42,6 +42,11 @@ K.results <- do.call(
 CV.df <- K.results %>%
   group_by(K) %>%
   summarise(
+    n = n(),
     CVG1 = sd(D1) / 0.05,
     CVG2 = sd(D2) / (0.05 / first(K))
+  ) %>%
+  mutate(
+    SE.CVG1 = CVG1 / sqrt(2 * (n - 1)),
+    SE.CVG2 = CVG2 / sqrt(2 * (n - 1))
   )
