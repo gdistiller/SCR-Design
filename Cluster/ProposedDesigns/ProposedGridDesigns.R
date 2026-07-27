@@ -52,6 +52,7 @@ spacing.minmax$optimum.spacing
 
 
 #generate 500 grid designs for each value of K
+#using the geometric mean approach
 GridKEval <- function(polygon, sigma1, K, nT, nreps){
   
   GridK.list <- vector("list", K-1)
