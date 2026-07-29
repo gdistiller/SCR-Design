@@ -226,7 +226,7 @@ L0.cov <- Metric.plot(summary.combined,
                      param_select = "lambda[0]",
                      metric = "coverage",
                      facet_traps = TRUE,
-                     ylims=c(0.8,1))
+                     ylims=c(0.75,1))
 
 #combine
 plot.L01 <- Combine.plots(L0.RB, L0.RSE, L0.cov,
@@ -240,7 +240,7 @@ sig.RB <- Metric.plot(summary.combined,
                      param_select = "sigma",
                      metric = "RB",
                      facet_traps = TRUE,
-                     ylims=c(-0.1,0.5))
+                     ylims=c(-0.1,1))
 
 #Rel SE plots (model-based)
 sig.RSE <- Metric.plot(summary.combined,
@@ -248,7 +248,7 @@ sig.RSE <- Metric.plot(summary.combined,
                       param_select = "sigma",
                       metric = "RSE",
                       facet_traps = TRUE,
-                      ylims=c(0,0.5))
+                      ylims=c(0,1))
 
 #coverage plots
 sig.cov <- Metric.plot(summary.combined,
@@ -256,7 +256,7 @@ sig.cov <- Metric.plot(summary.combined,
                       param_select = "sigma",
                       metric = "coverage",
                       facet_traps = TRUE,
-                      ylims=c(0.8,1))
+                      ylims=c(0.75,1))
 
 #combine in two different ways
 plot.sig1 <- Combine.plots(sig.RB, sig.RSE, sig.cov,
@@ -284,7 +284,7 @@ load("GA2StageDesigns.RData")
 sys1 <- as.data.frame(grid.designs.40$`800 m`[[2]]) %>%
   mutate(design = "Grid 800")
 
-sys2 <- as.data.frame(grid.designs.40$`Cluster (OS)`[[1]]) %>%
+sys2 <- as.data.frame(grid.designs.40$`Cluster (opt)`[[1]]) %>%
   mutate(design = "Cluster (OS)")
 
 sys3 <- as.data.frame(grid.designs.40$`Cluster (2 sig)`[[1]]) %>%
@@ -349,7 +349,7 @@ msk.red <- SCR.objs$Full[[2]]
 #use fn
 sys40.plot <- plot.design(sys.40, msk, view = "full", ndim2 = 4, title = "Systematic trap configurations (40 traps)")
 
-setwd("~/Git/SCRDesign_fresh")
+setwd("~/Git/SCR-Design")
 setwd("~/Documents/Git/SCRDesign_fresh")
 ggsave("15FoldScen/figures/sys40.pdf", plot = sys40.plot, width = 9, height = 6)
 
@@ -487,22 +487,22 @@ ga5.pad.40 <- bind_rows(
 levels_all_ga5 <- c(levels(GA5.40$design_label), "dummy")
 ga5.pad.40$design_label <- factor(ga5.pad.40$design_label, levels = levels_all_ga5)
 
-p.GA2.40 <- plot.design(GA2.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
-                        point.size = 0.5, title.expr = NULL)
+#p.GA2.40 <- plot.design(GA2.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
+#                        point.size = 0.5, title.expr = NULL)
 p.GA2b.40 <- plot.design(GA2b.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
                         point.size = 0.5, title.expr = NULL)
 p.syspad.40 <- plot.design(sys.pad.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL, 
                            point.size = 0.5, buffer.prop = 0.05, levels_all = levels_all_sys)
-p.GA4pad.40 <- plot.design(ga4.pad.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
-                           point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga4)
+#p.GA4pad.40 <- plot.design(ga4.pad.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
+#                           point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga4)
 p.GA5pad.40 <- plot.design(ga5.pad.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
                            point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga5)
 
-all.40.plot <- Combine.layoutplots(p.syspad.40, p.GA4pad.40,p.GA2.40)
+#all.40.plot <- Combine.layoutplots(p.syspad.40, p.GA4pad.40,p.GA2.40)
 all.40.plotb <- Combine.layoutplots(p.syspad.40, p.GA2b.40, p.GA5pad.40)
 
 setwd("~/Git/SCR-Design")
-ggsave("15FoldScen/figures/All40.pdf", plot = all.40.plot, width = 270, height = 190, units = "mm")
+#ggsave("15FoldScen/figures/All40.pdf", plot = all.40.plot, width = 270, height = 190, units = "mm")
 ggsave("15FoldScen/figures/All40b.pdf", plot = all.40.plotb, width = 270, height = 190, units = "mm")
 
 ###############
@@ -510,11 +510,13 @@ ggsave("15FoldScen/figures/All40b.pdf", plot = all.40.plotb, width = 270, height
 #version xxb is from ngen = 500
 ###############
 setwd("~/Documents/Git/SCRDesign_fresh/15FoldScen/Cluster/Sims/120Traps")
+setwd("~/Git/SCR-Design/15FoldScen/Cluster/Sims/120Traps")
 
 load("GridDesigns120.RData")
 load("GADesigns120.RData")
 
 setwd("~/Documents/Git/SCRDesign_fresh/15FoldScen/Cluster/Sims")
+setwd("~/Git/SCR-Design/15FoldScen/Cluster/Sims")
 load("LWdesigns.RData")
 load("GA2StageDesignsb.RData") 
 
@@ -593,6 +595,7 @@ sys.120$y[sys.120$design=="Lacework"] <- sys.120$y[sys.120$design=="Lacework"] +
 sys120.plot <- plot.design(sys.120, msk, view = "full", title = "Systematic trap configurations (120 traps)")
 
 setwd("~/Documents/Git/SCRDesign_fresh")
+setwd("~/Git/SCR-Design")
 ggsave("15FoldScen/figures/sys120.pdf", plot = sys120.plot, width = 9, height = 6)
 
 #######################################################################################
@@ -724,15 +727,15 @@ trap.locs <- obj [[2]]
 ###########################################################
 #have put 2 stage with GA4, still displaying in middle row for now
 
-p.GA2.120 <- plot.design(GA2.120, trap.locs, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL)
+#p.GA2.120 <- plot.design(GA2.120, trap.locs, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL)
 p.GA2b.120 <- plot.design(GA2b.120, trap.locs, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL)
-p.GA4pad.120 <- plot.design(ga4.pad.120, trap.locs, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga4)
+#p.GA4pad.120 <- plot.design(ga4.pad.120, trap.locs, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga4)
 p.GA5pad.120 <- plot.design(ga5.pad.120, trap.locs, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga5)
 
-all.120.plot <- Combine.layoutplots(sys120.plot, p.GA4pad.120,p.GA2.120)
+#all.120.plot <- Combine.layoutplots(sys120.plot, p.GA4pad.120,p.GA2.120)
 all.120.plotb <- Combine.layoutplots(sys120.plot, p.GA2b.120, p.GA5pad.120)
 
 setwd("~/Git/SCR-Design")
-ggsave("15FoldScen/figures/All120.pdf", plot = all.120.plot, width = 270, height = 190, units = "mm")
+#ggsave("15FoldScen/figures/All120.pdf", plot = all.120.plot, width = 270, height = 190, units = "mm")
 ggsave("15FoldScen/figures/All120b.pdf", plot = all.120.plotb, width = 270, height = 190, units = "mm")
 
