@@ -293,8 +293,22 @@ all_results_40_4 <- bind_rows(
 ###########################################################
 
 #1300 m spacing (OS)
+#ran as 5 jobs, need to collate
 
-load("15FoldScen/Cluster/Sims/120Traps/OSGridsResults120.RData")
+load("15FoldScen/Cluster/Sims/120Traps/OSGridsResults120a.RData")
+load("15FoldScen/Cluster/Sims/120Traps/OSGridsResults120b.RData")
+load("15FoldScen/Cluster/Sims/120Traps/OSGridsResults120c.RData")
+load("15FoldScen/Cluster/Sims/120Traps/OSGridsResults120d.RData")
+load("15FoldScen/Cluster/Sims/120Traps/OSGridsResults120e.RData")
+
+
+Grid.1300.results <- rbind(
+  Grid.1300.results.a,
+  Grid.1300.results.b,
+  Grid.1300.results.c,
+  Grid.1300.results.d,
+  Grid.1300.results.e
+)
 
 Grid120.1300.red1 <- find.rogue(Grid.1300.results[,c(1:6)], mag = mag.factor, true = c(0.05, 2, 200))
 Grid120.1300.red2 <- find.rogue(Grid.1300.results[,c(7:12)], mag = mag.factor, true = c(0.05/15, 2/15, 3000))
@@ -452,7 +466,6 @@ TwoStage.120 <- construct_df(TwoStage120.clean, design_name = "Two Stage", true_
 
 
 ################################################################
-#need to add Grid1300 and LWB
 
 all_results_120_4 <- bind_rows(
   Grid1300.120,
