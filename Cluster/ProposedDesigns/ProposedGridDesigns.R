@@ -95,3 +95,67 @@ h.vec
 Sig.vec
 L0.vec
 D.vec
+
+#############################################
+#again using OS with minmax CV
+
+rm(list=ls())
+
+source("functions2.R")
+source('optimalSpacing2G/optimalSpacing2G.R')
+
+#Set values for both strata
+sigma1 = 200 ; D1 = 0.05 ; L01 <- 2 
+nT1 <- 40
+
+################################
+#45 km area
+################################
+
+#setup mask and trap locs
+#create mask and potential traplocs
+#using 15 * larger sigma for extent and 3 sigma for buffer
+res.objs <- create.extent(sigma = 3000)
+mask <- res.objs[[1]]
+trap.locs <- res.objs[[2]]
+traplocs.sf <- res.objs[[3]]
+
+#use OS 2G for spacings for different K
+
+#create traps obj for OS
+## Fixed-T near-square rectangular trap grid
+nxtraps <- floor(sqrt(nT1))
+while (nT1 %% nxtraps != 0) nxtraps <- nxtraps - 1
+nytraps <- nT1 / nxtraps
+
+traps40 <- make.grid(
+  nx = nxtraps,
+  ny = nytraps,
+  spacing = 3000,
+  detector = "count"
+)
+
+#OS for 40 traps using OS 2G, min_max CV, for diff K
+h.vec2 <- NULL
+L0.vec <- NULL 
+D.vec <- NULL
+Sig.vec <- NULL
+
+for (k in 2:15){
+
+  Sig.vec[k-1] <- sigma1*k
+  L0.vec[k-1] <- L01 / k
+  D.vec[k-1] <- D1 / k
+  
+  spacing.minmaxCV <- optimalSpacing2G(D1 = D1, D2 = D.vec[k-1],
+                                       traps0 = traps40,
+                                       detectpar1 = list(lambda0 = L01, sigma = sigma1),
+                                       detectpar2 = list(lambda0 = L0.vec[k-1], sigma = Sig.vec[k-1]),
+                                       noccasions = 1,
+                                       criterion = c("min_mean_CV"),
+                                       spacing_m = seq(0,5000,50))
+  h.vec2[k-1] <- spacing.minmaxCV$optimum.spacing
+  
+}
+
+
