@@ -41,17 +41,97 @@ K.results <- do.call(
   names(KResults))
 )
 
-CV.df <- K.results %>%
+#get vectors of true values for the different Ks
+#spacings used
+sigma1 = 200 ; L01 = 2; D1 = 0.05
+L0.vec <- NULL
+D.vec <- NULL 
+Sig.vec <- NULL
+
+for (k in 2:14){
+  Sig.vec[k-1] <-  k * sigma1
+  L0.vec[k-1] <- L01 / k
+  D.vec[k-1] <- D1 / k
+}
+
+Sig.vec
+L0.vec
+D.vec
+
+#filter using find.rouge() based on the same mag factor, and construct_df 
+mag.factor <- 10
+
+K.values <- sort(unique(K.results$K))
+
+g1 <- find.rogue(
+  K.results[, 1:6],
+  mag = mag.factor,
+  true = c(D1, L01, sigma1)
+)
+
+g1$K <- K.results[g1$row, "K"]
+
+g2 <- do.call(
+  rbind,
+  lapply(seq_along(K.values), function(i) {
+    
+    k <- K.values[i]
+    
+    dat.k <- K.results[K.results$K == k, ]
+    
+    out <- find.rogue(
+      dat.k[, 7:12],
+      mag = mag.factor,
+      true = c(D.vec[i], L0.vec[i], Sig.vec[i])
+    )
+    
+    out$K <- k
+    out
+  })
+)
+
+K.clean <- merge(
+  g1,
+  g2,
+  by = c("row", "K"),
+  all = TRUE
+)
+
+K.clean <- K.clean[match(rownames(K.results), K.clean$row),]
+
+
+CV.df <- K.clean %>%
   group_by(K) %>%
   summarise(
-    n = n(),
-    CVG1 = sd(D1) / 0.05,
-    CVG2 = sd(D2) / (0.05 / first(K))
+    n1 = sum(!is.na(D.x)),
+    n2 = sum(!is.na(D.y)),
+    CVG1 = sd(D.x, na.rm = T) / 0.05,
+    CVG2 = sd(D.y, na.rm = T) / (0.05 / first(K))
   ) %>%
   mutate(
-    SE.CVG1 = CVG1 / sqrt(2 * (n - 1)),
-    SE.CVG2 = CVG2 / sqrt(2 * (n - 1))
+    SE.CVG1 = CVG1 / sqrt(2 * (n1 - 1)),
+    SE.CVG2 = CVG2 / sqrt(2 * (n2 - 1))
   )
+
+#calculating for K = 15 from main results file
+load("15FoldScen/AllResults4.RData")
+results.df <- Allresults_4[[1]]
+RSE.df <- results.df %>%
+  filter(design == "Grid 800m",
+         param == "D") %>%
+  group_by(stratum) %>%
+  summarise(
+    Truth = first(truth),
+    SD = sd(estimate, na.rm = T),
+    RSE = SD / Truth,
+    .groups = "drop"
+  )
+RSE.df
+
+0.346 / sqrt(2*487-1) ; 0.586 / sqrt(2*462-1)
+
+#Add results for K = 15
+CV.df <- rbind(CV.df, c(15, 487, 462,0.346,0.586, 0.011, 0.0193))
 
 #reshape to long format
 CV.long <- CV.df %>%
@@ -68,8 +148,8 @@ CV.long <- CV.df %>%
                    labels = c("Group 1", "Group 2"))
   )
 
-#PLot, with and without SEs
-p.RSE.K <- ggplot(CV.long,
+#Plot, with and without SEs
+p1.RSE.K <- ggplot(CV.long,
        aes(x = K,
            y = CV,
            colour = Group)) +
@@ -107,8 +187,8 @@ p.RSE.K <- ggplot(CV.long,
     legend.title = element_blank()
   )
 
-#and witout the SE bar
-p.RSE.K <- ggplot(CV.long,
+#and without the SE bar
+p2.RSE.K <- ggplot(CV.long,
        aes(x = K,
            y = CV,
            colour = Group)) +
@@ -138,20 +218,32 @@ p.RSE.K <- ggplot(CV.long,
     legend.position = "top"
   )
 
-ggsave("15FoldScen/figures/CV_vs_K.pdf", p.RSE.K, width = 6, height = 4)
+ggsave("15FoldScen/figures/CV_vs_Ka.pdf", p1.RSE.K, width = 6, height = 4)
+ggsave("15FoldScen/figures/CV_vs_Kb.pdf", p2.RSE.K, width = 6, height = 4)
 
-#calculating for K = 15 from main results file
-results.df <- Allresults_4[[1]]
-RSE.df <- results.df %>%
-  filter(design == "Grid 800m",
-         param == "D") %>%
-  group_by(stratum) %>%
-  summarise(
-    Truth = first(truth),
-    SD = sd(estimate, na.rm = T),
-    RSE = SD / Truth,
-    .groups = "drop"
+#boxplots of the estimates, 1st make long format
+D.plot <- K.clean %>%
+  select(K, D.x, D.y) %>%
+  pivot_longer(
+    cols = c(D.x, D.y),
+    names_to = "Group",
+    values_to = "Estimate"
+  ) %>%
+  mutate(
+    Group = recode(Group,
+                   "D.x" = "Group 1",
+                   "D.y" = "Group 2")
   )
 
-RSE.df
-#not sure why RSE for G1 is higher and lower for G2 than what I had before
+ggplot(D.plot,
+       aes(x = factor(K),
+           y = Estimate,
+           fill = Group)) +
+  geom_boxplot(position = position_dodge(width = 0.8)) +
+  labs(
+    x = "K",
+    y = "D estimate"
+  ) +
+  theme_bw()
+
+
