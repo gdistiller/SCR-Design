@@ -74,4 +74,24 @@ gridK.40 <- GridKEval(traplocs.sf, sigma1 = 200, K = 14, nT = 40, nreps = 500)
 
 save(gridK.40, file = "Cluster/Sims/GridK40.RData")
 
+#spacings used
+h.vec <- NULL ; sigma1 = 200
+L0.vec <- NULL ; L01 = 2
+D.vec <- NULL ; D1 = 0.05
+Sig.vec <- NULL
 
+for (k in 2:14){
+  sigma2 <- k * sigma1
+  h = sigma1^0.5 * sigma2^0.5
+  h = round(h/10)*10
+  h.vec[k-1] <- h
+  
+  Sig.vec[k-1] <- sigma2
+  L0.vec[k-1] <- L01 / k
+  D.vec[k-1] <- D1 / k
+}
+
+h.vec
+Sig.vec
+L0.vec
+D.vec
