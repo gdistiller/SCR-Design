@@ -64,8 +64,8 @@ design_cols <- c(
   "Grid"     = "#0072B2",
   "Cluster"  = "#D55E00",
   "Lacework" = "#009E73",
-  "GA4"      = "#CC79A7",
-  "GA5"      = "#E69F00",
+  "min(n,r)"      = "#CC79A7",
+  "En2"      = "#E69F00",
   "2 Stage"  = "#000000"
 )
 
@@ -100,36 +100,36 @@ design_key <- tibble::tribble(
   "LW",          "LW1",
   "LW (f)",      "LW2",
   
-  "GA4 G1",      "GA4-1",
-  "GA4 G2",      "GA4-2",
-  "GA4 Avg",     "GA4-3",
-  "GA4 Both",    "GA4-4",
+  "min(n,r)-G1",      "min(n,r)-1",
+  "min(n,r)-G2",      "min(n,r)-2",
+  "min(n,r)-A",     "min(n,r)-3",
+  "min(n,r)-B",    "min(n,r)-4",
   
-  "GA5 G1",      "GA5-1",
-  "GA5 G2",      "GA5-2",
-  "GA5 Avg",     "GA5-3",
-  "GA5 Both",    "GA5-4",
+  "En2-G1",      "En2-1",
+  "En2-G2",      "En2-2",
+  "En2-A",     "En2-3",
+  "En2-B",    "En2-4",
   
   "2 Stage",     "TS"
 )
 
 #new scatter plots for RB and RSE
 D.RB40 <- make_metric_scatter(summary.combined, metric = "RB", trap_level = "40",
-                    parameter = "Density")
+                    parameter = "Density", axis.lim2 = 0.75)
 
 D.RB120 <- make_metric_scatter(summary.combined, metric = "RB", trap_level = "120",
-                              parameter = "Density")
+                              parameter = "Density", axis.lim2 = 0.25)
 
-D.RB120b <- make_metric_scatter(summary.combined, metric = "RB", trap_level = "120",
-                               parameter = "Density", exclude_designs = "Grid (OS)")
+#D.RB120b <- make_metric_scatter(summary.combined, metric = "RB", trap_level = "120",
+#                               parameter = "Density", exclude_designs = "Grid (OS)")
 
 D.RSE40 <- make_metric_scatter(summary.combined, metric = "RSE_emp", trap_level = "40",
-                              parameter = "Density")
+                              parameter = "Density", axis.lim2 = 1.6)
 
 D.RSE120 <- make_metric_scatter(summary.combined, metric = "RSE_emp", trap_level = "120",
-                               parameter = "Density")
+                               parameter = "Density", axis.lim2 = 2)
 
-#new coverage plot
+#new coverage plot, now redundant as including original coverage plots
 D.Cov40 <- Coverage.plot(summary.combined,
                      plot.title = "40 traps",
                      trap_level = "40",
@@ -143,7 +143,7 @@ D.Cov120 <- Coverage.plot(summary.combined,
                          ylims=c(0.8,1))
 
 
-#combine
+#combine, 1st one redundant
 plot.D2 <- Combine.performance.plots(
   D.RB40,
   D.RB120,
@@ -165,24 +165,34 @@ plot.D2b <- Combine.performance.plots(
   global_title = "Performance for Density"
 )
 
+#combine just 2D plots
+plot.D2 <- Combine.performance.plots(
+  D.RB40,
+  D.RB120,
+  D.RSE40,
+  D.RSE120,
+  global_title = "Performance for Density"
+)
+
+
 ggsave("15FoldScen/figures/D2.pdf", plot = plot.D2, width = 7, height = 9)
-ggsave("15FoldScen/figures/D2b.pdf", plot = plot.D2b, width = 7, height = 9)
+#ggsave("15FoldScen/figures/D2b.pdf", plot = plot.D2b, width = 7, height = 9)
 
 #sigma
 #new scatter plots for RB and RSE
 Sig.RB40 <- make_metric_scatter(summary.combined, metric = "RB", trap_level = "40",
-                              parameter = "sigma")
+                              parameter = "sigma", axis.lim2 = 0.4)
 
 Sig.RB120 <- make_metric_scatter(summary.combined, metric = "RB", trap_level = "120",
-                               parameter = "sigma")
+                               parameter = "sigma", axis.lim1 = -0.5, axis.lim2 = 0.1)
 
 Sig.RSE40 <- make_metric_scatter(summary.combined, metric = "RSE_emp", trap_level = "40",
-                               parameter = "sigma")
+                               parameter = "sigma", axis.lim2 = 1.2)
 
 Sig.RSE120 <- make_metric_scatter(summary.combined, metric = "RSE_emp", trap_level = "120",
-                                parameter = "sigma")
+                                parameter = "sigma", axis.lim2 = 0.2)
 
-#coverage plots
+#coverage plots, redundant
 Sig.Cov40 <- Coverage.plot(summary.combined,
                          plot.title = "40 traps",
                          trap_level = "40",
@@ -202,8 +212,6 @@ plot.Sig2 <- Combine.performance.plots(
   Sig.RB120,
   Sig.RSE40,
   Sig.RSE120,
-  Sig.Cov40,
-  Sig.Cov120,
   global_title = expression("Performance of " * sigma)
 )
 
@@ -212,18 +220,18 @@ ggsave("15FoldScen/figures/Sig2.pdf", plot = plot.Sig2, width = 7, height = 9)
 #L0
 #new scatter plots for RB and RSE
 L0.RB40 <- make_metric_scatter(summary.combined, metric = "RB", trap_level = "40",
-                                parameter = "lambda[0]")
+                                parameter = "lambda[0]", axis.lim2 = 0.1)
 
 L0.RB120 <- make_metric_scatter(summary.combined, metric = "RB", trap_level = "120",
-                                 parameter = "lambda[0]")
+                                 parameter = "lambda[0]", axis.lim2 = 0.1)
 
 L0.RSE40 <- make_metric_scatter(summary.combined, metric = "RSE_emp", trap_level = "40",
-                                 parameter = "lambda[0]")
+                                 parameter = "lambda[0]", axis.lim2 = 0.35)
 
 L0.RSE120 <- make_metric_scatter(summary.combined, metric = "RSE_emp", trap_level = "120",
-                                  parameter = "lambda[0]")
+                                  parameter = "lambda[0]", axis.lim2 = 0.25)
 
-#coverage plots
+#coverage plots, redundant
 L0.Cov40 <- Coverage.plot(summary.combined,
                            plot.title = "40 traps",
                            trap_level = "40",
@@ -243,8 +251,6 @@ plot.L02 <- Combine.performance.plots(
   L0.RB120,
   L0.RSE40,
   L0.RSE120,
-  L0.Cov40,
-  L0.Cov120,
   global_title = expression("Performance of " * lambda[0])
 )
 

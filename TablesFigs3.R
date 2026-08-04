@@ -3,12 +3,14 @@
 #lastly the code is included in Overleaf using: \input{tables/table1.tex}
 #July 2026, updated with new OS and the new LW 120 
 #uses AllResults4.RData
+#updated Aug to use objkects for labels, colour scales etc
 
 library(kableExtra)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(patchwork)
+library(terra)
 
 #####################
 # table of parameter estimates per strata
@@ -170,6 +172,35 @@ summary.120$traps <- "120"
 summary.combined <- dplyr::bind_rows(summary.40, summary.120)
 summary.combined$traps <- factor(summary.combined$traps, levels = c("40", "120"))
 
+#setup labels, scales etc
+design_cols <- c(
+  "Grid"     = "#0072B2",
+  "Cluster"  = "#D55E00",
+  "Lacework" = "#009E73",
+  "min(n,r)"      = "#CC79A7",
+  "En2"      = "#E69F00",
+  "2 Stage"  = "#000000"
+)
+
+design_colour_scale <- scale_colour_manual(
+  values = design_cols,
+  name = "Design family",
+  drop = FALSE
+)
+
+design_guide <- guides(
+  colour = guide_legend(
+    nrow = 1,
+    byrow = TRUE,
+    override.aes = list(
+      shape = 16,
+      size = 3,
+      linewidth = 0,
+      linetype = 0
+    )
+  )
+)
+
 #with traps faceted
 D.RB <- Metric.plot(summary.combined,
                      plot.title = NULL,
@@ -288,34 +319,34 @@ sys2 <- as.data.frame(grid.designs.40$`Cluster (opt)`[[1]]) %>%
   mutate(design = "Cluster (OS)")
 
 sys3 <- as.data.frame(grid.designs.40$`Cluster (2 sig)`[[1]]) %>%
-  mutate(design = "Cluster (2 sig)")
+  mutate(design = "Cluster (2σ)")
 
 sys4 <- as.data.frame(lwlist$`40 traps`) %>%
   mutate(design = "Lacework")
 
 ga41 <- as.data.frame(GA.designs.40$G4S1[[1]]) %>%
-  mutate(design = "GA4 G1")
+  mutate(design = "min(n,r)-G1")
 
 ga42 <- as.data.frame(GA.designs.40$G4S2[[1]]) %>%
-  mutate(design = "GA4 G2")
+  mutate(design = "min(n,r)-G2")
 
 ga43 <- as.data.frame(GA.designs.40$G4Avg[[1]]) %>%
-  mutate(design = "GA4 Avg")
+  mutate(design = "min(n,r)-A")
 
 ga44 <- as.data.frame(GA.designs.40$G4Both[[1]]) %>%
-  mutate(design = "GA4 Both")
+  mutate(design = "min(n,r)-B")
 
 ga51 <- as.data.frame(GA.designs.40$G5S1[[1]]) %>%
-  mutate(design = "GA5 G1")
+  mutate(design = "En2-G1")
 
 ga52 <- as.data.frame(GA.designs.40$G5S2[[1]]) %>%
-  mutate(design = "GA5 G2")
+  mutate(design = "En2-G2")
 
 ga53 <- as.data.frame(GA.designs.40$G5Avg[[1]]) %>%
-  mutate(design = "GA5 Avg")
+  mutate(design = "En2-A")
 
 ga54 <- as.data.frame(GA.designs.40$G5Both[[1]]) %>%
-  mutate(design = "GA5 Both")
+  mutate(design = "En2-B")
 
 ga2 <- as.data.frame(GA2StageDesigns$`40 traps`[[1]]) %>%
   mutate(design = "Two Stage")
@@ -330,7 +361,7 @@ sys.40 <- sys.40 %>%
       design == "Grid (OS)" ~ "Grid~'(OS)'",
       design == "Grid 800" ~ "Grid~800",
       design == "Cluster (OS)" ~ "Cluster~'(OS)'",
-      design == "Cluster (2 sig)" ~ "Cluster~(2*sigma)",
+      design == "Cluster (2σ)" ~ "Cluster~(2*sigma)",
       design == "Lacework" ~ "Lacework"
     ),
     design_label = factor(design_label, levels = c(
@@ -361,17 +392,17 @@ GA4.40 <- bind_rows(ga41, ga42, ga43, ga44)
 GA4.40 <- GA4.40 %>%
   mutate(
     design_label = case_when(
-      design == "GA4 G1" ~ "GA[4]~G[1]",
-      design == "GA4 G2" ~ "GA[4]~G[2]",
-      design == "GA4 Avg" ~ "GA[4]~Avg",
-      design == "GA4 Both" ~ "GA[4]~Both",
+      design == "min(n,r)-G1" ~ "'min(n,r)'~G[1]",
+      design == "min(n,r)-G2" ~ "'min(n,r)'~G[2]",
+      design == "min(n,r)-A" ~ "'min(n,r)'~Avg",
+      design == "min(n,r)-B" ~ "'min(n,r)'~Both",
       TRUE ~ design
     ),
     design_label = factor(design_label, levels = c(
-      "GA[4]~G[1]",
-      "GA[4]~G[2]",
-      "GA[4]~Avg",
-      "GA[4]~Both")
+      "'min(n,r)'~G[1]",
+      "'min(n,r)'~G[2]",
+      "'min(n,r)'~Avg",
+      "'min(n,r)'~Both")
       )
   )
 
@@ -383,17 +414,17 @@ GA5.40 <- bind_rows(ga51, ga52, ga53, ga54)
 GA5.40 <- GA5.40 %>%
   mutate(
     design_label = case_when(
-      design == "GA5 G1" ~ "GA[5]~G[1]",
-      design == "GA5 G2" ~ "GA[5]~G[2]",
-      design == "GA5 Avg" ~ "GA[5]~Avg",
-      design == "GA5 Both" ~ "GA[5]~Both",
+      design == "En2-G1" ~ "En2-~G[1]",
+      design == "En2-G2" ~ "En2-~G[2]",
+      design == "En2-A" ~ "En2-~Avg",
+      design == "En2-B" ~ "En2-~Both",
       TRUE ~ design
     ),
     design_label = factor(design_label, levels = c(
-      "GA[5]~G[1]",
-      "GA[5]~G[2]",
-      "GA[5]~Avg",
-      "GA[5]~Both"
+      "En2-~G[1]",
+      "En2-~G[2]",
+      "En2-~Avg",
+      "En2-~Both"
     ))
   )
 
@@ -403,7 +434,7 @@ ggsave("15FoldScen/figures/GA440.pdf", plot = GA4.40.plot, width = 9, height = 6
 ggsave("15FoldScen/figures/GA540.pdf", plot = GA5.40.plot, width = 9, height = 6)
 
 ##################################################################################
-#put GA5 and 2 stage together
+#put GA5 and 2 stage together, redundant now
 GA2.40 <- bind_rows(ga51, ga52, ga53, ga54,
                      ga2)
 
@@ -433,18 +464,18 @@ GA2b.40 <- bind_rows(ga41, ga42, ga43, ga44,
 GA2b.40 <- GA2b.40 %>%
   mutate(
     design_label = case_when(
-      design == "GA4 G1" ~ "GA[4]~G[1]",
-      design == "GA4 G2" ~ "GA[4]~G[2]",
-      design == "GA4 Avg" ~ "GA[4]~Avg",
-      design == "GA4 Both" ~ "GA[4]~Both",
+      design == "min(n,r)-G1" ~ "'min(n,r)'~G[1]",
+      design == "min(n,r)-G2" ~ "'min(n,r)'~G[2]",
+      design == "min(n,r)-A" ~ "'min(n,r)'~Avg",
+      design == "min(n,r)-B" ~ "'min(n,r)'~Both",
       design == "Two Stage" ~ "Two~Stage",
       TRUE ~ design
     ),
     design_label = factor(design_label, levels = c(
-      "GA[4]~G[1]",
-      "GA[4]~G[2]",
-      "GA[4]~Avg",
-      "GA[4]~Both",
+      "'min(n,r)'~G[1]",
+      "'min(n,r)'~G[2]",
+      "'min(n,r)'~Avg",
+      "'min(n,r)'~Both",
       "Two~Stage"
     ))
   )
@@ -503,7 +534,7 @@ all.40.plotb <- Combine.layoutplots(p.syspad.40, p.GA2b.40, p.GA5pad.40)
 
 setwd("~/Git/SCR-Design")
 #ggsave("15FoldScen/figures/All40.pdf", plot = all.40.plot, width = 270, height = 190, units = "mm")
-ggsave("15FoldScen/figures/All40b.pdf", plot = all.40.plotb, width = 270, height = 190, units = "mm")
+ggsave("15FoldScen/figures/All40.pdf", plot = all.40.plotb, width = 270, height = 190, units = "mm")
 
 ###############
 #for 120 traps
@@ -530,7 +561,7 @@ sys2b <- as.data.frame(grid.designs.120$`Cluster (opt)`[[1]]) %>%
   mutate(design = "Cluster (OS)")
 
 sys3b <- as.data.frame(grid.designs.120$`Cluster (2 sig)`[[1]]) %>%
-  mutate(design = "Cluster (2 sig)")
+  mutate(design = "Cluster (2σ)")
 
 sys4b <- as.data.frame(lwlist$`120 traps`) %>%
   mutate(design = "Lacework")
@@ -539,28 +570,28 @@ sys5b <- as.data.frame(lwlist$`120 trapsB`) %>%
   mutate(design = "Lacework (F)")
 
 ga41b <- as.data.frame(GA.designs.120$G4S1[[1]]) %>%
-  mutate(design = "GA4 G1")
+  mutate(design = "min(n,r)-G1")
 
 ga42b <- as.data.frame(GA.designs.120$G4S2[[1]]) %>%
-  mutate(design = "GA4 G2")
+  mutate(design = "min(n,r)-G2")
 
 ga43b <- as.data.frame(GA.designs.120$G4Avg[[1]]) %>%
-  mutate(design = "GA4 Avg")
+  mutate(design = "min(n,r)-A")
 
 ga44b <- as.data.frame(GA.designs.120$G4Both[[1]]) %>%
-  mutate(design = "GA4 Both")
+  mutate(design = "min(n,r)-B")
 
 ga51b <- as.data.frame(GA.designs.120$G5S1[[1]]) %>%
-  mutate(design = "GA5 G1")
+  mutate(design = "En2-G1")
 
 ga52b <- as.data.frame(GA.designs.120$G5S2[[1]]) %>%
-  mutate(design = "GA5 G2")
+  mutate(design = "En2-G2")
 
 ga53b <- as.data.frame(GA.designs.120$G5Avg[[1]]) %>%
-  mutate(design = "GA5 Avg")
+  mutate(design = "En2-A")
 
 ga54b <- as.data.frame(GA.designs.120$G5Both[[1]]) %>%
-  mutate(design = "GA5 Both")
+  mutate(design = "En2-B")
 
 ga2b <- as.data.frame(GA2StageDesigns$`120 traps`[[1]]) %>%
   mutate(design = "Two Stage")
@@ -574,7 +605,7 @@ sys.120 <- sys.120 %>%
     design_label = case_when(
       design == "Grid 800" ~ "Grid~800",
       design == "Cluster (OS)" ~ "Cluster~'(OS)'",
-      design == "Cluster (2 sig)" ~ "Cluster~(2*sigma)",
+      design == "Cluster (2σ)" ~ "Cluster~(2*sigma)",
       design == "Lacework" ~ "Lacework",
       design == "Lacework (F)" ~ "Lacework (F)"
     ),
@@ -606,17 +637,17 @@ GA4.120 <- bind_rows(ga41b, ga42b, ga43b, ga44b)
 GA4.120 <- GA4.120 %>%
   mutate(
     design_label = case_when(
-      design == "GA4 G1" ~ "GA[4]~G[1]",
-      design == "GA4 G2" ~ "GA[4]~G[2]",
-      design == "GA4 Avg" ~ "GA[4]~Avg",
-      design == "GA4 Both" ~ "GA[4]~Both",
+      design == "min(n,r)-G1" ~ "'min(n,r)'~G[1]",
+      design == "min(n,r)-G2" ~ "'min(n,r)'~G[2]",
+      design == "min(n,r)-A" ~ "'min(n,r)'~Avg",
+      design == "min(n,r)-B" ~ "'min(n,r)'~Both",
       TRUE ~ design
     ),
     design_label = factor(design_label, levels = c(
-      "GA[4]~G[1]",
-      "GA[4]~G[2]",
-      "GA[4]~Avg",
-      "GA[4]~Both")
+      "'min(n,r)'~G[1]",
+      "'min(n,r)'~G[2]",
+      "'min(n,r)'~Avg",
+      "'min(n,r)'~Both")
     )
   )
 
@@ -628,17 +659,17 @@ GA5.120 <- bind_rows(ga51b, ga52b, ga53b, ga54b)
 GA5.120 <- GA5.120 %>%
   mutate(
     design_label = case_when(
-      design == "GA5 G1" ~ "GA[5]~G[1]",
-      design == "GA5 G2" ~ "GA[5]~G[2]",
-      design == "GA5 Avg" ~ "GA[5]~Avg",
-      design == "GA5 Both" ~ "GA[5]~Both",
+      design == "En2-G1" ~ "En2-~G[1]",
+      design == "En2-G2" ~ "En2-~G[2]",
+      design == "En2-A" ~ "En2-~Avg",
+      design == "En2-B" ~ "En2-~Both",
       TRUE ~ design
     ),
     design_label = factor(design_label, levels = c(
-      "GA[5]~G[1]",
-      "GA[5]~G[2]",
-      "GA[5]~Avg",
-      "GA[5]~Both"
+      "En2-~G[1]",
+      "En2-~G[2]",
+      "En2-~Avg",
+      "En2-~Both"
     ))
   )
 
@@ -648,7 +679,7 @@ ggsave("15FoldScen/figures/GA4120.pdf", plot = GA4.120.plot, width = 9, height =
 ggsave("15FoldScen/figures/GA5120.pdf", plot = GA5.120.plot, width = 9, height = 6)
 
 ##################################################################################
-#put GA5 and 2 stage together
+#put GA5 and 2 stage together, redundant
 GA2.120 <- bind_rows(ga51b, ga52b, ga53b, ga54b,
                     ga2b)
 
@@ -678,18 +709,18 @@ GA2b.120 <- bind_rows(ga41b, ga42b, ga43b, ga44b,
 GA2b.120 <- GA2b.120 %>%
   mutate(
     design_label = case_when(
-      design == "GA4 G1" ~ "GA[4]~G[1]",
-      design == "GA4 G2" ~ "GA[4]~G[2]",
-      design == "GA4 Avg" ~ "GA[4]~Avg",
-      design == "GA4 Both" ~ "GA[4]~Both",
+      design == "min(n,r)-G1" ~ "'min(n,r)'~G[1]",
+      design == "min(n,r)-G2" ~ "'min(n,r)'~G[2]",
+      design == "min(n,r)-A" ~ "'min(n,r)'~Avg",
+      design == "min(n,r)-B" ~ "'min(n,r)'~Both",
       design == "Two Stage" ~ "Two~Stage",
       TRUE ~ design
     ),
     design_label = factor(design_label, levels = c(
-      "GA[4]~G[1]",
-      "GA[4]~G[2]",
-      "GA[4]~Avg",
-      "GA[4]~Both",
+      "'min(n,r)'~G[1]",
+      "'min(n,r)'~G[2]",
+      "'min(n,r)'~Avg",
+      "'min(n,r)'~Both",
       "Two~Stage"
     ))
   )
@@ -737,5 +768,5 @@ all.120.plotb <- Combine.layoutplots(sys120.plot, p.GA2b.120, p.GA5pad.120)
 
 setwd("~/Git/SCR-Design")
 #ggsave("15FoldScen/figures/All120.pdf", plot = all.120.plot, width = 270, height = 190, units = "mm")
-ggsave("15FoldScen/figures/All120b.pdf", plot = all.120.plotb, width = 270, height = 190, units = "mm")
+ggsave("15FoldScen/figures/All120.pdf", plot = all.120.plotb, width = 270, height = 190, units = "mm")
 

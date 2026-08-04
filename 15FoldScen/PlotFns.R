@@ -45,15 +45,15 @@ make.summary <- function(df) {
         grepl("Grid", design) ~ "Grid",
         grepl("Cluster", design) ~ "Cluster",
         grepl("Lacework", design) ~ "Lacework",
-        grepl("GA4", design) ~ "GA4",
-        grepl("GA5", design) ~ "GA5",
+        grepl("GA4", design) ~ "min(n,r)",
+        grepl("GA5", design) ~ "En2",
         grepl("Two Stage", design) ~ "2 Stage",
         TRUE ~ "Other"
       ),
       
       design_group = factor(
         design_group,
-        levels = c("Grid", "Cluster", "Lacework", "GA4", "GA5", "2 Stage")
+        levels = c("Grid", "Cluster", "Lacework", "min(n,r)", "En2", "2 Stage")
       ),
       
       param = case_when(
@@ -76,8 +76,8 @@ make.summary <- function(df) {
           "Grid (OS)", "Grid 800",
           "Cl (OS)", "Cl (2 Sig)",
           "LW", "LW (f)",
-          "GA4 G1", "GA4 G2", "GA4 Avg", "GA4 Both", 
-          "GA5 G1", "GA5 G2", "GA5 Avg", "GA5 Both",
+          "min(n,r)-G1", "min(n,r)-G2", "min(n,r)-A", "min(n,r)-B", 
+          "En2-G1", "En2-G2", "En2-A", "En2-B",
           "2 Stage"
         )
       )
@@ -163,10 +163,10 @@ Metric.plot <- function(sum.df, plot.title, param_select, metric = "RB", ylims =
              fill = "#E69F00", alpha = 0.05) +   # Lacework
     
     annotate("rect", xmin = 6.5, xmax = 10.5, ymin = -Inf, ymax = Inf,
-             fill = "#0072B2", alpha = 0.05) +   # GA4
+             fill = "#0072B2", alpha = 0.05) +   # min(n,r)
     
     annotate("rect", xmin = 10.5, xmax = 14.5, ymin = -Inf, ymax = Inf,
-             fill = "#56B4E9", alpha = 0.05) +   # GA5
+             fill = "#56B4E9", alpha = 0.05) +   # En2
     
     annotate("rect", xmin = 14.5, xmax = 15.5, ymin = -Inf, ymax = Inf,
              fill = "#CC79A7", alpha = 0.05) +   # Two Stage
@@ -218,38 +218,25 @@ Metric.plot <- function(sum.df, plot.title, param_select, metric = "RB", ylims =
   }
   
   # ✅ colours
-  p <- p + scale_colour_manual(
-    name = "Design type",
-    values = c(
-      "Grid" = "#009E73",      # green
-      "Cluster" = "#D55E00",   # orange
-      "Lacework" = "#E69F00",  # yellow-orange
-      "GA4" = "#0072B2",       # blue
-      "GA5" = "#56B4E9",       # sky blue
-      "2 Stage" = "#CC79A7"    # reddish purple
-    )
-  ) +
-    
-    guides(
-      colour = guide_legend(
-        nrow = 1,
-        byrow = TRUE
-      )
-    ) +
-    
+  p <- p + 
+    design_colour_scale +
+    design_guide +
     theme_bw() +
     theme(
-      axis.text.x = element_text(size = 10, angle = 80, hjust = 1),
+      axis.text.x = element_text(
+        size = 10,
+        angle = 80,
+        hjust = 1
+      ),
       legend.position = "top",
       strip.text = element_text(size = 12)
     ) +
-    
     labs(
       y = ylab,
       x = "Design",
       title = plot.title
     )
-  
+
   # ✅ reference line
   if (!is.null(ref_line)) {
     p <- p + geom_hline(yintercept = ref_line,
@@ -592,7 +579,9 @@ make_metric_scatter <- function(
     trap_level,
     parameter = "Density",
     exclude_designs = NULL,
-    label_size = 3
+    label_size = 3,
+    axis.lim1 = -0.1,
+    axis.lim2 = 1
 ) {
   
   metric <- match.arg(metric)
@@ -669,14 +658,14 @@ make_metric_scatter <- function(
       ) +
       
       coord_cartesian(
-        xlim = c(-0.1, 0.8),
-        ylim = c(-0.1, 0.8)
+        xlim = c(axis.lim1, axis.lim2),
+        ylim = c(axis.lim1, axis.lim2)
       ) +
       
       labs(
         title = paste(trap_level, "traps"),
-        x = "Relative Bias (S1)",
-        y = "Relative Bias (S2)"
+        x = "Relative Bias (G1)",
+        y = "Relative Bias (G2)"
       )
     
   } else {
@@ -692,14 +681,14 @@ make_metric_scatter <- function(
       ) +
       
       coord_cartesian(
-        xlim = c(0, 2),
-        ylim = c(0, 2)
+        xlim = c(axis.lim1, axis.lim2),
+        ylim = c(axis.lim1, axis.lim2)
       ) +
       
       labs(
         title = paste(trap_level, "traps"),
-        x = "Relative Standard Error (S1)",
-        y = "Relative Standard Error (S2)"
+        x = "Relative Standard Error (G1)",
+        y = "Relative Standard Error (G2)"
       )
   }
   
@@ -804,21 +793,19 @@ Coverage.plot <- function(
   p
 }
 
-#new combine fn
+#new combine fn, now for just four panels
 Combine.performance.plots <- function(
     p1, p2,
     p3, p4,
-    p5, p6,
     global_title = NULL,
     tag_levels = "A",
-    heights = c(1,1,1)
+    heights = c(1,1)
 ) {
   
   p_comb <-
     (
       (p1 | p2) /
-        (p3 | p4) /
-        (p5 | p6)
+        (p3 | p4)
     ) +
     plot_layout(
       guides = "collect",
