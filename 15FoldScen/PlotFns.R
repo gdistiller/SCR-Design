@@ -73,9 +73,9 @@ make.summary <- function(df) {
           "Two Stage"
         ),
         labels = c(
-          "Grid(OS)", "Grid.800",
-          "Cl(OS)", "Cl(2 Sig)",
-          "LW", "LW(f)",
+          "Grid (OS)", "Grid 800",
+          "Cl (OS)", "Cl (2 Sig)",
+          "LW", "LW (f)",
           "GA4 G1", "GA4 G2", "GA4 Avg", "GA4 Both", 
           "GA5 G1", "GA5 G2", "GA5 Avg", "GA5 Both",
           "2 Stage"
@@ -584,6 +584,256 @@ plot.design <- function(design.df, mask, buffer.prop = 0.2, view = c("crop", "fu
   return(p)  
 }
 
+#scatterplot fn to construct scatterplots of RB or RSE
+#note that colour scale and guide defined before
+make_metric_scatter <- function(
+    data,
+    metric = c("RB", "RSE_emp"),
+    trap_level,
+    parameter = "Density",
+    exclude_designs = NULL,
+    label_size = 3
+) {
+  
+  metric <- match.arg(metric)
+  
+  plot.df <- data |>
+    filter(
+      param == parameter,
+      traps == trap_level
+    )
+  
+  if (!is.null(exclude_designs)) {
+    plot.df <- plot.df |>
+      filter(!design %in% exclude_designs)
+  }
+  
+  plot.df <- plot.df |>
+    select(
+      design,
+      design_group,
+      stratum,
+      value = all_of(metric)
+    ) |>
+    pivot_wider(
+      names_from = stratum,
+      values_from = value
+    ) |>
+    left_join(design_key, by = "design") |>
+    arrange(design_group, design)
+  
+  p <- ggplot(
+    plot.df,
+    aes(
+      x = S1,
+      y = S2,
+      colour = design_group
+    )
+  ) +
+    
+    geom_point(size = 2) +
+    
+    geom_text_repel(
+      aes(label = short_label),
+      size = label_size,
+      max.overlaps = Inf,
+      show.legend = FALSE
+    ) +
+    
+    design_colour_scale +
+    design_guide +
+    
+    theme_bw() +
+    
+    theme(
+      panel.grid.minor = element_blank(),
+      legend.position = "bottom"
+    )
+  
+  if(metric == "RB") {
+    
+    p <- p +
+      
+      geom_hline(
+        yintercept = 0,
+        linetype = 2,
+        colour = "grey50",
+        show.legend = FALSE
+      ) +
+      
+      geom_vline(
+        xintercept = 0,
+        linetype = 2,
+        colour = "grey50",
+        show.legend = FALSE
+      ) +
+      
+      coord_cartesian(
+        xlim = c(-0.1, 0.8),
+        ylim = c(-0.1, 0.8)
+      ) +
+      
+      labs(
+        title = paste(trap_level, "traps"),
+        x = "Relative Bias (S1)",
+        y = "Relative Bias (S2)"
+      )
+    
+  } else {
+    
+    p <- p +
+      
+      geom_abline(
+        slope = 1,
+        intercept = 0,
+        linetype = 2,
+        colour = "grey50",
+        show.legend = FALSE
+      ) +
+      
+      coord_cartesian(
+        xlim = c(0, 2),
+        ylim = c(0, 2)
+      ) +
+      
+      labs(
+        title = paste(trap_level, "traps"),
+        x = "Relative Standard Error (S1)",
+        y = "Relative Standard Error (S2)"
+      )
+  }
+  
+  p
+}
+
+#simplified fn to just do coverage plots for one trap lvl
+Coverage.plot <- function(
+    sum.df,
+    trap_level,
+    param_select = "Density",
+    plot.title = NULL,
+    ylims = NULL
+) {
+  
+  df <- sum.df %>%
+    filter(
+      param == param_select,
+      traps == trap_level
+    ) %>%
+    left_join(design_key, by = "design") %>%
+    mutate(
+      short_label = factor(
+        short_label,
+        levels = design_key$short_label
+      )
+    )
+
+  if (param_select == "Density") {
+    
+    ylab <- "Coverage (Density)"
+    
+  } else if (param_select == "lambda[0]") {
+    
+    ylab <- expression(Coverage~"(" * lambda[0] * ")")
+    
+  } else if (param_select == "sigma") {
+    
+    ylab <- expression(Coverage~"(" * sigma * ")")
+    
+  } else {
+    
+    ylab <- "Coverage"
+  }
+  
+  p <- ggplot(
+    df,
+    aes(
+      x = short_label,
+      y = coverage,
+      colour = design_group
+    )
+  ) +
+    
+    geom_point(size = 2) +
+    
+    geom_hline(
+      yintercept = 0.95,
+      linetype = "dashed",
+      show.legend = FALSE
+    ) +
+    
+    facet_wrap(
+      ~ stratum,
+      nrow = 1,
+      labeller = labeller(
+        stratum = c(
+          "S1" = "Group 1",
+          "S2" = "Group 2"
+        )
+      )
+    ) +
+    
+    scale_colour_manual(
+      values = design_cols,
+      guide = "none"
+    ) +
+    
+    labs(
+      title = plot.title,
+      x = "Design",
+      y = ylab
+    ) +
+    
+    theme_bw() +
+    
+    theme(
+      axis.text.x = element_text(
+        angle = 60,
+        hjust = 1,
+        vjust = 1,
+        size = 7
+      ),
+      strip.text = element_text(size = 11),
+      legend.position = "none"
+    )
+  
+  if (!is.null(ylims)) {
+    p <- p + coord_cartesian(ylim = ylims)
+  }
+  
+  p
+}
+
+#new combine fn
+Combine.performance.plots <- function(
+    p1, p2,
+    p3, p4,
+    p5, p6,
+    global_title = NULL,
+    tag_levels = "A",
+    heights = c(1,1,1)
+) {
+  
+  p_comb <-
+    (
+      (p1 | p2) /
+        (p3 | p4) /
+        (p5 | p6)
+    ) +
+    plot_layout(
+      guides = "collect",
+      heights = heights
+    ) +
+    plot_annotation(
+      title = global_title,
+      tag_levels = tag_levels
+    )
+  
+  p_comb &
+    theme(
+      legend.position = "bottom"
+    )
+}
 
 #################################################
 #older fns
