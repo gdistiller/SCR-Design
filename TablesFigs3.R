@@ -414,17 +414,17 @@ GA5.40 <- bind_rows(ga51, ga52, ga53, ga54)
 GA5.40 <- GA5.40 %>%
   mutate(
     design_label = case_when(
-      design == "En2-G1" ~ "En2-~G[1]",
-      design == "En2-G2" ~ "En2-~G[2]",
-      design == "En2-A" ~ "En2-~Avg",
-      design == "En2-B" ~ "En2-~Both",
+      design == "En2-G1" ~ "En2~G[1]",
+      design == "En2-G2" ~ "En2~G[2]",
+      design == "En2-A" ~ "En2~Avg",
+      design == "En2-B" ~ "En2~Both",
       TRUE ~ design
     ),
     design_label = factor(design_label, levels = c(
-      "En2-~G[1]",
-      "En2-~G[2]",
-      "En2-~Avg",
-      "En2-~Both"
+      "En2~G[1]",
+      "En2~G[2]",
+      "En2~Avg",
+      "En2~Both"
     ))
   )
 
@@ -659,17 +659,17 @@ GA5.120 <- bind_rows(ga51b, ga52b, ga53b, ga54b)
 GA5.120 <- GA5.120 %>%
   mutate(
     design_label = case_when(
-      design == "En2-G1" ~ "En2-~G[1]",
-      design == "En2-G2" ~ "En2-~G[2]",
-      design == "En2-A" ~ "En2-~Avg",
-      design == "En2-B" ~ "En2-~Both",
+      design == "En2-G1" ~ "En2~G[1]",
+      design == "En2-G2" ~ "En2~G[2]",
+      design == "En2-A" ~ "En2~Avg",
+      design == "En2-B" ~ "En2~Both",
       TRUE ~ design
     ),
     design_label = factor(design_label, levels = c(
-      "En2-~G[1]",
-      "En2-~G[2]",
-      "En2-~Avg",
-      "En2-~Both"
+      "En2~G[1]",
+      "En2~G[2]",
+      "En2~Avg",
+      "En2~Both"
     ))
   )
 
