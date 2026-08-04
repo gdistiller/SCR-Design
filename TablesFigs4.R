@@ -120,6 +120,9 @@ D.RB40 <- make_metric_scatter(summary.combined, metric = "RB", trap_level = "40"
 D.RB120 <- make_metric_scatter(summary.combined, metric = "RB", trap_level = "120",
                               parameter = "Density")
 
+D.RB120b <- make_metric_scatter(summary.combined, metric = "RB", trap_level = "120",
+                               parameter = "Density", exclude_designs = "Grid (OS)")
+
 D.RSE40 <- make_metric_scatter(summary.combined, metric = "RSE_emp", trap_level = "40",
                               parameter = "Density")
 
@@ -151,7 +154,19 @@ plot.D2 <- Combine.performance.plots(
   global_title = "Performance for Density"
 )
 
+#excl Grid (OS) from 120
+plot.D2b <- Combine.performance.plots(
+  D.RB40,
+  D.RB120b,
+  D.RSE40,
+  D.RSE120,
+  D.Cov40,
+  D.Cov120,
+  global_title = "Performance for Density"
+)
+
 ggsave("15FoldScen/figures/D2.pdf", plot = plot.D2, width = 7, height = 9)
+ggsave("15FoldScen/figures/D2b.pdf", plot = plot.D2b, width = 7, height = 9)
 
 #sigma
 #new scatter plots for RB and RSE
