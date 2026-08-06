@@ -215,7 +215,7 @@ D.RSE <- Metric.plot(summary.combined,
                       param_select = "Density",
                       metric = "RSE",
                       facet_traps = TRUE,
-                      ylims=c(0,1))
+                      ylims=c(0,1.75))
 
 #coverage plots
 D.cov <- Metric.plot(summary.combined,
@@ -279,7 +279,7 @@ sig.RSE <- Metric.plot(summary.combined,
                       param_select = "sigma",
                       metric = "RSE",
                       facet_traps = TRUE,
-                      ylims=c(0,1))
+                      ylims=c(0,1.75))
 
 #coverage plots
 sig.cov <- Metric.plot(summary.combined,
