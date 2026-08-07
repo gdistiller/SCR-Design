@@ -291,7 +291,7 @@ sig.cov <- Metric.plot(summary.combined,
 
 #combine in two different ways
 plot.sig1 <- Combine.plots(sig.RB, sig.RSE, sig.cov,
-                          global_title = expression("Performance of "~ sigma)
+                          global_title = expression("Performance for "~ sigma)
 )
 ggsave("15FoldScen/figures/Sig1.pdf", plot = plot.sig1, width = 7, height = 9)
 

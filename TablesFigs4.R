@@ -212,7 +212,7 @@ plot.Sig2 <- Combine.performance.plots(
   Sig.RB120,
   Sig.RSE40,
   Sig.RSE120,
-  global_title = expression("Performance of " * sigma)
+  global_title = expression("Performance for " * sigma)
 )
 
 ggsave("15FoldScen/figures/Sig2.pdf", plot = plot.Sig2, width = 7, height = 9)
