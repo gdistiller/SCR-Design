@@ -173,10 +173,10 @@ p1.RSE.K <- ggplot(CV.long,
   scale_x_continuous(breaks = unique(CV.long$K)) +
   
   labs(
-    x = "Difference factor (K)",
-    y = "Relative standard error (RSE) of density",
-    colour = "Group"
+    x = TeX("Between-group difference factor ($k$)"),
   ) +
+  
+  ylab(TeX(r'($CV(\hat{D}^{(g)})$)')) +
   
   theme_classic(base_size = 13) +
   
@@ -206,10 +206,10 @@ p2.RSE.K <- ggplot(CV.long,
   scale_x_continuous(breaks = unique(CV.long$K)) +
   
   labs(
-    x = expression(K),
-    y = "Relative standard error (RSE) of density",
-    colour = NULL
+    x = TeX("Between-group difference factor ($k$)"),
   ) +
+  
+  ylab(TeX(r'($CV(\hat{D}^{(g)})$)')) +
   
   theme_classic(base_size = 13) +
   
