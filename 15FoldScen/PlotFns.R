@@ -75,7 +75,7 @@ make.summary <- function(df) {
         labels = c(
           "Grid (OS)", "Grid 800",
           "Cl (OS)", "Cl (2 Sig)",
-          "LW", "LW (f)",
+          "LW", "LW (full)",
           "min(n,r)-G1", "min(n,r)-G2", "min(n,r)-A", "min(n,r)-B", 
           "En2-G1", "En2-G2", "En2-A", "En2-B",
           "2 Stage"
