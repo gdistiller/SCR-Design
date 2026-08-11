@@ -567,7 +567,7 @@ sys4b <- as.data.frame(lwlist$`120 traps`) %>%
   mutate(design = "Lacework")
 
 sys5b <- as.data.frame(lwlist$`120 trapsB`) %>%
-  mutate(design = "Lacework (F)")
+  mutate(design = "Lacework (Full)")
 
 ga41b <- as.data.frame(GA.designs.120$G4S1[[1]]) %>%
   mutate(design = "min(n,r)-G1")
@@ -607,14 +607,14 @@ sys.120 <- sys.120 %>%
       design == "Cluster (OS)" ~ "Cluster~'(OS)'",
       design == "Cluster (2σ)" ~ "Cluster~(2*sigma)",
       design == "Lacework" ~ "Lacework",
-      design == "Lacework (F)" ~ "Lacework (F)"
+      design == "Lacework (Full)" ~ "Lacework~(Full)"
     ),
     design_label = factor(design_label, levels = c(
       "Grid~800",
       "Cluster~'(OS)'",
       "Cluster~(2*sigma)",
       "Lacework",
-      "Lacework (F)"
+      "Lacework~(Full)"
     ))
   )
 
