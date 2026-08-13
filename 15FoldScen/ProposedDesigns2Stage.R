@@ -1,4 +1,5 @@
-#June 2026, 2 stage approach design
+#Aug 2026, 2 stage approach design
+#redoing with En2 for stage 2
 #will be added to the design objects afterwards
 
 library(secrdesign)
@@ -11,7 +12,7 @@ library(terra)
 rm(list=ls())
 
 source("functions2.R")
-source("GAoptim.R")
+#note Ian's GAoptim fns added to functions2
 
 #Set values for both strata
 sigma1 = 200 ; sigma2 = 3000  ; sigma <- c(sigma1, sigma2)
@@ -88,13 +89,13 @@ plot(opt.120$optimaltraps, detpar = list(pch = 21, cex = 1.2), add = TRUE)
 minnrRSE(opt.120, distribution = 'binomial')
 
 #now generate nreps designs using a function
-TwoStage.40 <- Two.stage.design(msk = mask, alltraps = trap.locs, L0 = L01, Sig = sigma1, Dens = D1, ntrps = nT1, nfixed = nT1/2, ngens = 100, nreps = 1)
+TwoStage.40 <- Two.stage.design(msk = mask, alltraps = trap.locs, L0 = L01, Sig = sigma1, Dens = D1, ntrps = nT1, nfixed = nT1/2, ngens = 3, nreps = 1)
 
 TwoStage.120 <- Two.stage.design(msk = mask, alltraps = trap.locs, L0 = L01, Sig = sigma1, Dens = D1, ntrps = nT2, nfixed = nT2/2, ngens = 200, nreps = 1)
 
 #500 reps run on cluster
 #I used .combine = 'c' so there are 3 elements for each rep, wil extract by element name
-
+#1st block does stage 2 with min(n,r), redone afterwards using En2
 setwd("~/OneDrive - University of Cape Town/Documents/Git/SCRDesign/15FoldScen/Cluster/ProposedDesigns/40Traps")
 setwd("C:/Users/Greg/OneDrive - University of Cape Town/Documents/Git/SCRDesign/15FoldScen/Cluster/ProposedDesigns/40Traps")
 
@@ -109,6 +110,7 @@ GA2Stage40 <- lapply(GA2Stage40, `[[`, 1)
 
 GA2StageDesigns <- list("40 traps" = GA2Stage40)
 #created without 120 traps while that is running
+
 
 #120 traps, first doing with set from ngen = 300
 setwd("C:/Users/Greg/OneDrive - University of Cape Town/Documents/Git/SCRDesign/15FoldScen/Cluster/ProposedDesigns/120Traps")
@@ -132,4 +134,27 @@ GA2StageDesigns <- list("40 traps" = GA2Stage40, "120 traps" = GA2Stage120)
 
 save(GA2StageDesigns, file = "Cluster/Sims/GA2StageDesignsb.RData")
 
+#################################################################
+#now with En2
+setwd("~/OneDrive - University of Cape Town/Documents/Git/SCRDesign/15FoldScen/Cluster/ProposedDesigns/40Traps")
+setwd("C:/Users/Greg/OneDrive - University of Cape Town/Documents/Git/SCRDesign/15FoldScen/Cluster/ProposedDesigns/40Traps")
+
+#40 traps (version c for 40 and d for 120)
+
+load("GA2Stage40c.RData")
+
+GA2Stage40 <- TwoStage.40.list[names(TwoStage.40.list) == "Proposed design"]
+
+#reformat so the obj contains a list of 500 (rather than a list of lists)
+GA2Stage40 <- lapply(GA2Stage40, `[[`, 1)
+
+setwd("C:/Users/Greg/OneDrive - University of Cape Town/Documents/Git/SCRDesign/15FoldScen/Cluster/ProposedDesigns/120Traps")
+
+load("GA2Stage120d.RData")
+GA2Stage120 <- TwoStage.120.list[names(TwoStage.120.list) == "Proposed design"]
+GA2Stage120 <- lapply(GA2Stage120, `[[`, 1)
+
+GA2StageDesigns <- list("40 traps" = GA2Stage40, "120 traps" = GA2Stage120)
+
+save(GA2StageDesigns, file = "Cluster/Sims/GA2StageDesignsEn2.RData")
 
