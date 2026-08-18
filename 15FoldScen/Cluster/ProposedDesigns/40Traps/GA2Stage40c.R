@@ -4,9 +4,6 @@
 #using foreach and doMPI to get 500 designs
 #Using values from both strata, max the  across the strata
 #uses higher ngen
-#due to timeout I ran seperate GA4/5 jobs as _3a and _3b
-#still timing out so splitting into two sets of 250
-#this the 1st set, saving as GA4... (dont get confused with script name)
 
 rm(list=ls())
 
