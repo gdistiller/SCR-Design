@@ -172,11 +172,8 @@ p1.RSE.K <- ggplot(CV.long,
   
   scale_x_continuous(breaks = unique(CV.long$K)) +
   
-  labs(
-    x = TeX("Between-group difference factor ($k$)"),
-  ) +
-  
-  ylab(TeX(r'($CV(\hat{D}^{(g)})$)')) +
+  labs(x = TeX("Between-group difference factor ($R$)"),
+               y = expression(CV(hat(D)^{(g)}))) +
   
   theme_classic(base_size = 13) +
   
