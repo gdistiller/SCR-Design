@@ -2,7 +2,6 @@
 #version d uses En2 for 2nd stage
 #requires the following objects: mask, traplocs
 #using foreach and doMPI to get 500 designs
-#Using values from both strata, max the min of n / r across the strata
 
 rm(list=ls())
 
