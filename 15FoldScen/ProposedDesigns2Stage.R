@@ -99,6 +99,8 @@ TwoStage.120 <- Two.stage.design(msk = mask, alltraps = trap.locs, L0 = L01, Sig
 setwd("~/OneDrive - University of Cape Town/Documents/Git/SCRDesign/15FoldScen/Cluster/ProposedDesigns/40Traps")
 setwd("C:/Users/Greg/OneDrive - University of Cape Town/Documents/Git/SCRDesign/15FoldScen/Cluster/ProposedDesigns/40Traps")
 
+##################################
+#original with min(n,r) for stage 2
 #40 traps
 
 load("GA2Stage40b.RData")
@@ -107,10 +109,6 @@ GA2Stage40 <- TwoStage.40.list[names(TwoStage.40.list) == "Proposed design"]
 
 #reformat so the obj contains a list of 500 (rather than a list of lists)
 GA2Stage40 <- lapply(GA2Stage40, `[[`, 1)
-
-GA2StageDesigns <- list("40 traps" = GA2Stage40)
-#created without 120 traps while that is running
-
 
 #120 traps, first doing with set from ngen = 300
 setwd("C:/Users/Greg/OneDrive - University of Cape Town/Documents/Git/SCRDesign/15FoldScen/Cluster/ProposedDesigns/120Traps")
@@ -136,8 +134,8 @@ save(GA2StageDesigns, file = "Cluster/Sims/GA2StageDesignsb.RData")
 
 #################################################################
 #now with En2
-setwd("~/OneDrive - University of Cape Town/Documents/Git/SCRDesign/15FoldScen/Cluster/ProposedDesigns/40Traps")
 setwd("C:/Users/Greg/OneDrive - University of Cape Town/Documents/Git/SCRDesign/15FoldScen/Cluster/ProposedDesigns/40Traps")
+setwd("C:/Users/01376436/Documents/Git/SCR-Design/15FoldScen/Cluster/ProposedDesigns/40Traps")
 
 #40 traps (version c for 40 and d for 120)
 
@@ -148,7 +146,7 @@ GA2Stage40 <- TwoStage.40.list[names(TwoStage.40.list) == "Proposed design"]
 #reformat so the obj contains a list of 500 (rather than a list of lists)
 GA2Stage40 <- lapply(GA2Stage40, `[[`, 1)
 
-setwd("C:/Users/Greg/OneDrive - University of Cape Town/Documents/Git/SCRDesign/15FoldScen/Cluster/ProposedDesigns/120Traps")
+setwd("C:/Users/01376436/Documents/Git/SCR-Design/15FoldScen/Cluster/ProposedDesigns/120Traps")
 
 load("GA2Stage120d.RData")
 GA2Stage120 <- TwoStage.120.list[names(TwoStage.120.list) == "Proposed design"]
@@ -156,5 +154,5 @@ GA2Stage120 <- lapply(GA2Stage120, `[[`, 1)
 
 GA2StageDesigns <- list("40 traps" = GA2Stage40, "120 traps" = GA2Stage120)
 
-save(GA2StageDesigns, file = "Cluster/Sims/GA2StageDesignsEn2.RData")
+save(GA2StageDesigns, file = "15FoldScen/Cluster/Sims/GA2StageDesignsEn2.RData")
 
