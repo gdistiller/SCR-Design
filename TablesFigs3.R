@@ -307,7 +307,7 @@ load("SCRObjs.RData")
 load("GridDesigns40.RData")
 load("LWdesigns.RData")
 load("GADesigns40.RData")
-load("GA2StageDesigns.RData") 
+load("GA2StageDesignsEn2.RData") 
 
 #extract coordinates and put all in one df
 
@@ -434,30 +434,30 @@ ggsave("15FoldScen/figures/GA440.pdf", plot = GA4.40.plot, width = 9, height = 6
 ggsave("15FoldScen/figures/GA540.pdf", plot = GA5.40.plot, width = 9, height = 6)
 
 ##################################################################################
-#put GA5 and 2 stage together, redundant now
+#put GA5 and 2 stage together
 GA2.40 <- bind_rows(ga51, ga52, ga53, ga54,
                      ga2)
 
 GA2.40 <- GA2.40 %>%
   mutate(
     design_label = case_when(
-      design == "GA5 G1" ~ "GA[5]~G[1]",
-      design == "GA5 G2" ~ "GA[5]~G[2]",
-      design == "GA5 Avg" ~ "GA[5]~Avg",
-      design == "GA5 Both" ~ "GA[5]~Both",
+      design == "En2-G1" ~ "En2~G[1]",
+      design == "En2-G2" ~ "En2~G[2]",
+      design == "En2-A" ~ "En2~Avg",
+      design == "En2-B" ~ "En2~Both",
       design == "Two Stage" ~ "Two~Stage",
       TRUE ~ design
     ),
     design_label = factor(design_label, levels = c(
-      "GA[5]~G[1]",
-      "GA[5]~G[2]",
-      "GA[5]~Avg",
-      "GA[5]~Both",
+      "En2~G[1]",
+      "En2~G[2]",
+      "En2~Avg",
+      "En2~Both",
       "Two~Stage"
     ))
   )
 
-#put GA4 and 2 stage together
+#put GA4 and 2 stage together, redundant now
 GA2b.40 <- bind_rows(ga41, ga42, ga43, ga44,
                     ga2)
 
@@ -518,19 +518,19 @@ ga5.pad.40 <- bind_rows(
 levels_all_ga5 <- c(levels(GA5.40$design_label), "dummy")
 ga5.pad.40$design_label <- factor(ga5.pad.40$design_label, levels = levels_all_ga5)
 
-#p.GA2.40 <- plot.design(GA2.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
-#                        point.size = 0.5, title.expr = NULL)
-p.GA2b.40 <- plot.design(GA2b.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
+p.GA2.40 <- plot.design(GA2.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
                         point.size = 0.5, title.expr = NULL)
+#p.GA2b.40 <- plot.design(GA2b.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
+#                        point.size = 0.5, title.expr = NULL)
 p.syspad.40 <- plot.design(sys.pad.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, title.expr = NULL, 
                            point.size = 0.5, buffer.prop = 0.05, levels_all = levels_all_sys)
-#p.GA4pad.40 <- plot.design(ga4.pad.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
-#                           point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga4)
-p.GA5pad.40 <- plot.design(ga5.pad.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
-                           point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga5)
+p.GA4pad.40 <- plot.design(ga4.pad.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
+                           point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga4)
+#p.GA5pad.40 <- plot.design(ga5.pad.40, msk.red, view = "full", ndim1 = 1, ndim2 = 5, 
+#                           point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga5)
 
 #all.40.plot <- Combine.layoutplots(p.syspad.40, p.GA4pad.40,p.GA2.40)
-all.40.plotb <- Combine.layoutplots(p.syspad.40, p.GA2b.40, p.GA5pad.40)
+all.40.plotb <- Combine.layoutplots(p.syspad.40, p.GA4pad.40, p.GA2.40)
 
 setwd("~/Git/SCR-Design")
 #ggsave("15FoldScen/figures/All40.pdf", plot = all.40.plot, width = 270, height = 190, units = "mm")
@@ -549,7 +549,7 @@ load("GADesigns120.RData")
 setwd("~/Documents/Git/SCRDesign_fresh/15FoldScen/Cluster/Sims")
 setwd("~/Git/SCR-Design/15FoldScen/Cluster/Sims")
 load("LWdesigns.RData")
-load("GA2StageDesignsb.RData") 
+load("GA2StageDesignsEn2.RData") 
 
 #extract coordinates and put all in one df
 
@@ -679,30 +679,30 @@ ggsave("15FoldScen/figures/GA4120.pdf", plot = GA4.120.plot, width = 9, height =
 ggsave("15FoldScen/figures/GA5120.pdf", plot = GA5.120.plot, width = 9, height = 6)
 
 ##################################################################################
-#put GA5 and 2 stage together, redundant
+#put GA5 and 2 stage together
 GA2.120 <- bind_rows(ga51b, ga52b, ga53b, ga54b,
                     ga2b)
 
 GA2.120 <- GA2.120 %>%
   mutate(
     design_label = case_when(
-      design == "GA5 G1" ~ "GA[5]~G[1]",
-      design == "GA5 G2" ~ "GA[5]~G[2]",
-      design == "GA5 Avg" ~ "GA[5]~Avg",
-      design == "GA5 Both" ~ "GA[5]~Both",
+      design == "En2-G1" ~ "En2~G[1]",
+      design == "En2-G2" ~ "En2~G[2]",
+      design == "En2-A" ~ "En2~Avg",
+      design == "En2-B" ~ "En2~Both",
       design == "Two Stage" ~ "Two~Stage",
       TRUE ~ design
     ),
     design_label = factor(design_label, levels = c(
-      "GA[5]~G[1]",
-      "GA[5]~G[2]",
-      "GA[5]~Avg",
-      "GA[5]~Both",
+      "En2~G[1]",
+      "En2~G[2]",
+      "En2~Avg",
+      "En2~Both",
       "Two~Stage"
     ))
   )
 
-#put GA4 and 2 stage together, optimisation of stage 2 is GA4
+#put GA4 and 2 stage together, redundant
 GA2b.120 <- bind_rows(ga41b, ga42b, ga43b, ga44b,
                      ga2b)
 
@@ -756,15 +756,15 @@ obj <- create.extent(sigma = 3000, buff.factor = 3, res = 200)
 trap.locs <- obj [[2]]
 
 ###########################################################
-#have put 2 stage with GA4, still displaying in middle row for now
+#have put 2 stage with GA5
 
-#p.GA2.120 <- plot.design(GA2.120, trap.locs, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL)
-p.GA2b.120 <- plot.design(GA2b.120, trap.locs, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL)
-#p.GA4pad.120 <- plot.design(ga4.pad.120, trap.locs, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga4)
-p.GA5pad.120 <- plot.design(ga5.pad.120, trap.locs, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga5)
+p.GA2.120 <- plot.design(GA2.120, trap.locs, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL)
+#p.GA2b.120 <- plot.design(GA2b.120, trap.locs, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL)
+p.GA4pad.120 <- plot.design(ga4.pad.120, trap.locs, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga4)
+#p.GA5pad.120 <- plot.design(ga5.pad.120, trap.locs, view = "full", ndim1 = 1, ndim2 = 5, point.size = 0.5, title.expr = NULL, levels_all = levels_all_ga5)
 
 #all.120.plot <- Combine.layoutplots(sys120.plot, p.GA4pad.120,p.GA2.120)
-all.120.plotb <- Combine.layoutplots(sys120.plot, p.GA2b.120, p.GA5pad.120)
+all.120.plotb <- Combine.layoutplots(sys120.plot, p.GA4pad.120, p.GA2.120)
 
 setwd("~/Git/SCR-Design")
 #ggsave("15FoldScen/figures/All120.pdf", plot = all.120.plot, width = 270, height = 190, units = "mm")
